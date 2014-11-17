@@ -1,3 +1,5 @@
+## How to Load Core Data `NSManagedObject`s in Tests
+
 Swift introduced access right management. The test target wouldn't know about the program's source files unless you do one of two things:
 
 1. Declare classes and methods to test `public`, so they are visible outside the app source module. This may become somewhat tedious.

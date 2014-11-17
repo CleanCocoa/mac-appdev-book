@@ -1,1 +1,9 @@
+201411171435 motivation.txt
+201411171431 architecture.txt
 part1.txt
+201411170954 swift core data tests.txt
+201411171045 fleshing out interfaces.txt
+201411171809 view controller basics.txt
+part2.txt
+appendix.txt
+201411171450 unowned self in closures.txt

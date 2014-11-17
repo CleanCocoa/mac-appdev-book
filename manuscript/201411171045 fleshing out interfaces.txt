@@ -1,3 +1,5 @@
+## Introduce Repository and Its Collaborators for Tests
+
 <!--ct: §201411170954-->
 
 When I create subclasses of my own classes in tests, the subclasses can only override methods which are public, since the tests are another module. This way, overriding private methods is not an option to change the behavior of a class. Weirdly enough, it worked in Objective-C.
