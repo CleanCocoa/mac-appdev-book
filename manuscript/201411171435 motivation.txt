@@ -1,0 +1,56 @@
+# Motivation
+
+Hi, I'm Christian and I develop [the Word Counter for Mac][wcapp]. It's my first big Mac application, and I charge money for a license, which makes me nervous. 
+
+Recently, I wanted to use Core Data to store a new kind of data. That poses some challenges for those of us who keep an eye or two on their architecture. This little book and the accompanying project document my explorations and a possible solution.
+
+Selling my app makes me nervous because I suddenly feel obliged to deliver the best software possible. It should be stable. But it should also grow: I want to deliver updates, and thus I need to change the code. Changes shouldn't break existing code -- at least not without me noticing. Therefore I want to write the best code I can in order to make changes easy and to deliver the best working software I'm able to produce.
+
+That's a lot of pressure. I am more comfortable with it because my confidence in the code grew.
+
+In fall 2014, I wanted to add a new feature to the Word Counter. Until then, the app observed key presses and increased interal counters to track words written per app. This is indented to show your overall productivity. But it can't show progress, so up next was the ability to monitor files to track project progress.
+
+This includes a lot of design changes:
+
+* Introduce `Project`s and associate `Path`s with them. The domain has to know how to track progress for this new kind of data.
+* Add background-queue file monitoring capabilities. Thanks to _Grand Central Dispatch_, this is supposed to be quite easy. I'd have to create wrappers nevertheless.
+* Design new user interface components to manage projects and their paths.
+* Store daily `PathRecord`s to keep track of file changes over a long period of time. Without records, no history. Without history, no analysis.
+* Make the existing productivity history view aware of `Project` progress.
+
+In the past, I stored the application-specific daily records in `.plist` files. They were easy to set up and get started. But they don't scale very well. After some time, parsing the file will become increasingly slow.
+
+That's when I decided to use either a SQLite library or opt-in to Core Data to represent `Project` data. I decided to use Core Data because it's so convenient to use.
+
+[wcapp]: http://wordcounterapp.com
+
+## Challenges
+
+I didn't have any experience displaying data using `NSOutlineView`s. I didn't have a lot of experience with Core Data. I couldn't copy too much of existing code to glue the user interface to existing data because the user wasn't able to set up a lot in the app until then.
+
+All in all, most of the design decisions and their requirements were news to me.
+
+I fiddled around with providing data to `NSOutlineView` via `NSTreeController` until appending projects to the list and adding paths to them would work as soon as the actual infrastructure were put in place.
+
+Enter Core Data.
+
+What a mess!
+
+It's super convenient to use Core Data because the framework takes care of a lot. If you want to manipulate persistent objects easily, you can ever wire `NSObjectController`s like `NSTreeController` to Core Data entities and skip _all of the object creation boilerplate code._
+
+Unfortunately, I don't edit a single kind of object, but two. And they can't be nested at will. `Path`s may only be nested below `Project`s which in turn are root level objects. The resulting tree is very shallow.
+
+Also, tying Core Data entities or `NSManagedObject` subclasses to the UI is so convenient because it skips all of the layers in between. This means, in turn, that you couple the user interface to the data representation.
+
+The data representation should stay an implementation detail. I may want to switch from Core Data to a SQLite library later on.
+
+Using Core Data the convenient way violates a lot of the principles I learned to adhere to. These principles help me keep the Word Counter code base clean.
+
+Let's consider the basic architecture I want to advocate. Sometimes it's called "Clean Architecture". Sometimes "Hexagonal". Because the Word Counter is still pretty straightforward, I guess my code base isn't all that complex, so this littler book will present you my interpretation on these things.
+
+I am still making sense of this, and I bet I get a term or two wrong.
+
+Feel free to contribute to this book and the project via GitHub:
+
+- [Book Manuscript on GitHub](https://github.com/DivineDominion/mac-appdev-book)
+- [Project Code on GitHub](https://github.com/DivineDominion/mac-appdev-code)

@@ -2,6 +2,8 @@
 
 When I create subclasses of my own classes in tests, the subclasses can only override methods which are public, since the tests are another module. This way, overriding private methods is not an option to change the behavior of a class. Weirdly enough, it worked in Objective-C.
 
+<!--ct: TODO reference pattern in "Legacy Code"-->
+
 Now that I think of my code as a module with a public interface, test stretegies involving method overrides have to be solved differently.
 
 I want to ensure the repository generates IDs until an ID is free. Duplicates are not allowed. I could override the `integerId()` method and make it public:

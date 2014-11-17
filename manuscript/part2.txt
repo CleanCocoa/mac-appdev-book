@@ -1,0 +1,9 @@
+# Part 2: Sending Messages Inside the App
+
+There are a few attractive options to consider:
+
+* Cocoa's classic delegate pattern to obtain objects ("data source") and handle interactions ("delegate")
+* Ports & Adapters-style command-only interfaces, adhering to CQRS[^cqrs]
+* Leveraging Domain Events
+
+[^cqrs]: "Command--Query Responsibility Segregation" separates changes (commands) from obtaining data (queries). A method should return a value or cause a change in the system, but not both.

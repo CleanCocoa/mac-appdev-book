@@ -1,0 +1,30 @@
+## Architecting
+
+<!--ct: TODO hexagonal diagram-->
+
+<!--ct: TODO layers diagram-->
+
+### Domain
+
+What's at the core?
+
+I buy into _Domain Driven Design_ principles and say: the domain is at the core. That's where `Project` and `Path` exist. These domain objects don't know a thing about Core Data.
+
+`Project` is an **Aggregate** with a title propery and a collection of `Path`s. It's an **Entity** inasmuch as it has identity over time. The user should be able to change an existing `Project`s title later on. That's sufficient to make it an **Entity**.
+
+In the **Domain** reside a lot of other objects dealing with incoming **Domain Events** like "a word was typed". There are `Recorder`s which increase the counter for the current hour when such an event comes in. `Bookkeeper`s hold on to a day's active **Entities**. There's a lot of other stuff revolving around counting words.
+
+### Infrastructure
+
+Then there's the interface for other layers. There's `Repository` objects in the **Infrastructure** layer which implement the **Domain**'s output **Ports** to save records, for example. When the **Domain** reaches outward through interfaces it itself declared, I call them "Ports".
+
+A **Repository** is a collection of **Entities** of the **Domain**. It can be an interface to an array. It can be an interface to a `.plist` file, or any other data store mechanism, including Core Data. The **Domain** doesn't care.
+
+But how does the **Domain** know which actual **Repository** to use when it does only declare the interface, not the implementation?
+
+Actual implementations are picked by a **Service Locator**, for example. Traditionally, that's a global singleton. You can chose a _Dependency Injection_ library instead if you like, but I always found them too cumbersome. _Service Locator_ objects can be modified by tests to return test _Repositories_ easily. My app isn't complex enough to warrant more than globally accessible singletons.
+
+### Application
+
+In layered architecture-speech, the **Application Layer** is the client of your **Domain**.
+

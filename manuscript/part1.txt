@@ -1,3 +1,9 @@
 # Part 1: Setting Up the Project, Core Data, and Unit Tests
 
-To get started, I have to familiarize myself with the new programming language first and then port some code to Swift to ensure everything works as expected.
+After a few experiments and a lot of conceptual drawings, I knew where I wanted to go. I wouldn't start with nothing. The example project should be written in Swift instead of Objective-C, though, so I dedicate this part to making the switch and getting everything to run.
+
+1. Get Core Data and related tests running
+2. Prepare the user interface in its own layer
+3. Have tests in place for the app's domain
+
+In the next part, I'll cover the actual messaging.
