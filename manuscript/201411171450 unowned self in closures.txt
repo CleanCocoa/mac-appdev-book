@@ -1,0 +1,40 @@
+[Swift closures][closures] are prone to creating strong reference cycles when you keep the closure around and reference self from within the closure:
+
+    var closure = {
+        self.doSomething()
+    }
+
+Thanks to ARC, Xcode will complain if you omit `self` in this case, although you can invoke `doSomething()` without further ado from everywhere else in the same class. That's true if you use closures for lazy initialized properties, too:
+
+    class Person {
+        // Strong reference to the closure
+        var onWakeUp: () -> Void = {}
+    
+        let firstName: String
+        let lastName: String
+    
+        // Closure is not retained after evaluation, no need to worry
+        lazy var fullName: String = {
+            return "\(self.firstName) \(self.lastName)"
+        }()
+    
+        init(firstName: String, lastName: String) {
+            self.firstName = firstName
+            self.lastName = lastName
+            
+            // Use unowned self to break strong reference cycle
+            onWakeUp = { [unowned self] in
+                self.dressUp()
+            }
+        }
+    
+        func dressUp() { /* ... */ }
+    }
+
+The main takeaway for me at this point: 
+
+- Lazily initialized properties aren't strongly referenced closures. No need to worry about strong reference cycles.
+- Closures capture their context and thus capture a strong reference to `self`, too. There, I have to pipe in `[unowned self]`.
+
+[closures]: https://developer.apple.com/library/ios/documentation/swift/conceptual/Swift_Programming_Language/Closures.html#//apple_ref/doc/uid/TP40014097-CH11-XID_151
+[uoself]: http://stackoverflow.com/questions/24320347/shall-we-always-use-unowned-self-inside-closure-in-swift

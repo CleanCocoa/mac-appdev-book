@@ -1,0 +1,58 @@
+Coming from my Objective-C projects, I continue to create a Nib file for each window. I ignore the notion of Storyboards on Mac OS for now.
+
+I create the files according to the following principles:
+
+* Use a `NSWindowController` subclass for each window or panel, and use a `NSViewController` subclass for each logical unit of the view.
+* When the unit is re-used, put it into its own Nib file and connect the outlets there.
+* When the unit is used only once, wire its outlets up from within the window's Nib.
+
+Not every button needs its own controller, but buttons modifying a list belong to the list's view controller.
+
+* Add `ItemManagementWindowController` and the accompanying Nib file. 
+* Add an `NSTableView` to the window and bind it to a `ItemViewController` which worries about data handling exclusively. 
+* Add an `NSArrayController` to the Nib to manage the actual `NSTableView` data. It's strongly referenced by the `ItemViewController`.
+
+Remove every notion of `NSWindow` from the `AppDelegate` and show `ItemManagementWindowController`'s window from within `applicationDidFinishLaunching()`. That suffices to show the user interface.
+
+I don't trust Interface Builder a lot, and I assume I will get Cocoa Bindings wrong from time to time. Thus, I add regression tests to show I have set up everything as intended:
+
+    // ItemViewControllerTests.swift
+    func testItemsController_IsConnected() {
+        XCTAssertNotNil(viewController.itemsController, "items controller should be connected in Nib")
+    }
+    
+    func testItemsController_RearrangesObjects() {
+        XCTAssertTrue(viewController.itemsController.automaticallyRearrangesObjects, "items controller should rearrange objects")
+    }
+    
+    func testItemsController_CocoaBindings() {
+        let controller = viewController.itemsController
+        let tableView = viewController.tableView
+    
+        XCTAssertTrue(hasBinding(controller, binding: NSSortDescriptorsBinding, to: viewController, throughKeyPath: "self.itemsSortDescriptors"), "items controller should obtain sortDescriptors from view controller through bindings")
+        XCTAssertTrue(hasBinding(tableView, binding: NSSelectionIndexesBinding, to: controller, throughKeyPath: "selectionIndexes"), "table view should have binding to items controller's selectionIndexes")
+    }
+
+The weird `hasBinding(_,binding:,to:,throughKeyPath:)` method is a little helper to inspect the underlying bindings dictionary in a readable fashion:
+
+    extension XCTestCase {
+        func hasBinding(object: NSObject, binding:String, to boundObject: NSObject, throughKeyPath keyPath:String) -> Bool {
+            if let info = object.infoForBinding(binding) {
+                return (info[NSObservedObjectKey] as NSObject == boundObject) && (info[NSObservedKeyPathKey] as String == keyPath)
+            }
+        
+            return false
+        }
+    }
+
+Now I know that the basic setup is working.
+
+Was the explosion of files worth it? Couldn't we've kept the AppDelegate to manage the window?
+
+I decided to to this move not because it's necessary to keep the code clean right now. It was a premature optimization, you could say.
+
+I did this because I know where I'll be heading. I'm still trying to replicate the basic setup of the Word Counter project but stumble upon Swift's pecularities from time to time.
+
+Once we begin to send messages here and there, the split between objects will make a lot more sense. We're getting there.
+
+<!--ct: commit #c5c351b54e53a5d22b44c20e376bca521f451e54 -->
