@@ -1,0 +1,16 @@
+Swift introduced access right management. The test target wouldn't know about the program's source files unless you do one of two things:
+
+1. Declare classes and methods to test `public`, so they are visible outside the app source module. This may become somewhat tedious.
+2. Add source files to the test target. This equals checking the "Tests" target in the Utilities browser's (⌘⌥1) "Target Membership" list.
+
+![Managing source file target memberships](assets/20141117095632_target-membership.png)
+
+Although it's easier to add sources to the test target, this may not be what you want to do. It is beneficial to think about what should be visible to the outside world and what is an internal detail only.
+
+<!--ct: commit #2f0f329e3cbec9f624cc575b717291989c960595 "get CoreDataItemRepo tests to pass"-->
+
+Unit testing becomes harder for Core Data `NSManagedObject` subclasses this way, though. Adding these to the test target will make the tests compile. Upon test execution, you will trigger an [invisible breakpoint in bytecode][cdbp].
+
+It may help to add `@objc(YourManagedObjectSubclass)`. It didn't in my case, though. I had to remove the `NSManagedObject` subclass from the test target and make its interface public.
+
+[cdbp]: http://stackoverflow.com/questions/24841856/swift-breakpoint-in-coredata-library

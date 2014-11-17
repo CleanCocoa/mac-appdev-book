@@ -1,0 +1,121 @@
+<!--ct: §201411170954-->
+
+When I create subclasses of my own classes in tests, the subclasses can only override methods which are public, since the tests are another module. This way, overriding private methods is not an option to change the behavior of a class. Weirdly enough, it worked in Objective-C.
+
+Now that I think of my code as a module with a public interface, test stretegies involving method overrides have to be solved differently.
+
+I want to ensure the repository generates IDs until an ID is free. Duplicates are not allowed. I could override the `integerId()` method and make it public:
+
+    // Source module
+    public class CoreDataItemRepository: NSObject, ItemRepository {
+        // ...
+        
+        public func nextId() -> ItemId {
+            return ItemId(integerId())
+        }
+
+        public func integerId() -> IntegerId {
+            // return random 64-bit integer
+        }
+    }
+
+    // Test module
+    class TestRepository : CoreDataItemRepository {
+        override func integerId() -> IntegerId {
+            // Return ID1 on first call, ID2 on consecutive calls
+        }
+    }
+
+With this `TestRepository` in hand, I can reserve `ID1` and test that the rest of the default repository implementation ensures another attempt is made at finding a free ID.
+
+Making ID-generation public is a bad idea, though. It's an implementation detail I don't want to expose. I don't want to make decisions like these that early on in the process. When dealing with legacy code, sometimes you have no choice but alter the public interface of a class and promise to yourself to not violate certain rules. 
+
+Instead, recognize ID generation as a distinct responsibility and extract it into its own interface:
+
+    public protocol GeneratesIntegerId {
+        func integerId() -> IntegerId
+    }
+
+Provide a default but private implementation. I used `struct` instead of `class` because there's no _state_ associated with this object. It's simply an object with a single method, no state, no past, and no dependencies:
+
+    struct DefaultIntegerIdGenerator: GeneratesIntegerId {
+        func integerId() -> IntegerId {
+            // return random 64-bit integer
+        }
+    }
+
+The `CoreDataItemRepository`'s interface doesn't have to change unless needed. Simply create another designated initializer and mark the old one as a "convenience" initializer:
+
+    public class CoreDataItemRepository: NSObject, ItemRepository {
+        let managedObjectContext: NSManagedObjectContext
+        let integerIdGenerator: GeneratesIntegerId
+    
+        public convenience init(managedObjectContext: NSManagedObjectContext) {
+            self.init(managedObjectContext: managedObjectContext, integerIdGenerator: DefaultIntegerIdGenerator())
+        }
+    
+        public init(managedObjectContext: NSManagedObjectContext, integerIdGenerator: GeneratesIntegerId) {
+            self.managedObjectContext = managedObjectContext
+            self.integerIdGenerator = integerIdGenerator
+        
+            super.init()
+        }
+    
+        // ...
+    
+        public func nextId() -> ItemId {
+            return ItemId(unusedIntegerId())
+        }
+    
+        func unusedIntegerId() -> IntegerId {
+            var identifier: IntegerId
+        
+            do {
+                identifier = integerId()
+            } while integerIdIsTaken(identifier)
+        
+            return identifier
+        }
+    
+        func integerId() -> IntegerId {
+            return integerIdGenerator.integerId()
+        }
+    
+        func integerIdIsTaken(identifier: IntegerId) -> Bool {
+            // check if an entity with the identifier is already present
+        }
+    }
+
+Now I can provide a test generator:
+
+    class TestIntegerIdGenerator : NSObject, GeneratesIntegerId {
+        let firstAttempt: IntegerId = 1234
+        let secondAttempt: IntegerId = 5678
+        var callCount = 0
+    
+        func integerId() -> IntegerId {
+            let identifier = (callCount == 0 ? firstAttempt : secondAttempt)
+        
+            callCount++
+        
+            return identifier
+        }
+    }
+
+An the test:
+
+    func testNextId_WhenGeneratedIdIsTaken_ReturnsAnotherId() {
+        let testGenerator = TestIntegerIdGenerator()
+        repository = CoreDataItemRepository(managedObjectContext: self.context, integerIdGenerator: testGenerator)
+        let existingId = ItemId(testGenerator.firstAttempt)
+        ManagedItem .insertManagedItem(existingId, title: "irrelevant", inManagedObjectContext: self.context)
+        
+        let itemId = repository!.nextId()
+        
+        let expectedNextId = ItemId(testGenerator.secondAttempt)
+        XCTAssertEqual(itemId, expectedNextId, "Should generate another ID because first one is taken")
+    }
+
+Strangely enough, I have the impression that Swift forces me to make good decisions design-wise, wheras I expect more experienced Cocoa developers to consider all of this backward, or ugly. I expect them to think this is all too much like Java: create a lot of interfaces (format protocols) and service objects and stuff like that.
+
+I think the code benefits from small, stateless objects like these. They enrichen the model and keep interface lean.

@@ -1,0 +1,3 @@
+part1.txt
+201411170954 swift core data tests.txt
+201411171045 fleshing out interfaces.txt
