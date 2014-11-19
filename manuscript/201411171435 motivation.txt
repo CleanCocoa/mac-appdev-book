@@ -53,4 +53,6 @@ I am still making sense of this, and I bet I get a term or two wrong.
 Feel free to contribute to this book and the project via GitHub:
 
 - [Book Manuscript on GitHub](https://github.com/DivineDominion/mac-appdev-book)
-- [Project Code on GitHub](https://github.com/DivineDominion/mac-appdev-code)
+- [Project Code on GitHub][bookcode]
+
+[bookcode]: https://github.com/DivineDominion/mac-appdev-code

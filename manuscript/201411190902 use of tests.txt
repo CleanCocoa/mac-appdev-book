@@ -1,0 +1,32 @@
+## Use of automatted tests
+
+Considering the circumstances and the high uncertainty of my situation, tests have more benefits than verifying the behavior of components:
+
+* Regression Tests: they ensure I don't break the functionality.
+* Discovery Tests: they become client code to find out how well the parts fit together.
+* Discovery Tests II: they help me learn the new language and its API. I can formalize expectations (based on my Objective-C experiences) and try to replicate behavior in Swift.
+
+<!--ct: TODO reference to "Legacy Code"s 'discovery tests'-->
+
+Discovery Tests[#feathers2011legco][] are tests which aren't necessarily meant to stay. They take the place of `NSLog`ging values in production code. Instead of fiddling with the app itself, running it, and looking at values at breakpoints, you write expectations about implementation details and fiddle with the code until the tests pass. Afterwards, you get rid of the tests if you think they're not covering what should be tested.
+
+For example, in this project I try not to unit test every little detail. I want to add more functional tests which involve a whole graph of actual objects interacting with each other. So I'll have to consider removing tests which don't add a lot of benefit for the overhead of keeping them in sync with production code.
+
+In the past I would've tried to test-drive my code.
+
+Let's say I know I have to add an algorithm which involves iterating over an array to sum up its elements. That's a straight-forward task. But with a naive approach to Test-Driven Development, I'd start with testing the return value of an array with 1 element, 2 elements, and then maybe 10 elements.  approach, I'd have which means that even though I knew 
+
+<!--ct: §201408131755 Tests sollten Refaktorisierungen priorisieren-->
+
+I am puzzled. I thought that having more tests is always better, because you cover more and more edge cases with each test. But too rigid testing makes code too hard to change.
+
+One necessary condition of successful [refactoring][] is that you have to be able to change the implementation without changing the behavior, thus breaking collaborators's expectations. Too explicit a test can be broken by refactoring code. So [tests can make refactoring harder.][objc1]
+
+It's hard for me to find a balance. But since I [publish the code of this project][bookcode], maybe with the help of other developers all of us can learn something about weighing test coverage.
+
+
+  [#feathers2011legco]: Michael C. Feathers (2011):  _[Working effectively with legacy code](x-bdsk://feathers2011legco)_, Upper Saddle River, NJ: Prentice Hall Professional Technical Reference.
+
+  [objc1]: http://www.objc.io/issue-15/bad-testing-practices.html
+
+  [refactoring]:

@@ -3,6 +3,22 @@ Develop Mac Apps With a Clean Architecture and Swift
 
 This is the book manuscript for "[Develop Mac Apps With a Clean Architecture and Swift][leanpub]".
 
+Outline
+-------
+
+* My motivation to document the process
+* Part 1: Getting everything ready
+    * This part is mostly about making myself comfortable with Swift
+    * I port old code to establish a foundation to build upon later
+    * Get Core Data and related tests running
+    * Prepare the user interface in its own layer
+    * Have tests in place for the app's domain
+* Part 2: Solving the actual problem
+    * my naive take on a DDD solution
+* Part 3: Discussing design alternatives
+    * where I create alternate branches
+
+
 License
 =======
 
