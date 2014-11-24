@@ -36,6 +36,8 @@ I don't trust my ability to use Interface Builder a lot, and I assume I will get
         XCTAssertTrue(hasBinding(countColumn!, binding: NSValueBinding, to: controller, throughKeyPath: "arrangedObjects.count"), "bind count column to count property")
     }
 
+<!--ct: 20141124163838 explicit bindings make things worse-->
+
 I hunted for a bug for a while only to find the Cocoa Binding from `NSOutlineView` to `NSTreeController` is in place _although I don't set it explicitely_. If I _do_, the behavior goes all nuts. It seems that the column bindings make up for the rest. I have no clue how to verify this kind of automatted set-up in the Nib without explicit bindings slipping by. Parsing the Nib XML is out of question.<!--ct: commit #dc824da1016025abd8be61fafb560995527dccfb-->
 
 The method `hasBinding(_,binding:,to:,throughKeyPath:)` is a little helper to inspect the underlying bindings dictionary in a readable fashion:
