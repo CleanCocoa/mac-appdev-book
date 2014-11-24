@@ -1,0 +1,37 @@
+Some stuff seems to work quite right now. To make it more interesting, I add the notion of `Box`es to the example project: a `Box` contains various `Item`s but no other `Box`.
+
+This is what I modeled in the Word Counter: `Project`s containing `Paths`. Using an `NSOutlineView` is a bit trickier than dealing with a linear `NSTableView`.
+
+Thus I found how nice Swift is for modeling data containers. With Objective-C, I'd have to provide custom initializers to distinguish `Box` from `Item` by setting properties like `isLeaf` appropriately. Using Swift, I can take a naive approach and still spend less time dealing with it:
+
+    @objc(TreeNode)
+    public protocol TreeNode {
+        var title: String { get set }
+        var count: UInt { get set }
+        var children: [TreeNode] { get }
+        var isLeaf: Bool { get }
+    }
+
+    class BoxNode: NSObject, TreeNode {
+        dynamic var title: String = "New Box"
+        dynamic var count: UInt = 0
+        dynamic var children: [TreeNode] = []
+        dynamic var isLeaf: Bool = false
+    }
+
+    class ItemNode: NSObject, TreeNode {
+        dynamic var title: String = "New Item"
+        dynamic var count: UInt = 0
+        dynamic var children: [TreeNode] = []
+        dynamic var isLeaf = true
+    }
+
+Using `dynamic` here enables KVO, which is a must for `NSObjectController` and Cocoa Bindings. Apart from that annotation, these class definitions provide necessary default values without any `init()` boilerplate necessary.
+
+Maybe I won't need to address different classes in the end. Maybe it'd suffice to properly set up a `BaseNode` in order to distinguish `Box`es from `Item`s in the view model.
+
+Why do I keep the classes nevertheless?
+
+I think the mental mapping of classes to things in the model is pretty straightforward. You don't need to decode a lot to understand the difference. This sistinction is modelled explicitely and thus easy to grasp: it would only make me slower to work with an implicit distinction based on attributes on a per-object level. Maybe not a lot slower, but still.
+
+Optimization can wait until later. I don't think I introduced unnecessary design complexity here either. you could say it's premature to model the distinction when no code relies on it. Fair enough. But it will in a matter of commits.

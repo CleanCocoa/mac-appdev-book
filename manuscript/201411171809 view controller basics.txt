@@ -11,31 +11,34 @@ I create the files according to the following principles:
 Not every button needs its own controller, but buttons modifying a list belong to the list's view controller.
 
 * Add `ItemManagementWindowController` and the accompanying Nib file. 
-* Add an `NSTableView` to the window and bind it to a `ItemViewController` which worries about data handling exclusively. 
-* Add an `NSArrayController` to the Nib to manage the actual `NSTableView` data. It's strongly referenced by the `ItemViewController`.
+* Add an `NSOutlineView` to the window and bind it to a `ItemViewController` which worries about data handling exclusively. 
+* Add an `NSTreeController` to the Nib to manage the actual `NSOutlineView` data. It's strongly referenced by the `ItemViewController`.
 
 Remove every notion of `NSWindow` from the `AppDelegate` and show `ItemManagementWindowController`'s window from within `applicationDidFinishLaunching()`. That suffices to show the user interface.
 
-I don't trust Interface Builder a lot, and I assume I will get Cocoa Bindings wrong from time to time. Thus, I add regression tests to show I have set up everything as intended:
+I don't trust my ability to use Interface Builder a lot, and I assume I will get Cocoa Bindings wrong from time to time. Thus, I add regression tests to show I have set up everything as intended:
 
     // ItemViewControllerTests.swift
     func testItemsController_IsConnected() {
         XCTAssertNotNil(viewController.itemsController, "items controller should be connected in Nib")
     }
     
-    func testItemsController_RearrangesObjects() {
-        XCTAssertTrue(viewController.itemsController.automaticallyRearrangesObjects, "items controller should rearrange objects")
-    }
-    
     func testItemsController_CocoaBindings() {
         let controller = viewController.itemsController
-        let tableView = viewController.tableView
-    
+        let outlineView = viewController.outlineView
+        let titleColumn = outlineView.tableColumnWithIdentifier(kTitleColumnName)
+        let countColumn = outlineView.tableColumnWithIdentifier(kCountColumnName)
+        
         XCTAssertTrue(hasBinding(controller, binding: NSSortDescriptorsBinding, to: viewController, throughKeyPath: "self.itemsSortDescriptors"), "items controller should obtain sortDescriptors from view controller through bindings")
-        XCTAssertTrue(hasBinding(tableView, binding: NSSelectionIndexesBinding, to: controller, throughKeyPath: "selectionIndexes"), "table view should have binding to items controller's selectionIndexes")
+        XCTAssertTrue(hasBinding(outlineView, binding: NSContentBinding, to: controller, throughKeyPath: "arrangedObjects"), "outline view should have binding to items controller's arrangedObjects")
+        
+        XCTAssertTrue(hasBinding(titleColumn!, binding: NSValueBinding, to: controller, throughKeyPath: "arrangedObjects.title"), "bind title column to title property")
+        XCTAssertTrue(hasBinding(countColumn!, binding: NSValueBinding, to: controller, throughKeyPath: "arrangedObjects.count"), "bind count column to count property")
     }
 
-The weird `hasBinding(_,binding:,to:,throughKeyPath:)` method is a little helper to inspect the underlying bindings dictionary in a readable fashion:
+I hunted for a bug for a while only to find the Cocoa Binding from `NSOutlineView` to `NSTreeController` is in place _although I don't set it explicitely_. If I _do_, the behavior goes all nuts. It seems that the column bindings make up for the rest. I have no clue how to verify this kind of automatted set-up in the Nib without explicit bindings slipping by. Parsing the Nib XML is out of question.<!--ct: commit #dc824da1016025abd8be61fafb560995527dccfb-->
+
+The method `hasBinding(_,binding:,to:,throughKeyPath:)` is a little helper to inspect the underlying bindings dictionary in a readable fashion:
 
     extension XCTestCase {
         func hasBinding(object: NSObject, binding:String, to boundObject: NSObject, throughKeyPath keyPath:String) -> Bool {
@@ -49,7 +52,9 @@ The weird `hasBinding(_,binding:,to:,throughKeyPath:)` method is a little helper
 
 Now I know that the basic setup is working.
 
-Was the explosion of files worth it? Couldn't we've kept the AppDelegate to manage the window?
+Was the sudden explosion of files worth it?
+
+Couldn't we've kept the AppDelegate to manage the window?
 
 I decided to to this move not because it's necessary to keep the code clean right now. It was a premature optimization, you could say.
 
@@ -57,4 +62,29 @@ I did this because I know where I'll be heading. I'm still trying to replicate t
 
 Once we begin to send messages here and there, the split between objects will make a lot more sense. We're getting there.
 
-<!--ct: commit #c5c351b54e53a5d22b44c20e376bca521f451e54 -->
+I am relieved once the "add" button does what is is created to do. To test controls such as buttons, there's no need to simulate clicks in the tests. Instead, it suffices to verify it is wired to an action method and that invoking the method does what it's expected to do.
+
+    // Test that there's a button outlet
+    func testAddItemButton_IsConnected() {
+        XCTAssertNotNil(viewController.addItemButton, "add item button not connected")
+    }
+    
+    // Test that it is connected to an action method
+    func testAddItemButton_IsWiredToAction() {
+        XCTAssertEqual(viewController.addItemButton.action, Selector("addItem:"), "'add item' button should be wired to addItem:");
+    }
+    
+    // Specify preconditions in "Initially" context
+    func testInitially_TreeIsEmpty() {
+        XCTAssertEqual(itemNodeCount(), 0, "start with empty tree")
+    }
+        
+    // Invoke the button's action method to verify its behavior
+    func testAddingItem_WithEmptyList_AddsItem() {
+        viewController.addItem(self)
+        
+        XCTAssertEqual(itemNodeCount(), 1, "adds item to tree")
+    }
+
+<!--ct: commit #c5c351b54e53a5d22b44c20e376bca521f451e54 initial view setup -->
+<!--ct: commit #7648d603c832c5d7cd41a041da5d3e4114f7c955 switch to outline view-->
