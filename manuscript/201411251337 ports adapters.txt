@@ -1,0 +1,25 @@
+## Ports and Adapters
+
+### Consuming `Box`es and `Item`s instead of obtaining IDs
+
+    protocol ConsumesBox: class {
+        func consume(box: Box)
+    }
+    
+    class BoxAndItemService: HandlesItemListEvents {
+        var boxConsumer: ConsumesBox?
+
+        func provisionBox() {
+            let repository = ServiceLocator.boxRepository()
+            let boxId = repository.nextId()
+            let box = Box(boxId: boxId, title: "New Box")
+            repository.addBox(box)
+            reportBoxToConsumer(box)
+        }
+        
+        func reportBoxToConsumer(box: Box) {
+            if let port = boxConsumer {
+                port.consume(box)
+            }
+        }
+    }

@@ -1,0 +1,182 @@
+## Naive Event Handler
+
+Somehow, the `BoxRepository` has to know about the user clicking a button, thus issuing the creation of a new `Box`. `BoxRepository` belongs to the domain, although the concrete `CoreDataBoxRepository` is part of infrastructure. It's part of infrastructure because the domain's clients shouldn't have knowledge about this implementation detail, even less so the domain.
+
+The missing glue is between user interface and the domain. That's the application layer: the premier client to the domain.
+
+
+### View Controllers don't have to belong to the Application Layer
+
+Depending on how you create `NSViewController` subclasses, view controllers either belong to the application layer or to the user interface layer. I tend to write dumb view controllers which belong into the user interface layer, next to custom `NSView`s and Nib files. If view controllers become too clever, it's harder to add features or re-use user interface components. That's why I want to separate the UI from Core Data in the first place.
+
+When view controllers are too dumb to perform interesting actions, they have to delegate this behavior to collaborators.
+
+Think of view controllers as smart views rather than complex controllers. Unlike usual views, they can't display themselves. But they are a façade to other user interface components, taking care of the set-up, layout, and basic event handling.
+
+In other words, view controllers coordinate views to form a more complex user interface component. They aggregate their views's basic events and take care of sending more meaningful events to interested parties.
+
+An event handler in the application layer is an interested party. It understands nothing about buttons and outlines. Instead, it answers questions like "How many `Item`s are there in this `Box`?" and takes care of events like "Create a new `Box`."
+
+Handling events in the application layer instead of the view controller introduces the option to phrase the events in a way suitable to the task. You can refer to the **Ubiquituous Language** of your project to describe these events in code: talk in terms of "create `Box`" instead of "`addBoxButton` clicked".
+
+### Leverage the Delegate Pattern
+
+The delegate pattern is widespread in Apple's own framework. You implement a `NSTableViewDelegate` to handle `NSTableView`-specific events. You also need a `NSTableViewDataSource` to provide (initial) data to the table. The table _asks_ for this information. You don't have to shove it down its throat upon initialization. This way, the table can worry about performance issues like caching table cells and ask for parts of the data at your disposal only.
+
+![20141125103816 Components  Event Handler](assets/20141125103816_components--event_handler.jpg)
+
+It's pretty easy to add this to the code there is already.
+
+    public protocol HandlesItemListEvents: class {
+        func provisionNewBoxId() -> BoxId;
+        func provisionNewItemId(inBox boxId: BoxId) -> ItemId;
+    }
+
+I tend to phrase protocols this way because it makes the role clear and reads pretty well:
+
+    class BoxService: HandlesItemListEvents { /* ... */ }
+
+How to name such **Application Services**?
+
+I favor good names. Back in Java-land, the code was cluttered with `XYZService`s and `ABCManager`s. These nouns don't convey a lot of meaning. It requires knowlege of the **Ubiquituous Language** to come up with better names. Most of the really good names will be found in the domain, though. Even the domain will have services to carry out complex actions.
+
+For example, the Word Counter domain includes a `Recorder` and various `Bookkeeper`s. The former takes care of the various ways to track words (all words, words per application, words in project files) while the latter holds on to the actual data in memory, incrementing counters.
+
+The application layer is going to be pretty thin, so I don't mind resorting to the `XYZService` naming convention for now. I can change names later anyway:
+
+    public class BoxAndItemService: HandlesItemListEvents {
+        public func provisionNewBoxId() -> BoxId {
+            let repository = ServiceLocator.boxRepository()
+            let boxId = repository.nextId()
+            let box = Box(boxId: boxId, title: "New Box")
+        
+            repository.addBox(box)
+        
+            return boxId
+        }
+    
+        public func provisionNewItemId(inBox boxId: BoxId) -> ItemId {
+            //FIXME: this is a stub
+            return ItemId(0);
+        }
+    }
+    
+The implementation of `provisionNewBoxId` is easy. Provisioning items belonging to boxes will be a bit more intricate.
+
+The functional test still fails because the `BoxAndItemService` is never actually loaded. Whichever object is responsible for creating the window must introduce this event handler to the view controller. Currently, that's the job of `AppDelegate`.
+
+### Wire together
+
+`AppDelegate` sets up the view controller like this:
+
+    lazy var windowController = ItemManagementWindowController()
+    lazy var boxAndItemService = BoxAndItemService()
+    
+    func applicationDidFinishLaunching(aNotification: NSNotification) {
+        windowController.eventHandler = boxAndItemService
+        
+        windowController.showWindow(self)
+        windowController.window?.makeKeyAndOrderFront(self)
+    }
+
+`ItemManagementWindowController` simply passes the `BoxAndItemService` down to the `ItemViewController` which actually needs it.
+
+    @IBAction public func addBox(sender: AnyObject) {
+        if let eventHandler = self.eventHandler {
+            let boxId = eventHandler.provisionNewBoxId()
+            let box = BoxNode(boxId: boxId)
+            let indexPath = NSIndexPath(index: nodeCount())
+            itemsController.insertObject(box, atArrangedObjectIndexPath: indexPath)
+            orderTree()
+        }
+    }
+
+Now that `addBox(_:)` in `ItemViewController` depends on `eventHandler` being set, the tests have to provide it. The `AddingItemsTests` suite will use the actual `BoxAndItemService`, but the `ItemViewControllerTests` won't. They're unit tests. To make them pass, the unit tests will provide a `NullEventHandler`: a stub to satisfy the dependency.
+
+    class EventHandlerStub: HandlesItemListEvents {
+        func provisionNewBoxId() -> BoxId {
+            return BoxId(0)
+        }
+    
+        func provisionNewItemId(inBox boxId: BoxId) -> ItemId {
+            return ItemId(0)
+        }
+    }
+
+I would've added `EventHandlerStub` to `ItemViewController` directly as the default value of the `eventHandler` property. This way, I wouldn't need to conditionally unwrap the optional. (I don't like the additional level of nesting.) 
+
+Since `eventHandler` is a weak reference only, it isn't possible to add a placeholder object with "null" behavior in `ItemViewController` directly. [**Null Object**s][nullobj] are pretty useful to avoid `nil` checks. My utter dislike for what conditionally unwrapping optionals does to my code is a strong motivation to employ **Null Object**s in Swift. This particular interface is heavy on the _query_ side of **CQRS** while **Null Object**s are better suited to stub-out _commands_.
+
+To make the test pass, `CoreDataBoxRepository` needs a `count() -> Int` method:
+
+    public func count() -> Int {
+        let fetchRequest = NSFetchRequest(entityName: ManagedBox.entityName())
+        fetchRequest.includesSubentities = false
+        
+        var error: NSError? = nil
+        let count = managedObjectContext.countForFetchRequest(fetchRequest, error: &error)
+        
+        if count == NSNotFound {
+            //FIXME: handle error
+            return NSNotFound
+        }
+        
+        return count
+    }
+
+Here, still, I don't handle errors. Why is that so? Because I don't have an actual application at my disposal which could respond to anything. I could either `fail()` and stop the application on such errors or implement my own error handling facilities. The latter is what I'll do in part 3.
+
+Now all tests pass: new `Box`es are created and both stored and shown. 
+
+[nullobj]: http://en.wikipedia.org/wiki/Null_Object_pattern
+
+### Concerns, and moving on to more elaborate patterns
+
+Have a look at the event handling protocol again:
+    
+    provisionNewBoxId() -> BoxId 
+    
+In fact, this method is kind of a mix between typical data source and delegate method. It's intent is a command, suitable for user interaction events. But it's also meant to return an object like a factory or data source does. IT should be rephrased as such:
+
+    provisionBox()
+    newBoxId() -> BoxId
+
+The two processes can't be split up in the **Application Service**, though. `newBoxId()` would have to return the last ID the service had used, but then everything will fall apart too easily once `provisionBoxId()` is called twice. Think about concurrency. The contract to call both methods in succession only can't be enforced, so better not rely on it.
+
+To model it more explicitely, one could introduce a callback to write the ID to, like so:
+
+    provisionBox(andReportBoxId: (BoxId) -> ())
+
+I don't like how that reads, though. And since there's just a single window present, we can formalize this as another protocol from the point of view of `BoxAndItemService`.
+
+My very first take:
+
+    protocol ConsumesBoxId: class {
+        func consume(boxId: BoxId)
+    }
+    
+    class BoxAndItemService: HandlesItemListEvents {
+        var boxIdConsumer: ConsumesBoxId?
+
+        func provisionBox() {
+            let repository = ServiceLocator.boxRepository()
+            let boxId = repository.nextId()
+            storeNewBoxWithId(boxId, into: repository)
+            reportBoxIdToConsumer(boxId)
+        }
+        
+        func storeNewBoxWithId(boxId: BoxId, into repository: BoxRepository) {
+            let box = Box(boxId: boxId, title: "New Box")
+            repository.addBox(box)
+        }
+        
+        func reportBoxIdToConsumer(boxId: BoxId) {
+            if let port = boxIdConsumer {
+                port.consume(boxId)
+            }
+        }
+    }
+
+Instead of _querying_ `BoxAndItemService` for an ID, the view controller can now _command_ it to provision a new `Box`. It won't do anything else. Clicking the button will add a `Box` as it says on the label, but it won't change the view. Just by "accident" will the application be set-up in such a way that `ItemViewController` immediately receives the _command_ to `consume()` a `BoxId`, which will trigger adding a new node with the appropriate `BoxId` to the outline view.
+
+Enter the basics of Ports and Adapters, or Hexagonal Architecture.

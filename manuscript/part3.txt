@@ -1,0 +1,3 @@
+# Part 3: Putting a Domain in Place
+
+* Use Domain Events to change the UI

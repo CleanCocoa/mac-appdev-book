@@ -10,6 +10,9 @@ part1.txt
 201411241637 functional tests.txt
 
 part2.txt
+201411251003 naive event handler.txt
 
-appendix.txt
+part3.txt
+
+part-appendix.txt
 201411171450 unowned self in closures.txt

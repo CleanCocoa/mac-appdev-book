@@ -140,3 +140,5 @@ It's not very sophisticated, but it is enough to decouple the layers. An **Appli
 This is not a command-only method because it returns a value. Instead of returning the new ID so the view can add it to the node, the service will be responsible for actually adding the node to the view. That'd be the first major refactoring.
 
 It's about time to leave the early set-up phase and enter Part II, where I'm going to deal with all these details.
+
+<!--ct: commit #cf861676e8ce37ec13bce12999f7e778f2ce081d-->

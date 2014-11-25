@@ -1,9 +1,21 @@
 # Part 2: Sending Messages Inside the App
 
-There are a few attractive options to consider:
+I tried to prepare all of the app's components so far in isolation and not worry much about the integration. That's changing in this part.
+
+I left off with the following:
+
+* The user interface is operational but doesn't persist data. The `ItemViewController` reacts to button presses and creates node objects.
+* The Core Data part of infrastructure seems to work fine according to the tests but doesn't receive any commands, yet.
+* The domain is particularly boring. It has no behavior at all. Until now, the whole demo application is centered around getting user input to the data store. This will not change until the next part. It's nonsensical to work this way of course when the domain should be the very key component of the application.
+* There's no event handling, at all, as in "User adds a Box to the list". There's no layer between user interface and domain. 
+
+![20141125103807 Components](assets/20141125103807_components.jpg)
+
+This part will focus on the integration and various methods of passing messages between components of the app. There are a few attractive options to consider:
 
 * Cocoa's classic delegate pattern to obtain objects ("data source") and handle interactions ("delegate")
 * Ports & Adapters-style command-only interfaces, adhering to CQRS[^cqrs]
-* Leveraging Domain Events
+* Leveraging Domain Events (since there's no domain, we'll defer exploring that option to part 3)
 
-[^cqrs]: "Command--Query Responsibility Segregation" separates changes (commands) from obtaining data (queries). A method should return a value or cause a change in the system, but not both.
+
+  [^cqrs]: According to "Command--Query Responsibility Segregation" you separate changes (commands) from obtaining data (queries). A method should return a value or cause a change in the system, never both.
