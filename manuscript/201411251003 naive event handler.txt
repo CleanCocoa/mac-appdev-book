@@ -57,7 +57,7 @@ The application layer is going to be pretty thin, so I don't mind resorting to t
     
         public func provisionNewItemId(inBox boxId: BoxId) -> ItemId {
             //FIXME: this is a stub
-            return ItemId(0);
+            return ItemId(0)
         }
     }
     
@@ -128,7 +128,221 @@ Here, still, I don't handle errors. Why is that so? Because I don't have an actu
 
 Now all tests pass: new `Box`es are created and both stored and shown. 
 
+<!--ct: commit #1d4b7c3ffa9fbd71ee7d64e5aacab39446c90acd use application layer service to create Box objects into Core Data-->
+
 [nullobj]: http://en.wikipedia.org/wiki/Null_Object_pattern
+
+### Adding `Item`s as Part of Their Larger Aggregate `Box`
+
+Adding items takes a bit more lines to test, but it's nothing special:
+
+    func testAddItem_WithBoxInRepo_CreatesItemBelowBox() {
+        let existingId = BoxId(1337)
+        ManagedBox.insertManagedBox(existingId, title: "irrelevant", inManagedObjectContext: context)
+        XCTAssertEqual(boxRepository!.count(), 1, "repo contains a box")
+    
+        // When
+        viewController!.addItem(self)
+    
+        // Then
+        if let box: ManagedBox = allBoxes().first {
+            XCTAssertEqual(box.items.count, 1, "contains an item")
+        
+            if let item: ManagedItem = box.items.anyObject() as? ManagedItem {
+                XCTAssertEqual(item.title, "New Item")
+                XCTAssertEqual(item.box, box)
+            }
+        } else {
+            XCTFail("no boxes found")
+        }
+    }
+
+Appending `ItemNode` to the current selection (or its parent) `BoxNode` works by finding the `BoxNode`'s index path. The associated `NSTreeNode` provides all details to obtain the `BoxId`.
+
+    func appendItemNodeToBoxIndexPath(parentIndexPath: NSIndexPath) {
+        let parentTreeNode = boxTreeNodeAtIndexPath(parentIndexPath)
+        let itemIndexPath = indexPath(appendedToTreeNode: parentTreeNode)
+        let item = itemNode(belowBoxTreeNode: parentTreeNode)
+    
+        itemsController.insertObject(item, atArrangedObjectIndexPath: itemIndexPath)
+    }
+    // ...
+    func itemNode(belowBoxTreeNode boxTreeNode: NSTreeNode)-> ItemNode {
+        let boxNode = boxTreeNode.representedObject as BoxNode
+        let itemId = eventHandler.provisionNewItemId(inBox: boxNode.boxId)
+
+        return ItemNode(itemId: itemId)
+    }
+
+Now that `ItemViewController` asks for a new `ItemId`, we could simply replicate `provisionNewBoxId()` and ask the `CoreDataItemRepository` for a new ID, insert it, and all is well.
+
+    public func provisionNewItemId(inBox boxId: BoxId) -> ItemId {
+        let repository = ServiceLocator.itemRepository()
+        let itemId = repository.nextId()
+        let item = Item(itemId: ItemId, title: "New Item")
+    
+        repository.addItem(item)
+    
+        return itemId
+    }
+
+Stop right there. This may be a mistake.
+
+Think about the domain's specification. `Item`s are part of `Box`es. It doesn't make sense to create them in isolation. In fact, the code above wouldn't execute without errors because the Core Data `ManagedItem` definition declares the `box`-relationship must be set.
+
+In Domain-Driven Design terms, `Box` is an **Aggregate Root**. It is responsible for managing its invariants and related entities. `Item`s are related entities: they have identity over time and across sessions. But in this scenario, they aren't to be managed independently from their respective `Box`es.
+
+At the moment and with the current domain design in hand, it doesn't make sense to fetch `Item`s in isolation. That's not the case for the Word Counter. There, paths may belong to more than one project. It would make sense to fetch all paths and start file monitoring. In this example application, it doesn't make sense to fetch all `Item`s without their `Box`es. That's why I keep `Item` as a part of the `Box` aggregate.
+
+Creating `Item`s thus becomes part of the boundary of `Box`.
+
+    public func provisionNewItemId(inBox boxId: BoxId) -> ItemId? {
+        let repository = ServiceLocator.boxRepository()
+        if let box = repository.boxWithId(boxId) {
+            let itemId = repository.nextItemId()
+            box.addItem(itemId, title: "New Item")
+            
+            return itemId
+        }
+
+        return nil
+    }
+
+This aspect of the domain changes how to think about the box and item **Repositories**.
+
+Until now, I had collection-oriented repositories in mind.[see Chapter 12, "Repositories"][#vernon2013ddd] You query the repository for objects, change them, and not worry about saving. The repository does it behind the scenes. If I worked with Core Data managed objects directly, that's exactly what would happen. But I don't, so I have to ensure that changes to a `Box` find their way to the Core Data store.
+
+There's three options:
+
+1. Change the way the **Repositories** work. Instead of collection-oriented, make them work persistence-oriented. This includes explicit calls to `save` methods, passing in `Box` or `Item`. Since I don't manipulate a SQL database directly, I have to map changes from `Box` and `Item`to `ManagedBox` and `ManagedItem` respectively.
+2. Leverage KVO to track changes of `Box` objects and map changes to the underlying `ManagedBox`. Similar to (1), but without explicit calls to a `save` method.
+3. Use `NSManagedObject` directly to manipulate the persisted data. Every change gets persisted automagically.
+
+I think (1) is a waste of time in this case. (2) is a viable option I'll explore more. Discovering these difficulties in practice, I decide to take on (3) in another part, namely part 4.
+
+#### Tracking `Box` changes from within `ManagedBox`
+
+To leverage Key-Value Observing in Swift, I have to change `Box` to this:
+
+    public class Box: NSObject {
+        public let boxId: BoxId
+        public dynamic var title: String
+    
+        public init(boxId: BoxId, title: String) {
+            self.boxId = boxId
+            self.title = title
+        }
+    }
+
+`ManagedBox` observation is set up in a lazy property initializer. This way, the `Box` can use `ManagedBox`es values when it's requested. Since the Core Data managed object context keeps fetched values around until saving, subsequent fetch requests will produce the same `ManagedBox` and thus the same `Box`:
+
+    private var kBoxContext = 0
+
+    public class ManagedBox: NSManagedObject {
+        // ...
+
+        private var _box: Box?
+        public lazy var box: Box = {
+        
+            let box = Box(boxId: self.boxId(), title: self.title)
+            box.addObserver(self, forKeyPath: "title", options: .New, context: &kBoxContext)
+        
+            self._box = box
+            return box
+        }()
+    
+        public override func observeValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutablePointer<Void>) {
+        
+            if context != &kBoxContext {
+                super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
+                return
+            }
+        
+            if keyPath == "title" {
+                self.title = change[NSKeyValueChangeNewKey] as String
+            }
+        }
+    
+        deinit {
+            if let box = _box {
+                box.removeObserver(self, forKeyPath: "title")
+            }
+        }
+    }
+
+This works pretty well for fetched boxes:
+
+    public class CoreDataBoxRepository: NSObject, BoxRepository {
+        // ...
+        public func boxWithId(boxId: BoxId) -> Box? {
+            if let managedBox = managedBoxWithUniqueId(boxId.identifier) {
+                return managedBox.box
+            }
+        
+            return nil
+        }
+    }
+
+#### Populating the view with content from Core Data
+
+To add an `Item` to a `Box`, the view controller has to know about items in the data store. Until now, the view always starts blank.
+
+Showing the view and populating its data can be modeled as a use case: `ManageBoxesAndItems`. Another naming candidate is `ShowBoxManagementWindow` or similar to express the intent, but `ManageBoxesAndItems` better captures the user's intention.
+
+    public class ManageBoxesAndItems {
+        var windowController: ItemManagementWindowController!
+        // ...
+        
+        public func showBoxManagementWindow() {
+            let repository = ServiceLocator.boxRepository()
+            let allBoxes = repository.boxes()
+            let allBoxData = boxData(allBoxes)
+        
+            windowController.displayBoxData(allBoxData)
+            
+            showWindow()
+        }
+        
+        func boxData(boxes: [Box]) -> [BoxData] {
+            // Adapt each Box to BoxData, the view's Data Transfer Object
+        }
+    }
+
+`BoxData` is (yet) another simple struct to pass values to the view:
+
+    public struct BoxData {
+        let boxId: BoxId
+        let title: String
+        let itemData: [ItemData]
+    }
+
+    public struct ItemData {
+        let itemId: ItemId
+        let title: String
+    }
+
+The view controller `ItemViewController` then creates `BoxNode`s and `ItemNode`s in its `displayBoxData`. The window controller simply forwards the message.
+
+This simple use case-oriented **Application Service** object relieves the `AppDelegate` from a lot of responsibilities. To show the window at startup, it simply invokes the use case service:
+
+    class AppDelegate: NSObject, NSApplicationDelegate {
+        // ...
+        lazy var manageBoxesAndItems: ManageBoxesAndItems! = ManageBoxesAndItems()
+    
+        func applicationDidFinishLaunching(aNotification: NSNotification) {
+            ServiceLocator.sharedInstance.managedObjectContext = persistentStack.managedObjectContext
+            manageBoxesAndItems.showBoxManagementWindow()
+        }
+    }
+
+This works well in tests. And all of a sudden the application persists the user's changes -- at least when it comes to adding `Box`es.
+
+<!--ct: commits:
+d8b64eabee134cd516b382956e2aa58c194d5886 prepare populating the view with data via use cases
+b4c63ff803672889f7683aae72554d9538c7f335 make save-on-quit work; view-populating, too
+6cfabcf026b516b69a30873aa30ea68de79a6aa9 refactor code
+f9d96aa1f19db681ba654f2bdf067bd8a7edf08f remove CoreDataItemRepository
+-->
 
 ### Concerns, and moving on to more elaborate patterns
 

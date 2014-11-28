@@ -1,0 +1,45 @@
+This works well in view controller code:
+
+    @objc(TreeNode)
+    public protocol TreeNode {
+        var title: String { get set }
+        var count: UInt { get set }
+        var children: [TreeNode] { get }
+        var isLeaf: Bool { get }
+    }
+
+    class BoxNode: NSObject, TreeNode { 
+        let boxId: BoxId
+        /* ... */ 
+    }
+
+    class ItemNode: NSObject, TreeNode { /* ... */ }
+
+It does until you throw in a `TestNode` in your tests to stub a `BoxNode`, say. Then, downcasting to `BoxNode` in production code results in a runtime error. But you have to downcast to access the `boxId` property since Swift doesn't support the inherently unsafe `performSelector:withObject:`.
+
+Two options:
+
+1. Add an `identifier` property to `TreeNode`. That's clean, but in order to create the `Identifiable` protocol for `BoxId` and `ItemId`, you have to get rid of `struct`s in favor of `class`es: `Identifiable` has to be annotated with `@objc` to work with `TreeNode`, but then only classes may implement it. Gone are the call-by-value benefits of `struct`s.
+2. Make `BoxNode` and `ItemNode` public. They aren't to be used by any client code, really, but only by exposing these `TreeNode` implementations can you inherit their properties in `TestBoxNode` objects.
+
+I end up with too many public interfaces and a test stub looking like this:
+
+    class TestBoxNode: BoxNode {
+        convenience init() {
+            self.init(boxId: BoxId(0))
+        
+            title = "title"
+            count = 1234
+            children = []
+            isLeaf = false
+        }
+    
+        convenience init(title: String) {
+            self.init()
+            self.title = title
+        }
+    }
+
+Sheesh. If only Swift was able to use Cocoa API without Objective-C. 
+
+I think the `Identifiable` protocol works well to communicate the intent. I keep it. But it's not as useful as it could be with all the Objective-C bridging limitations.

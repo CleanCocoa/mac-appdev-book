@@ -1,3 +1,5 @@
 # Part 3: Putting a Domain in Place
 
 * Use Domain Events to change the UI
+* Core Data error handling/recovery
+* Introduce multiple consumers: keeps 2 windows in sync (`Consumers<Consumer, Consummable>`)

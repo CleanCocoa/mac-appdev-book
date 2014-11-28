@@ -43,8 +43,6 @@ One necessary condition of successful [refactoring][] is that you have to be abl
 It's hard for me to find a balance. But since I [publish the code of this project][bookcode], maybe with the help of other developers all of us can learn something about weighing test coverage.
 
 
-  [#feathers2011legco]: Michael C. Feathers (2011):  _[Working effectively with legacy code](x-bdsk://feathers2011legco)_, Upper Saddle River, NJ: Prentice Hall Professional Technical Reference.
-
   [objc1]: http://www.objc.io/issue-15/bad-testing-practices.html
 
   [refactoring]:
