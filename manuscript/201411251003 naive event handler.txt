@@ -65,7 +65,7 @@ The implementation of `provisionNewBoxId` is easy. Provisioning items belonging 
 
 The functional test still fails because the `BoxAndItemService` is never actually loaded. Whichever object is responsible for creating the window must introduce this event handler to the view controller. Currently, that's the job of `AppDelegate`.
 
-### Wire together
+### Wire together existing components
 
 `AppDelegate` sets up the view controller like this:
 
@@ -308,7 +308,7 @@ Showing the view and populating its data can be modeled as a use case: `ManageBo
         }
     }
 
-`BoxData` is (yet) another simple struct to pass values to the view:
+`BoxData` is (yet) another simple struct to pass values to the view, and another chance to be thankful for Swift:
 
     public struct BoxData {
         let boxId: BoxId
@@ -343,6 +343,144 @@ b4c63ff803672889f7683aae72554d9538c7f335 make save-on-quit work; view-populating
 6cfabcf026b516b69a30873aa30ea68de79a6aa9 refactor code
 f9d96aa1f19db681ba654f2bdf067bd8a7edf08f remove CoreDataItemRepository
 -->
+
+Obtaining the `Box` via `ManagedBox` didn't re-create the associated items, yet. It's easily achieved via `map()`, though:
+
+	let box = Box(boxId: self.boxId(), title: self.title)
+    let managedItems = self.items.allObjects as [ManagedItem]
+    let items = managedItems.map() { (item: ManagedItem) -> Item in
+        return item.item
+    }
+    box.items = items
+
+That's all there is to it to create, save, and show items with their default values. Changing the values has no lasting effect, though.
+
+### Renaming Boxes and Items
+
+There are two options I can think of to take note of changes to the view model, that is, `BoxNode` and `ItemNode` titles:
+
+1. Leverage KVO in the view controller to notify the event handler, or
+2. Use Swift property observers `willSet`/`didSet` to fire a message to any interested party.
+
+The first approach sounds good because there's a single event handler, using the already established delegate pattern. The second approach takes far less boilerplate code to set up, and I don't need to worry about removing the observer upon item removal. On the downside, I have to send messages using the notification center. Who should subscribe to these? The view controller or the event handler?
+
+In classic Model--View--Controller fashion,[^mvc] every view component has its own controller. One could say that the `didSet` property observer already is part of the controller. Why delegate it up to the list component's façade, `ItemViewController`? Thus the objective is to send a change message to the event handler from the `didSet` property observer directly. I could set a (shared) `eventHandler` property to every `TreeNode` upon initialization and invoke `boxDidChange(_:BoxId, title:String)`, for example. The consequences are severe, though:
+
+* `BoxNode` has to be representable in Objective-C, thus its `eventHandler` protocol has to be annotated `@objc`, too.
+* The protocol, `HandlesItemListChanges`, cannot be Objective-C compatible if `BoxId` isn't.
+* `BoxId` is a struct. It's a genuine value object. To make it Objective-C compatible, it has to become a class instead.
+
+I don't want to water-down the existing design just for the sake of convenience. Instead, I opt in to delegate `didSet` messages up to the `ItemViewController`.
+
+	public protocol HandlesItemListChanges: class {
+	    func treeNodeDidChange(treeNode: TreeNode, title: String)
+	}
+
+	public class BoxNode: NSObject, TreeNode {
+	    public dynamic var title: String = "New Box" {
+	        didSet {
+	            if let controller = self.eventHandler {
+	                controller.treeNodeDidChange(self, title: title)
+	            }
+	        }
+	    }
+	    public weak var eventHandler: HandlesItemListChanges?
+		// ...
+	}
+
+Until now, `BoxNode` did set up its own child nodes when it was reconstituted from `BoxData`. I move this part out into `ItemViewController` to set the `eventHandler` property to `self` there:
+
+	public func displayBoxData(boxData: [BoxData]) {
+        removeExistingNodes()
+        for data in boxData {
+            itemsController.addObject(boxNode(data))
+        }
+    }
+
+    func removeExistingNodes() {
+        itemsController.content = NSMutableArray()
+    }
+    
+    func boxNode(boxData: BoxData) -> BoxNode {
+        let boxNode = BoxNode(boxData: boxData)
+        boxNode.eventHandler = self
+        boxNode.children = itemNodes(boxData.itemData)
+        
+        return boxNode
+    }
+    
+	func itemNodes(allItemData: [ItemData]) -> [ItemNode] {
+        var result: [ItemNode] = allItemData.map() { (itemData: ItemData) -> ItemNode in
+            self.itemNode(itemData)
+        }
+        return result
+    }
+    
+    func itemNode(itemData: ItemData) -> ItemNode {
+        let itemNode = ItemNode(itemData: itemData)
+        itemNode.eventHandler = self
+        
+        return itemNode
+    }
+
+Another option is to pipe the value for every node's `eventHandler` upon reconstitution, so the method signature becomes `BoxNode.init(_: BoxData, eventHandler: HandlesItemListChanges?)`.
+
+The **Application Service** is pretty simple, still:
+
+	public class BoxAndItemService: HandlesItemListEvents {
+	    // ...
+    
+	    public func boxDidChange(boxId: BoxId, title: String) {
+	        let repository = ServiceLocator.boxRepository()
+        
+	        if let box = repository.boxWithId(boxId) {
+	            box.title = title
+	        }
+	    }
+	}
+
+Does phrasing it this way make sense, though?
+
+Just try read it: "Box and item service handles item list events. Box did change to a new title. Set box title to the new title." When the box changed to a new title, change the title? Really?
+
+The real `Box` _should_ change. The user-facing component _did_ change.
+
+How wouly you phrase it?
+
+I decide to use an active form for this method. Similar to `provisionNewBoxId`, this method will be called `changeBoxTitle`. This diverges from Cocoa naming conventions, but it makes more sense. An overall observation when looking at real _Domain-Driven Design_ project code is that the code reads well. I hope you agree that this is more important than adhering to naming conventions, especially if you don't expose a public API.
+
+<!--ct: commit: #f4abec848fdd107fff3d4badeaa83877bfaf930e persist title changes to Box -->
+
+Similarily, I want `changeItemTitle` to look like this:
+
+	public func changeItemTitle(itemId: ItemId, title: String, inBox boxId: BoxId) {
+        let repository = ServiceLocator.boxRepository()
+    
+        if let box = repository.boxWithId(boxId) {
+            if let item = box.itemWithId(itemId) {
+                item.title = title
+            }
+        }
+    }
+
+To obtain the parent item's `BoxId`, I walk over the tree controller's arranged objects to generate a collection of `BoxNode`s. Then, I let the `ItemNode` decide where it belongs: 
+
+	public func parentBoxNode(inArray nodes: [BoxNode]) -> BoxNode? {
+        for boxNode in nodes {
+            if contains(boxNode.children as [ItemNode], self) {
+                return boxNode
+            }
+        }
+    
+        return nil
+    }
+
+The item change test passes, too. Great!
+
+[^mvc]: Like, 1988-classic. See [Wikipedia's MVC history](http://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller#History) for links to articles on the topic.
+
+### Removing Items and Boxes
+
 
 ### Concerns, and moving on to more elaborate patterns
 
