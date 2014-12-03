@@ -15,7 +15,7 @@ This part will focus on the integration and various methods of passing messages 
 
 * Cocoa's classic delegate pattern to obtain objects ("data source") and handle interactions ("delegate")
 * Ports & Adapters-style command-only interfaces, adhering to CQRS[^cqrs]
-* Leveraging Domain Events (since there's no domain, we'll defer exploring that option to part 3)
+* Leveraging Domain Events (since there's no domain worth speaking of, we'll defer exploring that option to part 3)
 
 
   [^cqrs]: According to "Command--Query Responsibility Segregation" you separate changes (commands) from obtaining data (queries). A method should return a value or cause a change in the system, never both.

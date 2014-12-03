@@ -1,25 +1,219 @@
 ## Ports and Adapters
 
-### Consuming `Box`es and `Item`s instead of obtaining IDs
+The basic idea of this architectural style is this: separate queries from commands and isolate layers through ports and adapters.
 
-    protocol ConsumesBox: class {
-        func consume(box: Box)
+For example, `BoxRepository` is a port of the domain to which `CoreDataBoxRepository` from infrastructure is an adapter. Similarly, the `HandlesItemListEvents` protocol from the user interface layer is implemented by an application service.
+
+I want to refactor `HandlesItemListEvents` to pay more attention to command--query separation.
+
+### Concerns with the naive approach
+
+Have a look at the event handling protocol again:
+    
+    provisionNewBoxId() -> BoxId 
+    
+In fact, this method is kind of a mix between typical data source and delegate method. It's intent is a command, suitable for user interaction events. But it's also meant to return an object like a factory or data source does. 
+
+It should be rephrased as such:
+
+    provisionBox()
+    newBoxId() -> BoxId
+
+The two processes can't be split up in the **Application Service**, though. With the current expectations in place, `newBoxId()` would have to return the last ID the service had provisioned. This way, everything will fall apart too easily once `provisionBoxId()` is called twice. Just think about concurrency. The contract to call both methods in succession only can't be enforced, so better not rely on it.
+
+Another alternative is to model it as such:
+
+    newBoxId() -> BoxId
+    provisionBox(_:BoxId)
+
+The service will be an adapter to both domain and infrastructure this way. It'd work, but it's not what I aim for.
+
+To model the expectation of "provision first, obtain ID second" more explicitely, one could introduce a callback to write the ID to, like so:
+
+    provisionBox(andReportBoxId: (BoxId) -> ())
+
+I don't like how that reads, though. And since there's just a single window present, we can formalize this as another protocol from the point of view of `BoxAndItemService`.
+
+My very first take:
+
+    protocol ConsumesBoxId: class {
+        func consume(boxId: BoxId)
     }
     
     class BoxAndItemService: HandlesItemListEvents {
-        var boxConsumer: ConsumesBox?
+        var boxIdConsumer: ConsumesBoxId?
 
         func provisionBox() {
             let repository = ServiceLocator.boxRepository()
             let boxId = repository.nextId()
-            let box = Box(boxId: boxId, title: "New Box")
-            repository.addBox(box)
-            reportBoxToConsumer(box)
+            storeNewBoxWithId(boxId, into: repository)
+            reportBoxIdToConsumer(boxId)
         }
         
-        func reportBoxToConsumer(box: Box) {
-            if let port = boxConsumer {
-                port.consume(box)
+        func storeNewBoxWithId(boxId: BoxId, into repository: BoxRepository) {
+            let box = Box(boxId: boxId, title: "New Box")
+            repository.addBox(box)
+        }
+        
+        func reportBoxIdToConsumer(boxId: BoxId) {
+            if let port = boxIdConsumer {
+                port.consume(boxId)
             }
         }
     }
+
+Instead of _querying_ `BoxAndItemService` for an ID, the view controller can now _command_ it to provision a new `Box`. It won't do anything else. Clicking the button will add a `Box` as it says on the label, but it won't change the view. Just by "accident" will the application be set-up in such a way that `ItemViewController` immediately receives the _command_ to `consume()` a `BoxId`, which will trigger adding a new node with the appropriate `BoxId` to the outline view.
+
+
+### Refactor Code into a Domain Service and Domain Events
+
+What `reportBoxToConsumer(_:Box)` does is equal to the intent of the observer pattern. In Cocoa, we usually send notifications. This is more like calling a delegate because it's a 1:1 relationship instead of the many-to-one observer pattern relationship:
+
+    func reportBoxToConsumer(box: Box) {
+        if let port = boxConsumer {
+            port.consume(box)
+        }
+    }
+
+Now that's a first step into the right direction. But I notice the **Application Service** `BoxAndItemService` is now doing these things:
+
+* it sets up the aggregate `Box`
+* it adds the aggregate instance to its repository
+* it notifies interested parties (limited to 1) of additions
+
+Essentially, that's the job of a **Domain Service**.
+
+The domain has a few data containers, but no means to create **Aggregate**s or manipulate data. The application layer, being client to the domain, shouldn't replace domain logic. Posting "Box was created" events is the domain's responsibility.
+
+Using `NSNotificationCenter` as a domain event publisher, `BoxAndItemService` loses part of its concerns in favor of a **Domain Service**, `ProvisioningService`:
+
+	class ProvisioningService {
+	    let repository: BoxRepository
+    
+	    var eventPublisher: NSNotificationCenter {
+	        return DomainEventPublisher.defaultCenter()
+	    }
+    
+	    init(repository: BoxRepository) {
+	        self.repository = repository
+	    }
+    
+	    func provisionBox() {
+	        let boxId = repository.nextId()
+	        let box = Box(boxId: boxId, title: "New Box")
+        
+	        repository.addBox(box)
+        
+	        eventPublisher.postNotificationName(kBoxProvisioned,
+	            object: self,
+	            userInfo: ["boxId" : NSNumber(longLong: boxId.identifier)])
+	    }
+		
+		func provisionItem(inBox box: Box) {
+	        let itemId = repository.nextItemId()
+	        let item = Item(itemId: itemId, title: "New Item")
+
+	        box.addItem(item)
+    
+	        let userInfo = ["boxId" : NSNumber(longLong: box.boxId.identifier),
+	                        "itemId" : NSNumber(longLong: itemId.identifier)]
+	        eventPublisher.postNotificationName(kBoxItemProvisioned,
+	            object: self,
+	            userInfo: userInfo)
+	    }
+	}
+
+I'm not all that keen about the way `NSNotificationCenter`s work. Dealing with the `userInfo` parameter is a pain: wrapping `Int64` identifiers into `NSNumber` just for the sake of adhering to the protocol sounds nuts to me.
+
+I think `provisionItem` doesn't read too well, but it's not the worst method in human history either. Getting the data out is really bad, though:
+
+	let boxInfo = notification.userInfo!["boxId"] as NSNumber
+    let boxId = BoxId(boxInfo.longLongValue)
+
+It's very hard to read, compared to:
+
+	let boxId = boxCreatedEvent.boxId
+
+Getting another layer of abstraction in there is a good idea, especially since Swift's structs make it really easy to create **Domain Event**s. It will improve the code, although you'll have to weigh the additional cost of developing and testing this very layer of abstraction. For the sake of this sample application, I prefer not to over-complicate things even more and stick to plain old notifications for now.
+
+To replace the command--query-mixing methods from before, there needs to be an event handler which subscribes to **Domain Events** in the application layer and display the additions in the view.
+
+Renaming the **Application Service**s to something more fitting, I end up with:
+
+* `ManageBoxesAndItems` as the use case, 
+* `DisplayBoxesAndItems` as its _presenter_, and
+* `HandleBoxAndItemModifications` as its _event handler_ (the former `BoxAndItemService`).
+
+Only `ManageBoxesAndItems` has to be public. The rest is an implementation detail and, in fact, a refactoring. Thanks to the functional tests in place, it's easy to verify the behavior while fleshing out the new parts.
+
+I named the collaborating services according to the [VIPER architecture][viper]: a **Presenter** updates the view on changes, while an **Event Handler** is delegate to user interaction. The use case object `ManageBoxesAndItems` replaces VIPER's notion of a **Wireframe** which suits iOS apps and their view transitions better than multi-windowed Mac apps.
+
+[viper]: http://www.objc.io/issue-13/viper.html
+
+### Consuming `Box`es and `Item`s instead of obtaining IDs
+
+The old methods which were both _command_ and _query_ are gone. Instead, there is an event handler which receives commands from the user interface or view, and there's a presenter which updates the view according to changes in the domain.
+
+The view _consumes_ changes. It sounds weird a bit, but I didn't come up with a better name, yet.[^change]
+
+  [^change]: Remember you can propose changes to [the book's manuscript][bookcode] on GitHub!
+
+
+Consuming data for a `BoxNode` is pretty easy because the nodes are just appended to the tree:
+
+	public func consume(boxData: BoxData) {
+        let boxNode = self.boxNode(boxData)
+        let indexPath = NSIndexPath(index: nodeCount())
+        itemsController.insertObject(boxNode, atArrangedObjectIndexPath: indexPath)
+        orderTree()
+    }
+	
+Consuming data for `ItemNodes` is a bit more intricate, but still not too complicated:
+
+    public func consume(itemData: ItemData) {
+        if let boxId = itemData.boxId {
+            if let boxNode = existingBoxNode(boxId) {
+                let itemId = itemData.itemId
+                let itemNode = self.itemNode(itemData)
+                
+                boxNode.addItemNode(itemNode)
+                orderTree()
+            }
+        }
+    }
+
+Thanks to `NSTreeController`, `addItemNode`, which is appending the argument to the receiver's `children` property, results in automagical updates of the view.
+
+Walking the first level of `NSTreeNodes` to find the `BoxNode` with a specific ID sounds like a waste of CPU cycles to me, but it's not a problem at all, especially not with smaller lists. No need to think about optimizing anything here just yet.
+
+<!--ct: commits:
+#8abe3c0a0eee951e70a0375e96d2775cc26a3597 replace provisionNewBoxId with createBox/consume(box)
+#ba050fbfeb2adbb6656c0b0477b62e2e5705f5b8 rename application services
+-->
+
+### What's all this good for?
+
+Separating event handling from updating the view can have nice benefits. Imagine there's a background thread syncing the database to a server: you can display changes with the existing setup just like that.
+
+To test how good it really is, I delay view updates a bit using `dispatch_after` with the following global helper function:
+
+	func delay(delay:Double, closure:()->()) {
+	    dispatch_after(
+	        dispatch_time(
+	            DISPATCH_TIME_NOW,
+	            Int64(delay * Double(NSEC_PER_SEC))
+	        ),
+	        dispatch_get_main_queue(), closure)
+	}
+
+If I press "New Box" multiple times, it inserts the boxes one after another with a delay.
+
+At the moment, there's no way to rename `Box` or `Item` in the domain and push changes to the view. Currently, the view optimistically assumes its updates will persist and displays the change on its own terms, without a round-trip to the domain (or persistence).
+
+With a delay of about 10 seconds, I can even rename existing nodes before new ones come in without any conflicts. Try that with an omnipotent, tightly coupled, simultaneous read--write view controller.
+
+Splitting concerns is good most of the time, but it's not always easily done.
+
+When I added a real user interface to the Word Counter, I used a separation similar to Wireframe/Presenter/Event Handler as **Application Services**, only the Event Handler was really an Interactor with close affinity to the domain, pulling in changes from running **Domain Services**. I wasn't ready to do experiments with the architecture for quite a while. Now I feel confident that a strong domain with **Domain Events** can yield better results. The _pull_-oriented Interactor can fetch a snapshot of the data, but if it changes in the background, the user-facing values are getting stale quickly. A _push_-oriented approach, on the other hand, easily remedies such problems.
+
+So up next is the part most interesting to _Domain-Driven Design_, but the least interesting for the sake of this example project so far: the domain itself.
