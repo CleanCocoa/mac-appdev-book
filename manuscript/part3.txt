@@ -1,5 +1,17 @@
 # Part 3: Putting a Domain in Place
 
-* Use real Domain Events to change the UI
+For the most part of this exercise, the Domain consisted of two **Entities**: `Box` and `Item`. It wasn't a domain model worth talking about. There were data containers without any behavior at all. There were no business rules except managing `Item`s in `Box`es.
+
+This changed a bit when I realized I had mixed **Domain Service** and **Application Service** into a single object. The resulting `ProvisioningService` in the domain creates Entities, adds them to the repository, and notifies interested parties of the event.
+
+Notifications are useful for auto-updating the view as I mentioned in the last part already. They are useful for populating an event store, too: persist the events themselves instead of Entity snapshots to replay changes and thus synchronize events across multiple clients, for example. This is called [Event Sourcing][esrc] and replaces traditional database models to persist Entity states. Digging into this goes way beyond the scope of this book, but I'm eager to try it in the future (hint, hint).
+
+[esrc]: http://msdn.microsoft.com/en-us/library/dn589792.aspx
+
+
+----
+
+TODO:
+
 * Core Data error handling/recovery with events
 * Introduce multiple consumers: keeps 2 windows in sync (`Consumers<Consumer, Consummable>`)

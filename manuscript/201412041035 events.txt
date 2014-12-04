@@ -1,0 +1,155 @@
+## Introducing Events in Place of Notifications
+
+Using `NSNotificationCenter` is easy and a well-known practice. I don't like how working with a notifications `userInfo` dictionary changed with Swift and its enforcement of strong typing.
+
+### Swift is sticking your head right at the problems
+
+In Objective-C, I'd send and access the "Box was created" event info like this:
+
+    // Sending
+    [notificationCenter postNotificationName: kBoxProvisioned,
+                                      object: self,
+                                    userInfo: @[@"boxId": @(boxId.identifier)]]
+    
+    // Receiving
+    [BoxId boxIdWithIdentifier: notification.userInfo["boxId"].longLongValue]
+
+To get this deep in Swift, I have to do this instead:
+    
+    // Sending
+    notificationCenter.postNotificationName(kBoxProvisioned, object: self,
+        userInfo: ["boxId" : NSNumber(longLong: boxId.identifier)])
+    
+    // Receiving
+    let boxInfo = notification.userInfo!["boxId"] as NSNumber
+    let boxId = BoxId(boxInfo.longLongValue)
+
+I settled for sending IDs only because putting ID and title makes things complicated for the "Item was created" event. There, I'd have to use nested dictionaries. A JSON representation would look like this:
+
+    {
+        box: {
+            id: ...
+        }
+        item: {
+            id: ...
+            title: "the title"
+        }
+    }
+
+Accessing nested dictionaries in Swift is even worse, though, so I settled with supplying two IDs only. On the downside, every client now has to fetch data from the repository to do anything with the event. That's nuts.
+
+The relative pain Swift imposes highlights possible problems: there could be no `userInfo` at all, there could be no value for a given key, and there could be a different kind of value than you expect. Even more so with nested dictionaries of the type `[NSObject : AnyObject]`.
+
+It's almost always a bad idea to simply assume that the event publisher provided valid data in dictionaries. What if the dictionary keys change but you didn't notice in the client? Defining constants remedies the problem a bit. 
+
+You have to perform sanity checks to catch invalid events anyway, in Objective-C just as much as in Swift.
+
+Using real event objects will work wonders. Serializing them into dictionaries and de-serializing `userInfo` into events will encapsulate the sanity checks and provide usable interfaces tailored to each event's use.
+
+### Event Value Types
+
+An event should be a value type, and thus a struct. It assembles a `userInfo` dictionary. For `NSNotificationCenter` convenience, it also assembles a `NSNotification` object:
+
+    typealias UserInfo = [NSObject : AnyObject]
+    struct BoxProvisionedEvent: DomainEvent {
+        let boxId: BoxId
+        let title: String
+    
+        init(boxId: BoxId, title: String) {
+            self.boxId = boxId
+            self.title = title
+        }
+    
+        func userInfo() -> UserInfo {
+            return [
+                "id": NSNumber(longLong: boxId.identifier),
+                "title": title
+            ]
+        }
+    
+        func notification() -> NSNotification {
+            return NSNotification(name: kBoxProvisioned, object: nil, userInfo: userInfo())
+        }
+    }
+
+A domain event should also de-serialize from existing `userInfo` data. Unwrapping the dictionary is trivial.
+
+Now `BoxProvisionedEvent` wraps the `NSNotification` in something more meaningful. It also provides convenient accessors to its data, the ID and title of the newly created box. That's good for slimming-down the subscriber: no need to query the repository for additional data.
+
+With the changes in place, the `DisplayBoxesAndItems` Application Service now does no more than this: 
+
+    class DisplayBoxesAndItems {
+        func subscribe() {
+            let mainQueue = NSOperationQueue.mainQueue()
+        
+            boxProvisioningObserver = publisher.subscribe(BoxProvisionedEvent.self, queue: mainQueue) {
+                [unowned self] (event: BoxProvisionedEvent!) in
+
+                let boxData = BoxData(boxId: event.boxId, title: event.title)
+                self.consumeBox(boxData) // Notice how misleading this reads?
+                                         // That has to change soon.
+            }
+            
+            // ...
+        }
+        
+        func consumeBox(boxData: BoxData) {
+            if let consumer = self.consumer {
+                consumer.consume(boxData)
+            }
+        }
+        
+        // ...
+    }
+
+The `subscribe` method is interesting. Thanks to Swift generics, I can specify an event type using `TheClassName.self` and pipe it through to the specified block to easily access the values.
+
+The conversion of `NSNotification` to the appropriate domain event takes place in the `DomainEventPublisher`:
+
+    public func subscribe<T: DomainEvent>(eventKind: T.Type, queue: NSOperationQueue, usingBlock block: (T!) -> Void) -> NSObjectProtocol {
+        let eventType: DomainEventType = T.eventType
+        return notificationCenter.addObserverForName(eventType.name, object: nil, queue: queue) {
+            (notification: NSNotification!) -> Void in
+        
+            let userInfo = notification.userInfo!
+            let event: T = T(userInfo: userInfo)
+            block(event)
+        }
+    }
+
+It takes some getting used to Swift to read this well. Let's stick to the client code from above and see what subscribing to `BoxProvisionedEvent`s does:
+
+* The type of the `eventKind` argument should the type (not instance!) of a decendant of `DomainEvent`. That's what `BoxProvisionedEvent.self` is. You don't pass in an actual event, but it's class (or "type"). Interestingly, this value is of no use but to set `T`, the generics type placeholder.
+* The `block` yields an event object of type `T` (an instance of `BoxProvisionedEvent`)
+* The `eventType` is an enum value. In this example case, this will be `BoxProvisionedEvent.eventType`, which returns the enum value `DomainEventType.BoxProvisioned`. `DomainEventType`s have a property called `name` to return a string which becomes the notification name:
+
+        enum DomainEventType: String {
+            case BoxProvisioned = "Box Provisioned"
+            case BoxItemProvisioned = "Box Item Provisioned"
+    
+            var name: String {
+                return self.rawValue
+            }
+        }
+        
+* The actual observer is a wrapper around the `block` specified by the client. The wrapper creates an event of type `T`. All `DomainEvent`s must provide the deserializing initializer `init(userInfo: [NSObject : AnyObject])`, and so does `T`:
+
+        protocol DomainEvent {
+            /// The `DomainEventType` to identify this kind of DomainEvent
+            class var eventType: DomainEventType { get }
+    
+            init(userInfo: UserInfo)
+            func userInfo() -> UserInfo
+            func notification() -> NSNotification
+        }
+
+When a `BoxProvisioned` event is published, it is transformed into a `NSNotification`. The notification is posted as usual. The wrapper around the client's subscribing block receives the notification, de-serializes a `BoxProvisioned` event again, and provides this to the client.
+
+It took some trial and error to get there, but it's pretty clever if I may say as much.
+
+<!--ct: 
+#d0a8c7b56296961a662bd1681b134dfe550adfff use real DomainEvents instead of notifications
+#9a8f41d29b1bd48eb1d6f7475699da0d0d925c2b add TestDomainEventPublisher and NullNotificationCenter for isolating tests
+#a2b0f4c578abbe4407d5cc06b7fc423472cb8151 test ProvisioningService sending domain events
+#74cf8041d561e6ecbe696dbb8f9c5d6046005405 refactor code for domain events
+-->

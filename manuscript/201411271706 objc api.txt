@@ -1,3 +1,5 @@
+## Access rights VS laisser-faire Objective-C
+
 This works well in view controller code:
 
     @objc(TreeNode)
@@ -8,6 +10,7 @@ This works well in view controller code:
         var isLeaf: Bool { get }
     }
 
+    // No need to make this public as only the view needs to know about it
     class BoxNode: NSObject, TreeNode { 
         let boxId: BoxId
         /* ... */ 
@@ -15,14 +18,14 @@ This works well in view controller code:
 
     class ItemNode: NSObject, TreeNode { /* ... */ }
 
-It does until you throw in a `TestNode` in your tests to stub a `BoxNode`, say. Then, downcasting to `BoxNode` in production code results in a runtime error. But you have to downcast to access the `boxId` property since Swift doesn't support the inherently unsafe `performSelector:withObject:`.
+It does until you throw in a `TestNode` in your tests to stub a `BoxNode`, say. Then, downcasting to `BoxNode` in production code results in a runtime error. But you _have_ to downcast in order to access the `boxId` property: since Swift doesn't support the inherently unsafe `performSelector:withObject:` which in the past worked on objects of type `id` just fine, there's no other way to get to properties not exposed via the type.
 
 Two options:
 
-1. Add an `identifier` property to `TreeNode`. That's clean, but in order to create the `Identifiable` protocol for `BoxId` and `ItemId`, you have to get rid of `struct`s in favor of `class`es: `Identifiable` has to be annotated with `@objc` to work with `TreeNode`, but then only classes may implement it. Gone are the call-by-value benefits of `struct`s.
-2. Make `BoxNode` and `ItemNode` public. They aren't to be used by any client code, really, but only by exposing these `TreeNode` implementations can you inherit their properties in `TestBoxNode` objects.
+1. Add an abstract `identifier` property to `TreeNode`. That's clean, but in order to create the `Identifiable` protocol for `BoxId` and `ItemId`, you have to get rid of `struct`s in favor of `class`es: `Identifiable` has to be annotated with `@objc` to work with `TreeNode`, but then only classes may implement it. Gone are the call-by-value benefits of `struct`s. I don't like that.
+2. Make `BoxNode` and `ItemNode` public. They aren't to be used by any client code, really, but only by exposing them can you inherit their properties in `TestBoxNode` objects, say.
 
-I end up with too many public interfaces and a test stub looking like this:
+Thus I end up with too many public interfaces and a test stub looking like this:
 
     class TestBoxNode: BoxNode {
         convenience init() {
@@ -40,6 +43,6 @@ I end up with too many public interfaces and a test stub looking like this:
         }
     }
 
-Sheesh. If only Swift was able to use Cocoa API without Objective-C. 
+Sheesh. If only Swift was able to use Cocoa API without Objective-C: then I'd prefer option (1) and keep the structs. 
 
-I think the `Identifiable` protocol works well to communicate the intent. I keep it. But it's not as useful as it could be with all the Objective-C bridging limitations.
+I think the `Identifiable` protocol works well to communicate the intent, though, so I add it nevertheless. But it's not as useful right now as it could be with all the Objective-C bridging limitations.
