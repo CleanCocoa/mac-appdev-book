@@ -346,7 +346,7 @@ f9d96aa1f19db681ba654f2bdf067bd8a7edf08f remove CoreDataItemRepository
 
 Obtaining the `Box` via `ManagedBox` didn't re-create the associated items, yet. It's easily achieved via `map()`, though:
 
-	let box = Box(boxId: self.boxId(), title: self.title)
+    let box = Box(boxId: self.boxId(), title: self.title)
     let managedItems = self.items.allObjects as [ManagedItem]
     let items = managedItems.map() { (item: ManagedItem) -> Item in
         return item.item
@@ -372,25 +372,25 @@ In classic Model--View--Controller fashion,[^mvc] every view component has its o
 
 I don't want to water-down the existing design just for the sake of convenience. Instead, I opt in to delegate `didSet` messages up to the `ItemViewController`.
 
-	public protocol HandlesItemListChanges: class {
-	    func treeNodeDidChange(treeNode: TreeNode, title: String)
-	}
+    public protocol HandlesItemListChanges: class {
+        func treeNodeDidChange(treeNode: TreeNode, title: String)
+    }
 
-	public class BoxNode: NSObject, TreeNode {
-	    public dynamic var title: String = "New Box" {
-	        didSet {
-	            if let controller = self.eventHandler {
-	                controller.treeNodeDidChange(self, title: title)
-	            }
-	        }
-	    }
-	    public weak var eventHandler: HandlesItemListChanges?
-		// ...
-	}
+    public class BoxNode: NSObject, TreeNode {
+        public dynamic var title: String = "New Box" {
+            didSet {
+                if let controller = self.eventHandler {
+                    controller.treeNodeDidChange(self, title: title)
+                }
+            }
+        }
+        public weak var eventHandler: HandlesItemListChanges?
+        // ...
+    }
 
 Until now, `BoxNode` did set up its own child nodes when it was reconstituted from `BoxData`. I move this part out into `ItemViewController` to set the `eventHandler` property to `self` there:
 
-	public func displayBoxData(boxData: [BoxData]) {
+    public func displayBoxData(boxData: [BoxData]) {
         removeExistingNodes()
         for data in boxData {
             itemsController.addObject(boxNode(data))
@@ -409,7 +409,7 @@ Until now, `BoxNode` did set up its own child nodes when it was reconstituted fr
         return boxNode
     }
     
-	func itemNodes(allItemData: [ItemData]) -> [ItemNode] {
+    func itemNodes(allItemData: [ItemData]) -> [ItemNode] {
         var result: [ItemNode] = allItemData.map() { (itemData: ItemData) -> ItemNode in
             self.itemNode(itemData)
         }
@@ -427,17 +427,17 @@ Another option is to pipe the value for every node's `eventHandler` upon reconst
 
 The **Application Service** is pretty simple, still:
 
-	public class BoxAndItemService: HandlesItemListEvents {
-	    // ...
+    public class BoxAndItemService: HandlesItemListEvents {
+        // ...
     
-	    public func boxDidChange(boxId: BoxId, title: String) {
-	        let repository = ServiceLocator.boxRepository()
+        public func boxDidChange(boxId: BoxId, title: String) {
+            let repository = ServiceLocator.boxRepository()
         
-	        if let box = repository.boxWithId(boxId) {
-	            box.title = title
-	        }
-	    }
-	}
+            if let box = repository.boxWithId(boxId) {
+                box.title = title
+            }
+        }
+    }
 
 Does phrasing it this way make sense, though?
 
@@ -453,7 +453,7 @@ I decide to use an active form for this method. Similar to `provisionNewBoxId`, 
 
 Similarily, I want `changeItemTitle` to look like this:
 
-	public func changeItemTitle(itemId: ItemId, title: String, inBox boxId: BoxId) {
+    public func changeItemTitle(itemId: ItemId, title: String, inBox boxId: BoxId) {
         let repository = ServiceLocator.boxRepository()
     
         if let box = repository.boxWithId(boxId) {
@@ -465,7 +465,7 @@ Similarily, I want `changeItemTitle` to look like this:
 
 To obtain the parent item's `BoxId`, I walk the tree controller's arranged objects to generate a collection of `BoxNode`s. Then, I let the `ItemNode` decide where it belongs: 
 
-	public func parentBoxNode(inArray nodes: [BoxNode]) -> BoxNode? {
+    public func parentBoxNode(inArray nodes: [BoxNode]) -> BoxNode? {
         for boxNode in nodes {
             if contains(boxNode.children as [ItemNode], self) {
                 return boxNode
@@ -494,20 +494,20 @@ The tests have to verify the following:
 
 There's nothing interesting to do. I still like to show the **Application Service**'s implementation because I think it shows best how well the parts integrate:
 
-	public class BoxAndItemService: HandlesItemListEvents {
-		var repository: BoxRepository! {
-	        return ServiceLocator.boxRepository()
-	    }
+    public class BoxAndItemService: HandlesItemListEvents {
+        var repository: BoxRepository! {
+            return ServiceLocator.boxRepository()
+        }
     
-	    public func removeBox(boxId: BoxId) {
-	        repository.removeBox(boxId: boxId)
-	    }
+        public func removeBox(boxId: BoxId) {
+            repository.removeBox(boxId: boxId)
+        }
     
-	    public func removeItem(itemId: ItemId, fromBox boxId: BoxId) {
-	        if let box = repository.box(boxId: boxId) {
-	            box.removeItem(itemId: itemId)
-	        }
-	    }
-		// ...
-	}
+        public func removeItem(itemId: ItemId, fromBox boxId: BoxId) {
+            if let box = repository.box(boxId: boxId) {
+                box.removeItem(itemId: itemId)
+            }
+        }
+        // ...
+    }
 
