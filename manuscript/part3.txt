@@ -7,11 +7,3 @@ This changed a bit when I realized I had mixed **Domain Service** and **Applicat
 Notifications are useful for auto-updating the view as I mentioned in the last part already. They are useful for populating an event store, too: persist the events themselves instead of Entity snapshots to replay changes and thus synchronize events across multiple clients, for example. This is called [Event Sourcing][esrc] and replaces traditional database models to persist Entity states. Digging into this goes way beyond the scope of this book, but I'm eager to try it in the future (hint, hint).
 
 [esrc]: http://msdn.microsoft.com/en-us/library/dn589792.aspx
-
-
-----
-
-TODO:
-
-* Core Data error handling/recovery with events
-* Introduce multiple consumers: keeps 2 windows in sync (`Consumers<Consumer, Consummable>`)

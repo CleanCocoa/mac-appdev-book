@@ -1,0 +1,6 @@
+## Multiple Consumers: Reaping the Benefits of Domain Events
+
+I this chapter, I'll write:
+
+* Introduce multiple consumers: keeps 2 windows in sync (`Consumers<Consumer, Consummable>`)
+* Add background task to increase the (yet unused) counter

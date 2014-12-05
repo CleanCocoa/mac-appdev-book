@@ -16,6 +16,7 @@ part2.txt
 part3.txt
 201412041035 events.txt
 201412050930 error handling.txt
+201412051558 multiple consumers.txt
 
 part4.txt
 
