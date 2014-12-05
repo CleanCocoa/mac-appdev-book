@@ -67,7 +67,7 @@ My very first take:
 Instead of _querying_ `BoxAndItemService` for an ID, the view controller can now _command_ it to provision a new `Box`. It won't do anything else. Clicking the button will add a `Box` as it says on the label, but it won't change the view. Just by "accident" will the application be set-up in such a way that `ItemViewController` immediately receives the _command_ to `consume()` a `BoxId`, which will trigger adding a new node with the appropriate `BoxId` to the outline view.
 
 
-### Refactor Code into a Domain Service and Domain Events
+### Using Domain Services and Domain Events
 
 What `reportBoxToConsumer(_:Box)` does is equal to the intent of the observer pattern. In Cocoa, we usually send notifications. This is more like calling a delegate because it's a 1:1 relationship instead of the many-to-one observer pattern relationship:
 
@@ -139,6 +139,8 @@ It's very hard to read, compared to:
 Getting another layer of abstraction in there is a good idea, especially since Swift's structs make it really easy to create **Domain Event**s. It will improve the code, although you'll have to weigh the additional cost of developing and testing this very layer of abstraction. For the sake of this sample application, I prefer not to over-complicate things even more and stick to plain old notifications for now.
 
 To replace the command--query-mixing methods from before, there needs to be an event handler which subscribes to **Domain Events** in the application layer and display the additions in the view.
+
+### VIPER & Naming Conventions
 
 Renaming the **Application Service**s to something more fitting, I end up with:
 
@@ -218,11 +220,13 @@ To test how good it really is, I delay view updates a bit using `dispatch_after`
             dispatch_get_main_queue(), closure)
     }
 
-If I press "New Box" multiple times, it inserts the boxes one after another with a delay.
+Now if I press "New Box" multiple times, it inserts the boxes one after another with a delay.
 
 At the moment, there's no way to rename `Box` or `Item` in the domain and push changes to the view. Currently, the view optimistically assumes its updates will persist and displays the change on its own terms, without a round-trip to the domain (or persistence).
 
-With a delay of about 10 seconds, I can even rename existing nodes before new ones come in without any conflicts. Try that with an omnipotent, tightly coupled, simultaneous read--write view controller.
+With a delay of about 10 seconds, I can even rename existing nodes before new ones come in without any conflicts. Try that with an omnipotent, tightly coupled, blocking read--write view controller.
+
+Keep in mind, though, that this needn't be a sign of high quality. I think the view should optimistically add view components instantaneously even though the persistence takes some time. Putting a delay in `CoreDataBoxRepository` should not delay user interface reactions. We'll look into this problem soon. <!--ct: TODO link to the corresponding part of "error handling"-->
 
 Splitting concerns is good most of the time, but it's not always easily done.
 

@@ -1,13 +1,14 @@
 # Appendix
 
-
-## Interesting Links
-
-SourceView sample code (Objective-C):
-<https://developer.apple.com/library/mac/samplecode/SourceView/Listings/BaseNode_m.html#//apple_ref/doc/uid/DTS10004441-BaseNode_m-DontLinkElementID_6>
+The appendix is mostly a collection of blog post-sized writings about problems I discovered.
 
 
+<!--ct: 
+This is a place to globally store references to books and links, if needed.
+-->
 
+[hp-contact]: http://divinedominion.github.io/mac-appdev-book/#contact
+[hp-contribute]: http://divinedominion.github.io/mac-appdev-book/#contributing
 
 [#feathers2011legco]: Michael C. Feathers (2011):  _[Working effectively with legacy code](x-bdsk://feathers2011legco)_, Upper Saddle River, NJ: Prentice Hall Professional Technical Reference.
   

@@ -1,0 +1,6 @@
+## Interesting Links
+
+SourceView sample code (Objective-C)
+:   <https://developer.apple.com/library/mac/samplecode/SourceView/Listings/BaseNode_m.html#//apple_ref/doc/uid/DTS10004441-BaseNode_m-DontLinkElementID_6>
+:   Example application by Apple where `NSOutlineView` is used. Good for getting started, although the example app doesn't run properly anymore -- I don't see any images in the source view.
+

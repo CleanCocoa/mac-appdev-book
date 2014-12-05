@@ -1,0 +1,5 @@
+## On Swift
+
+I think Swift is Apple's move towards more advanced app architecture patterns. The wonders generics do to domain event handling, for example!
+
+<!--ct: TODO add this section-->
