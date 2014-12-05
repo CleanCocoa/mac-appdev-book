@@ -1,0 +1,289 @@
+## Error Handling[^201412051135]
+
+Maybe you know this situation, too: you want your user interface to be super-responsive and decide to create view components on demand even before the underlying model or data changes. This makes for a great user experience. But then you notice that saving the data can fail, and that you'd have to remove the view components again. How does the view new if its components are valid or not?
+
+The best I came up with is sharing a unique identifier between the various layers. `BoxNode`s in the view have a `BoxId`, so does the domain's `Box`, and so does infrastructure's Core Data `ManagedBox`.
+
+
+[^201412051135]: This section is the least satisfying in this book. At least to me. We'll explore a few ideas on error handling, but there's not much general advice to share. Just too much depends on the actual project. If you come up with something good yourself, don't hesitate to [share and contribute!][hp-contribute]
+
+
+### Handle components with individual controllers
+
+I had another option in mind, but didn't explore it myself, yet. Basically, it realizes what the original Model--View--Controller design proposed: each view component gets its own controller. Each `BoxNode` would be assigned to its own lightweight `NodeObserver` upon initialization. The observer issues persisting associated data in the database. If it fails, it deletes its own `BoxNode` again. The observer would also react to changes in the view and push them to the data store.
+
+Essentially, you'd move the `treeNodeDidChange` delegate or event handler callback from the single `ItemViewController` instance into a multitude of observers. One delegate or event handler per node.
+
+The gain from this huge object overhead is this: each delegate will know which view component it's tied to. No need to broadcast the node's identity with each change. The user interface layer wouldn't have to deal with `BoxId`s anymore. 
+
+There could be a central dispatcher of sorts in the application layer to receive domain changes. The dispatcher would hold a dictionary of `BoxId`--to-`NodeObserver` mappings. When the entities change, the dispatcher will inform the appropriate `NodeObserver`.
+
+Then again, `NodeObserver`s could listen to domain events themselves and incorporate changes for related entities. This is a highly decentralized architecture. It has a strong appeal, and I'd love to redesign the layer integration in a future edition of this book accordingly to see how well it works.[^fut] I think this will allow for a responsive user interface and thus greatly enhance the overall user experience.
+
+  [^fut]: Let me know if you'd like to see this, too. [Get in touch.][hp-contact]
+
+### Dealing with Core Data Errors
+
+For now, we stick with the existing design. Saving data could fail for various reasons, and somehow the application has to know about this to inform the user.
+
+Since _provisioning_ new entities is conceptually decoupled from actually _adding_ them to the view, and since the view doesn't optimistically add visible components, it suffices to inform the user about problems.
+
+Now the infrastructure layer isn't the best location for user-facing information. That's why it should rather broadcast problems and hope someone will handle the information.
+
+Currently, the `CoreDataBoxRepository` implementation can fail at the following operations:
+
+* `nextId() -> BoxId` -- can't create new `Box`es
+* `nextItemId() -> ItemId` -- can't create new `Item`s
+* `box(boxId: BoxId) -> Box?` -- can't update values
+* `boxes() -> [Box]` -- can't display data
+* `count() -> Int`
+
+Additionally, `PersistentStack` can fail at saving the context.
+
+Since there's no client but the tests using `count()` at the moment, there's no need to worry about recovering from problems there. We can leave that one out.
+
+Not being able to create new objects is worse:
+
+    class ProvisioningService {
+        func provisionBox() {
+            let boxId = repository.nextId()
+            let box = Box(boxId: boxId, title: "New Box")
+    
+            repository.addBox(box)
+    
+            eventPublisher.publish(BoxProvisionedEvent(boxId: boxId, title: box.title))
+        }
+        // ...
+    }
+
+If obtaining a new ID fails for some reason, `provisionBox()` can't continue. In fact, the whole application would currently show an alert and crash.
+
+What does it mean if reading from the store is impossible? Was there a disk fault, perhaps? Can we recover from this at all?
+
+Handling such errors doesn't come easy to me because what you can do depends on each and every situation:
+
+* For example, if a remote database server doesn't respond anymore, you'd have to save changes locally and sync them once the server is back online.
+* But what if the primary storage is local and the disk is full? You can only use an in-memory store until the user provides some space to persist the changes. Maybe disable the user interface so the user won't try to mutate even more data. Provide a big, red "try to save again or you'll lose changes soon" button just in case.
+* Validation errors are possible, too. On iOS, the app could enter background due to an incoming call while the user fills out a form. Performing saves in `applicationDidEnterBackground` will produce errors if the edited object can't be validated. Better use a second `NSManagedObjectContext` as an in-memory scratchpad.
+* Object-specific errors not related to validation? Rollback the transaction or, if `save` calls aren't performed very often, [delete the erroneous object](http://stackoverflow.com/a/25643856) from the context again.
+
+People say that Core Data errors are [most likely](http://stackoverflow.com/a/2262808/1460929) developer errors. You shouldn't validate objects by saving a context. Validate them individually and don't let the user go away until either the business rules and validation rules are met, or she discarded the changes.
+
+This leaves the unlikely but problematic case of write-failures (disk full or store file got corrupted).
+
+1. Log the problem.
+2. Recover from the problem.
+3. Maybe report the problem.
+
+Let's go through these steps, although in a different order.
+
+#### Log the Problem
+
+Core Data errors can be [manifold][cderr] and they usually come in batches. To log all of them, iterate over the error's `userInfo[NSDetailedErrorsKey]`.
+
+The `save()` method of `PersistentStack` will look like this afterwards:
+
+    var error: NSError? = nil
+    if managedObjectContext.hasChanges && !managedObjectContext.save(&error) {
+        NSLog("Failed to save to data store: \(error!.localizedDescription)")
+        
+        logDetailledErrors(error)
+    }
+
+With `logDetailledErrors()`[^201412051124] defined in "Utilities.swift" for global access as:
+
+    func logDetailledErrors(error: NSError) {
+        if let detailedErrors: [NSError] = error.userInfo?[NSDetailedErrorsKey]? as? [NSError] {
+            for detailedError in detailedErrors {
+                NSLog("  DetailedError: \(detailedError.userInfo)")
+            }
+        } else {
+            NSLog("  \(error.userInfo)")
+        }
+    }
+
+I opt in to using this method in `CoreDataBoxRepository`, too, in order to generate a comprehensive error log.
+
+Using a real logger object would be nice, though. It'd be trivial to swap out the logging mechanisms and logging templates. I don't think it's worth the effort for this project, though.
+
+Using [CocoaLumberjack][] to create log files on disk and print to the console simulteneously is a nice option, too. In fact, I use CocoaLumberjack in the Word Counter to generate ongoing reports during beta tests. If something goes wrong, people can simply e-mail the reports to me. CocoaLumberjack is dead-simple to use, so I won't explain it in the scope of this book, nor will I use it in the code to keep it free from external dependencies.
+
+With logging in place, it'll be easier to find and fix fatal problems in the code.
+
+[cderr]: https://developer.apple.com/library/mac/documentation/Cocoa/Reference/CoreDataFramework/Miscellaneous/CoreData_Constants/index.html
+[cocoalumberjack]: https://github.com/CocoaLumberjack/CocoaLumberjack
+
+[^201412051124]: Credits go to [Charles on StackOverflow](http://stackoverflow.com/a/1297157/1460929). There you'll find even more elaborate solutions which make for a nice logger template.
+
+
+#### Report the Problem
+
+Reporting a problem upon `save()` can be pretty straightforward:
+
+    NSApplication.sharedApplication().presentError(error!)
+
+Apart from showing a modal dialog, this doesn't help much. If you keep a log file using CocoaLumberjack, for example, you should replace this with a decent interface to help mail the error log to the developer.
+
+In this situation, it's a fatal error and the user faces data loss. Keep the objects in memory for as long as you can. No need to crash the app here. If the disk is full (which is unlikely nowadays, but still), give the user a change to free space and try again. If `PersistentStack` saves because the user quits the app, abort termination of the application unless the user forces the app to close.
+
+
+#### Recover from the Problem
+
+When saving the context fails, it's hard to think of a way to not lose data.
+
+Depending on the data, could you provide another means to persist changes?
+
+If the Core Data store is broken somehow, [delete the persistent store](http://stackoverflow.com/a/1222145/1460929) and save all data into a new one. Or maybe serialize pending changes into `.plist`s and offer a means to import them later.
+
+Read-errors are easier to handle. If `nextId()` fails because existing IDs couldn't be read, don't create an object. If obtaining one or more `Box`es fails, don't populate the view. In all cases, inform the user about the error.
+
+Only if the view optimistically adds components to itself do you have to actually recover from a faulty state: delete the component again. How to do this exactly depends on the design. In general, you'll want some kind of callback for both "creation failed" and "creation succeeded".
+
+#### Prevent Problems from Happening
+
+If 99% of Core Data errors are developer errors, better put automatted tests in place and see what happens if for example the user enters faulty data. Data validation is part of the business rules. You should codify them and prevent validation errors from happening instead of trying to save the context with invalid data and recover.
+
+For example, the relation from `ManagedItem` to `ManagedBox` is required. When the user deletes a `ManagedBox`, associated `ManagedItem`s are deleted as well. This way you don't keep orphaned objects around. There's no way to manipulate existing relationships besides deleting entities, so there's no way to get an invalid entity because of missing relationship targets. Check ✓
+
+A title is required, too. This isn't enforced in the user interface at the moment, so let's deal with that as an example.
+
+### Enforcing valid objects
+
+To empty the box title text field should work. An empty string is still a string, and thanks to Swift and non-optional parameters, it's impossible to create a `Box` with a nil title.
+
+Still, an empty title doesn't make sense. (This is a rule I just made up.) The user interface should not allow this.
+
+When I empty a box title text field, the app crashes. I didn't expect this to happen. Something's wrong with KVO and `didChangeValueForKey`, the debugger tells me. There are a few KVO candidates in the whole stack:
+
+* Cocoa Bindings from the actual text field to its row's `objectValue`'s title attribute can cause problems
+* `NSTreeController` trying to set the `BoxNode` title
+* `BoxNode`'s `didSet` property observer
+* `ManagedBox` observing changes to `Box`
+
+Automatted tests to the rescue: 
+
+* `testChangingFetchedBoxTitle_ToEmptyString_PersistsChanges()` passes, to changing the `Box` doesn't produce problems for `ManagedBox`
+* `testChangeBoxNodeTitle_ToEmptyString_PersistsChanges()` works, too, verifying that all project code doesn't fail 
+
+Now what's with the text field? Does it try to set the title to nil instead of an empty String? Indeed it does! Changing the title property to an optional reveals the cause of the problem with the help of logging on `willSet`:
+
+    public class BoxNode: NSObject, TreeNode {
+        public dynamic var title: String? = "Box Node" {
+            willSet {
+                let nilvalue: String = newValue == nil ? "1" : "0"
+                NSLog("\(title) --> \(newValue) (nil: \(nilvalue))")
+            }
+            // ...
+        }
+        // ...
+    }
+
+Once discovered, the problem is easily remedied by using an `NSValueTransformer` to ensure the value is never nil:
+
+    @objc(NonNilStringValueTransformer)
+    public class NonNilStringValueTransformer: NSValueTransformer {
+        override public func transformedValue(value: AnyObject?) -> AnyObject? {
+            if value == nil {
+                return ""
+            }
+        
+            return value
+        }
+    }
+
+<!--ct: #75a75c4a54add4e57849d22e8c8c47d32f074f86 ensure text field values never become nil but empty strings instead-->
+
+There don't seem to be any more runtime errors related to renaming objects. The objects stay valid in a Core Data validation way.
+
+#### Enforce rules in the user interface
+
+To prevent empty titles, we have to codify this rule somehow. Business rules belong to the domain. Empty titles don't cause problems to the domain, though, so I don't think this should become a business rule. Instead, this is a rule of the application and/or user interface designer. Empty titles look weird and can be possibly harder to click.
+
+Since the domain doesn't care about the title, it doesn't matter _how_ we enforce non-empty title strings. It suffices to replace the empty string with a default value, like "Box" and "Item".
+
+If we had just one kind of tree node, the `NonNilStringValueTransformer` could do the job. But a value transformer cannot access information about the node and thus cannot distinguish between "Box" and "Item".
+
+But the title-change event handler could:
+
+    func treeNodeDidChange(treeNode: TreeNode, title: String) {
+        if title.isEmpty {
+            changeNodeTitleToPlaceholderValue(treeNode)
+        } else {
+            broadcastTitleChange(treeNode)
+            orderTree()
+        }
+    }
+    
+    func changeNodeTitleToPlaceholderValue(treeNode: TreeNode) {
+        // Don't execute in didSet callback context or KVO won't work.
+        dispatch_async_main {
+            if treeNode is BoxNode {
+                treeNode.title = BoxNode.defaultTitle
+            } else if treeNode is ItemNode {
+                treeNode.title = ItemNode.defaultTitle
+            }
+        }
+    }
+
+There's one benefit in handling title resets in the view controller to enforcing the rule in the nodes themselves: KVO. The `NSTreeController` doesn't notice changes in a `didSet` property observer, not even with `willChangeValueForKey`/`didChangeValueForKey`:
+
+    public class BoxNode: NSObject, TreeNode {
+        public dynamic var title: String = "Box" {
+            didSet {
+                if title.isEmpty {
+                    title = "Box" // This value is stored, but not displayed
+                }
+            
+                if let controller = self.eventHandler {
+                    controller.treeNodeDidChange(self, title: title)
+                }
+            }
+        }
+        // ...
+    }
+
+That's why we have to dispatch the actual title change in `changeNodeTitleToPlaceholderValue` for execution outside the current context. This way the change will trigger another Key-Value Notification. [Nested notifications don't work](http://stackoverflow.com/a/26565401/1460929) -- probably to prevent infinite loops.
+
+Now empty tree nodes are avoided by virtue of the user interface.
+
+#### Alternate paths for transformations
+
+<!--ct: TODO write in detail about this-->
+
+* business rule: broadcast reset from domain to view to recover
+* business rule: provide validation mechanism for the view _before_ it commits changes
+
+### Broadcasting Error Events
+
+Read errors don't (necessarily) imply data loss. I let `CoreDataBoxRepository` broadcast a notification to interested parties:
+
+    func postReadErrorNotification() {
+        notificationCenter.postNotificationName(kCoreDataReadErrorNotificationName, object: self)
+    }
+    
+Since this application has no value to the user if reading data isn't possible, I decide to quit the app on these occasions. `AppDelegate` for now seems to be the best-suited object to terminate the application on errors:
+
+    func subscribeToCoreDataReadErrors() {
+        readErrorCallback = notificationCenter.addObserverForName(kCoreDataReadErrorNotificationName, object: nil, queue: NSOperationQueue.mainQueue()) { notification in
+            
+            let question = NSLocalizedString("Could not read data. Report and Quit?", comment: "Read error quit question message")
+            let info = NSLocalizedString("The application cannot read data and thus better not continues to operate. Changes will be saved if possible.", comment: "Read error quit question info");
+            let quitButton = NSLocalizedString("Report and Quit", comment: "Report and Quit button title")
+            let cancelButton = NSLocalizedString("Cancel", comment: "Cancel button title")
+            let alert = NSAlert()
+            alert.messageText = question
+            alert.informativeText = info
+            alert.addButtonWithTitle(quitButton)
+            alert.addButtonWithTitle(cancelButton)
+            
+            let answer = alert.runModal()
+            if answer == NSAlertFirstButtonReturn {
+                //TODO: Add error reporting here
+                return NSApplication.sharedApplication().terminate(self)
+            }
+        }
+    }
+
+If you come up with more error cases, it's better to add a dedicated error handler which presents alerts, though.
+
+An error handler may report problems to a delegate. This delegate may in turn be implemented by `AppDelegate`. In my opinion, `reportErrorsAndQuit` fits nicely to `applicationShouldTerminate`. That's why I put handling fatal errors into `AppDelegate`. Everything else may be handled by an Application Service instead as it doesn't affect program execution. The latter is `AppDelegate`'s sole territory.
