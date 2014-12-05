@@ -3,6 +3,8 @@ Exploring Mac App Development Strategies
 
 This is the book website for "[Exploring Mac App Development Strategies][leanpub]".
 
+**[View website](http://divinedominion.github.io/mac-appdev-book)**
+
 License
 =======
 
