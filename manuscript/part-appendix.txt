@@ -3,17 +3,4 @@
 
 -# Appendix
 
-The appendix is mostly a collection of blog post-sized writings about problems I discovered.
-
-
-<!--ct: 
-This is a place to globally store references to books and links, if needed.
--->
-
-[hp-contact]: http://divinedominion.github.io/mac-appdev-book/#contact
-[hp-contribute]: http://divinedominion.github.io/mac-appdev-book/#contributing
-
-[#feathers2011legco]: Michael C. Feathers (2011):  _[Working effectively with legacy code](x-bdsk://feathers2011legco)_, Upper Saddle River, NJ: Prentice Hall Professional Technical Reference.
-  
-[#vernon2013ddd]: Vaughn Vernon (2013):  _[Implementing domain driven design](x-bdsk://vernon2013ddd)_, Upper Saddle River, NJ: Addison-Wesley.
-
+The appendix is mostly a collection of blog post-sized writings about problems I discovered. Apart from the upcoming list of suggested reading, the articles are in no particular order.

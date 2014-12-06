@@ -21,6 +21,8 @@ There could be a central dispatcher of sorts in the application layer to receive
 Then again, `NodeObserver`s could listen to domain events themselves and incorporate changes for related entities. This is a highly decentralized architecture. It has a strong appeal, and I'd love to redesign the layer integration in a future edition of this book accordingly to see how well it works.[^fut] I think this will allow for a responsive user interface and thus greatly enhance the overall user experience.
 
   [^fut]: Let me know if you'd like to see this, too. [Get in touch.][hp-contact]
+ 
+[hp-contact]: http://divinedominion.github.io/mac-appdev-book/#contact
 
 ### Dealing with Core Data Errors
 

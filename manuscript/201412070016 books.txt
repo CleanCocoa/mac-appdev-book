@@ -1,0 +1,31 @@
+
+{pagebreak}
+
+## Interesting Books
+
+I recommend reading the following books, ordered by subjective significance to the topic. 
+
+The top four are really worth your money, so I added amazon affiliate links to them [on the book website](http://divinedominion.github.io/mac-appdev-book/#interesting-books). If you buy from these links, I get a small kick-back from amazon. It won't cost you anything, though. Adding these links to the e-books is forbidden, so please consider heading to the project website instead to support my writing. Thank you!
+
+* Vaughn Vernon (2013):  _Implementing domain driven design_, Upper Saddle River, NJ: Addison-Wesley.
+    
+    --- Lots of practical examples and explanation for the patterns Evans laid out.
+* Eric Evans (2006):  _Domain-Driven Design. Tackling complexity in the heart of software_, Upper Saddle River, NJ: Addison-Wesley.
+    
+    --- Full of good examples and refactorings itself but a little light on actually solving implementation problems.
+* Michael C. Feathers (2011):  _Working effectively with legacy code_, Upper Saddle River, NJ: Prentice Hall Professional Technical Reference.
+    
+    --- Helps to learn decoupling code incrementally and how to test hard-to-test parts. That's where I learned to provide means to reset singletons, and that it's better to wrap `NSNotificationCenter` in order to replace the wrapper in tests than not test notifications at all.
+* Steve Freeman and Nat Pryce (2010):  _Growing object-oriented software, guided by tests_, Boston: Pearson Education.
+    
+    --- This book has taught me so much about Test-Driven Development! I figured out when to use functional tests, why it's beneficial to start with a failing test on the system level to guide development, and how to create multi-layered applications with test fakes all thanks to this book.
+* Ivar Jacobson, Magnus Christerson, Patrik Jonsson, and Gunnar Övergaard (1990):  _Object-Oriented Software Engineering. A Use Case Driven Approach_, Wokingham: Addison-Wesley.
+    
+    --- Actually a recommendation by Uncle Bob in _Architecture: The Lost Years_. It taught me to think about application services and use case objects. The book's focus is on architecture, not on code. Useful practices. You may get this one used for a few dollars. I found it in my local university's library.
+* Scott Millett (2014):  _Practicing Domain-Driven Design. Practical advice for teams implementing the development philosophy of Domain-Driven Design. With code examples in C# .NET_, Scott Millett.
+* Robert C. Martin (2009):  _Clean Code. A Handbook of Agile Software Craftsmanship_, Upper Saddle River: Prentice Hall.
+* Andy Oram and Greg Wilson (Eds.) (2007):  _Beautiful Code_, Beijing: O'Reilly.
+* Sandi Metz (2013):  _Practical object-oriented design in Ruby: an agile primer_, Upper Saddle River, NJ: Addison-Wesley.
+    
+    --- A really good read. Sadly, it's about Ruby, not about Swift or Objective-C, but you may want to peek into it anyway.
+

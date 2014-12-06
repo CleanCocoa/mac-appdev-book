@@ -1,3 +1,5 @@
+{:: encoding="UTF-8" /}
+
 ## How to Load Core Data `NSManagedObject`s in Tests
 
 For the most part, I am going to develop the example application in a Test-Driven manner. I will write tests first and add the user interface components and necessary service functionality later. You may call these functional tests.
@@ -11,14 +13,8 @@ The Core Data managed objects are called `ManagedBox` and `ManagedItem`. They mo
 I add class-level helper methods to these to make [creating new Core Data entities][objc1] a bit easier. It will work like this: 
 
 {linenos=off}
-    ManagedItem.insertManagedItem(anItemId, 
-        title: "the title", inManagedObjectContext: aManagedObjectContext)
-
-This is a test:
-
-{line-numbers=off}
-    ManagedItem.insertManagedItem(anItemId, 
-        title: "the title", inManagedObjectContext: aManagedObjectContext)
+    ManagedItem.insertManagedItem(anItemId, title: "the title",
+        inManagedObjectContext: aManagedObjectContext)
 
 Now I want to add tests to verify this helper method actually adds an entity to the context. Since the method is trivially simple, the tests will also show that Core Data-specific tests work, with their own in-memory scratchpad `NSManagedContext`.
 
