@@ -5,3 +5,6 @@ This add-on part is coming soon!
 Here, I explore how to use Core Data managed objects the way Apple meant them to be used: woven into our application's heart. Until now, we've avoided this with utmost caution. Let's see how bad it'll be if we turn to the _Dark Side._
 
 * Use Entity protocols in the Domain for Domain and View use: limit available accessors to make objects virtually immutable. Expose `NSManagedObject` only to Infrastructure.
+
+
+<!--ct: TODO update resume in epilogue-->

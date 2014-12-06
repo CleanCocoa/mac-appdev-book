@@ -1,4 +1,4 @@
-# Motivation
+# Motivation to Write This Book
 
 Hi, I'm Christian and I develop [the Word Counter for Mac][wcapp]. It's my first big Mac application, and I charge money for a license, which makes me nervous. 
 
@@ -6,14 +6,18 @@ Recently, I wanted to use Core Data to store a new kind of data. That poses some
 
 Selling my app makes me nervous because I suddenly feel obliged to deliver the best software possible. It should be stable. But it should also grow: I want to deliver updates, and thus I need to change the code. Changes shouldn't break existing code -- at least not without me noticing. Therefore I want to write the best code I can in order to make changes easy and to deliver the best working software I'm able to produce.
 
-That's a lot of pressure. I am more comfortable with it because my confidence in the code grew.
+That's a lot of pressure. I grew more comfortable with it when my confidence in the code grew.
 
-In fall 2014, I wanted to add a new feature to the Word Counter. Until then, the app observed key presses and increased interal counters to track words written per app. This is indented to show your overall productivity. But it can't show progress, so up next was the ability to monitor files to track project progress.
+## Untangling Cocoa from the App
 
-This includes a lot of design changes:
+So now it's fall 2014. I want to add a new feature to the Word Counter.
+
+Until now, the Word Counter observed key presses and increased interal counters to track words written per app. This is indented to show your overall _productivity_. But it can't show _progress_, another essential metric. So up next was the ability to monitor files to track project progress.
+
+This innocent feature includes a lot of design changes:
 
 * Introduce `Project`s and associate `Path`s with them. The domain has to know how to track progress for this new kind of data.
-* Add background-queue file monitoring capabilities. Thanks to _Grand Central Dispatch_, this is supposed to be quite easy. I'd have to create wrappers nevertheless.
+* Add background-queue file monitoring capabilities. Thanks to _Grand Central Dispatch_, this is supposed to be quite easy. I have to create wrappers nevertheless to provide an API for clean code, though.
 * Design new user interface components to manage projects and their paths.
 * Store daily `PathRecord`s to keep track of file changes over a long period of time. Without records, no history. Without history, no analysis.
 * Make the existing productivity history view aware of `Project` progress.
@@ -32,27 +36,33 @@ All in all, most of the design decisions and their requirements were news to me.
 
 I fiddled around with providing data to `NSOutlineView` via `NSTreeController` until appending projects to the list and adding paths to them would work as soon as the actual infrastructure were put in place.
 
-Enter Core Data.
+Now add Core Data to the equation.
 
 What a mess!
 
-It's super convenient to use Core Data because the framework takes care of a lot. If you want to manipulate persistent objects easily, you can ever wire `NSObjectController`s like `NSTreeController` to Core Data entities and skip _all of the object creation boilerplate code._
+It's super convenient to use Core Data because the framework takes care of a lot. If you want to manipulate persistent objects easily, you can ever wire `NSObjectController` objects to Core Data entities and skip _all of the object creation boilerplate code._  For example, an `NSTreeController` can take care of displaying nested data in an `NSOutlineView`, adding items relative to the user's current selection for example.
 
-Unfortunately, I don't edit a single kind of object, but two. And they can't be nested at will. `Path`s may only be nested below `Project`s which in turn are root level objects. The resulting tree is very shallow.
+If you adhere to the limitations of an `NSTreeController`, that is.
 
-Also, tying Core Data entities or `NSManagedObject` subclasses to the UI is so convenient because it skips all of the layers in between. This means, in turn, that you couple the user interface to the data representation.
+Unfortunately, users of the Word Counter will edit two kinds of objects, not one: `Path`s may only be nested below `Project`s, which in turn are strict root level objects. I have to enforce these rules myself, and I have to add objects to the tree from my own code. I don't know about a lot of use cases where boilerplate code won't be necessary at all.
 
-The data representation should stay an implementation detail. I may want to switch from Core Data to a SQLite library later on.
+To tie Core Data entities (or `NSManagedObject` subclasses for that matter) to the user interface is so convenient because it skips all of the layers in between. No view controller, no custom domain objects. This means, in turn, to couple the user interface to the data representation. In other words, the user-facing windows are directly dependent on the database. This may be a clever short cut, but this might also be the reason why your app is getting hard to change and hard to test.
 
-Using Core Data the convenient way violates a lot of the principles I learned to adhere to. These principles help me keep the Word Counter code base clean.
+The data representation should stay an implementation detail. I may want to switch from Core Data to a SQLite library later on. There have to be intermediary layers to achieve this.
 
-Let's consider the basic architecture I want to advocate. Sometimes it's called "Clean Architecture". Sometimes "Hexagonal". Because the Word Counter is still pretty straightforward, I guess my code base isn't all that complex, so this littler book will present you my interpretation on these things.
+In short, using Core Data in the most convenient way violates a lot of the principles I learned to adhere to. These principles help me keep the Word Counter code base clean and maintainable.
 
-I am still making sense of this, and I bet I get a term or two wrong.
+The basic architecture I want to advocate is sometimes called "[Clean Architecture][cleanar]", sometimes "[Hexagonal][hexagonal]". There a differences between these two, but I won't be academic about this. This little book will present you my interpretation on these things first and point you into the right direction to find out more afterwards.
 
-Feel free to contribute to this book and the project via GitHub:
+Keep in mind I am still making sense of this myself. I bet I get a concept or two wrong.
+
+That's why you may feel free to contribute to this book and the project via GitHub:
 
 - [Book Manuscript on GitHub](https://github.com/DivineDominion/mac-appdev-book)
 - [Project Code on GitHub][bookcode]
 
+I hope reading this book will be as useful to you as writing it was to me.
+
 [bookcode]: https://github.com/DivineDominion/mac-appdev-code
+[cleanar]: http://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html
+[hexagonal]: http://alistair.cockburn.us/Hexagonal+architecture
