@@ -11,7 +11,7 @@ Depending on how you create `NSViewController` subclasses, view controllers eith
 
 When view controllers are too dumb to perform interesting actions, they have to delegate this behavior to collaborators.
 
-Think of view controllers as smart views rather than complex controllers. Unlike usual views, they can't display themselves. But they are a façade to other user interface components, taking care of the set-up, layout, and basic event handling.
+Think of view controllers as smart views rather than complex controllers. Unlike usual views, they can't display themselves. But they are a facade to other user interface components, taking care of the set-up, layout, and basic event handling.
 
 In other words, view controllers coordinate views to form a more complex user interface component. They aggregate their views's basic events and take care of sending more meaningful events to interested parties.
 
@@ -105,7 +105,7 @@ Now that `addBox(_:)` in `ItemViewController` depends on `eventHandler` being se
 
 I would've added `EventHandlerStub` to `ItemViewController` directly as the default value of the `eventHandler` property. This way, I wouldn't need to conditionally unwrap the optional. (I don't like the additional level of nesting.) 
 
-Since `eventHandler` is a weak reference only, it isn't possible to add a placeholder object with "null" behavior in `ItemViewController` directly. [**Null Object**s][nullobj] are pretty useful to avoid `nil` checks. My utter dislike for what conditionally unwrapping optionals does to my code is a strong motivation to employ **Null Object**s in Swift. This particular interface is heavy on the _query_ side of **CQRS** while **Null Object**s are better suited to stub-out _commands_.
+Since `eventHandler` is a weak reference only, it isn't possible to add a placeholder object with "null" behavior in `ItemViewController` directly. [Null Objects][nullobj] are pretty useful to avoid `nil` checks. My utter dislike for what conditionally unwrapping optionals does to my code is a strong motivation to employ Null Objects in Swift. This particular interface is heavy on the _query_ side of CQRS while Null Objects are better suited to stub-out _commands_.
 
 To make the test pass, `CoreDataBoxRepository` needs a `count() -> Int` method:
 
@@ -216,7 +216,7 @@ Until now, I had collection-oriented repositories in mind.[see Chapter 12, "Repo
 
 There's three options:
 
-1. Change the way the **Repositories** work. Instead of collection-oriented, make them work persistence-oriented. This includes explicit calls to `save` methods, passing in `Box` or `Item`. Since I don't manipulate a SQL database directly, I have to map changes from `Box` and `Item`to `ManagedBox` and `ManagedItem` respectively.
+1. Change the way the Repositories work. Instead of collection-oriented, make them work persistence-oriented. This includes explicit calls to `save` methods, passing in `Box` or `Item`. Since I don't manipulate a SQL database directly, I have to map changes from `Box` and `Item`to `ManagedBox` and `ManagedItem` respectively.
 2. Leverage KVO to track changes of `Box` objects and map changes to the underlying `ManagedBox`. Similar to (1), but without explicit calls to a `save` method.
 3. Use `NSManagedObject` directly to manipulate the persisted data. Every change gets persisted automagically.
 
@@ -369,7 +369,7 @@ There are two options I can think of to take note of changes to the view model, 
 
 The first approach sounds good because there's a single event handler, using the already established delegate pattern. The second approach takes far less boilerplate code to set up, and I don't need to worry about removing the observer upon item removal. On the downside, I have to send messages using the notification center. Who should subscribe to these? The view controller or the event handler?
 
-In classic Model--View--Controller fashion,[^mvc] every view component has its own controller. One could say that the `didSet` property observer already is part of the controller. Why delegate it up to the list component's façade, `ItemViewController`? Thus the objective is to send a change message to the event handler from the `didSet` property observer directly. I could set a (shared) `eventHandler` property to every `TreeNode` upon initialization and invoke `boxDidChange(_:BoxId, title:String)`, for example. The consequences are severe, though:
+In classic Model--View--Controller fashion,[^mvc] every view component has its own controller. One could say that the `didSet` property observer already is part of the controller. Why delegate it up to the list component's facade, `ItemViewController`? Thus the objective is to send a change message to the event handler from the `didSet` property observer directly. I could set a (shared) `eventHandler` property to every `TreeNode` upon initialization and invoke `boxDidChange(_:BoxId, title:String)`, for example. The consequences are severe, though:
 
 * `BoxNode` has to be representable in Objective-C, thus its `eventHandler` protocol has to be annotated `@objc`, too.
 * The protocol, `HandlesItemListChanges`, cannot be Objective-C compatible if `BoxId` isn't.
@@ -430,7 +430,7 @@ Until now, `BoxNode` did set up its own child nodes when it was reconstituted fr
 
 Another option is to pipe the value for every node's `eventHandler` upon reconstitution, so the method signature becomes `BoxNode.init(_: BoxData, eventHandler: HandlesItemListChanges?)`.
 
-The **Application Service** is pretty simple, still:
+The Application Service is pretty simple, still:
 
     public class BoxAndItemService: HandlesItemListEvents {
         // ...

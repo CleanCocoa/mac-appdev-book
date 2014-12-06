@@ -87,7 +87,7 @@ Essentially, that's the job of a **Domain Service**.
 
 The domain has a few data containers, but no means to create **Aggregate**s or manipulate data. The application layer, being client to the domain, shouldn't replace domain logic. Posting "Box was created" events is the domain's responsibility.
 
-Using `NSNotificationCenter` as a domain event publisher, `BoxAndItemService` loses part of its concerns in favor of a **Domain Service**, `ProvisioningService`:
+Using `NSNotificationCenter` as a domain event publisher, `BoxAndItemService` loses part of its concerns in favor of a Domain Service, `ProvisioningService`:
 
     class ProvisioningService {
         let repository: BoxRepository
@@ -138,7 +138,7 @@ It's very hard to read, compared to:
 
 Getting another layer of abstraction in there is a good idea, especially since Swift's structs make it really easy to create **Domain Event**s. It will improve the code, although you'll have to weigh the additional cost of developing and testing this very layer of abstraction. For the sake of this sample application, I prefer not to over-complicate things even more and stick to plain old notifications for now.
 
-To replace the command--query-mixing methods from before, there needs to be an event handler which subscribes to **Domain Events** in the application layer and display the additions in the view.
+To replace the command--query-mixing methods from before, there needs to be an event handler which subscribes to Domain Events in the application layer and display the additions in the view.
 
 ### VIPER & Naming Conventions
 
@@ -149,6 +149,8 @@ Renaming the **Application Service**s to something more fitting, I end up with:
 * `HandleBoxAndItemModifications` as its _event handler_ (the former `BoxAndItemService`).
 
 Only `ManageBoxesAndItems` has to be public. The rest is an implementation detail and, in fact, a refactoring. Thanks to the functional tests in place, it's easy to verify the behavior while fleshing out the new parts.
+
+<!--ct: TODO insert Jeff's image once his employer is cool with it-->
 
 I named the collaborating services according to the [VIPER architecture][viper]: a **Presenter** updates the view on changes, while an **Event Handler** is delegate to user interaction. The use case object `ManageBoxesAndItems` replaces VIPER's notion of a **Wireframe** which suits iOS apps and their view transitions better than multi-windowed Mac apps.
 
