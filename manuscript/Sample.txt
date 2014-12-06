@@ -1,0 +1,22 @@
+part-intro.txt
+sample-stripped.txt
+201412061628 who.txt
+201412061816 the example.txt
+201411171431 architecture.txt
+
+part1.txt
+sample-stripped.txt
+201411241637 functional tests.txt
+
+part2.txt
+sample-stripped.txt
+201411251337 ports adapters.txt
+
+part3.txt
+sample-stripped.txt
+201412041035 events.txt
+
+part-appendix.txt
+sample-stripped.txt
+201412051148 links.txt
+201412070016 books.txt

@@ -1,0 +1,97 @@
+### VIPER & Naming Conventions
+
+Renaming the **Application Service**s to something more fitting, I end up with:
+
+* `ManageBoxesAndItems` as the use case, 
+* `DisplayBoxesAndItems` as its _presenter_, and
+* `HandleBoxAndItemModifications` as its _event handler_ (the former `BoxAndItemService`).
+
+Only `ManageBoxesAndItems` has to be public. The rest is an implementation detail and, in fact, a refactoring. Thanks to the functional tests in place, it's easy to verify the behavior while fleshing out the new parts.
+
+<!--ct: TODO insert Jeff's image once his employer is cool with it-->
+
+I named the collaborating services according to the [VIPER architecture][viper]: a **Presenter** updates the view on changes, while an **Event Handler** is delegate to user interaction. The use case object `ManageBoxesAndItems` replaces VIPER's notion of a **Wireframe** which suits iOS apps and their view transitions better than multi-windowed Mac apps.
+
+Quoting [Jeff Gilbert and Conrad Stoll][viper] here, the main parts of VIPER are:
+
+> * _View:_ displays what it is told to by the Presenter and relays user input back to the Presenter.
+> * _Interactor:_ contains the business logic as specified by a use case.
+> * _Presenter:_ contains view logic for preparing content for display (as received from the Interactor) and for reacting to user inputs (by requesting new data from the Interactor).
+> * _Entity:_ contains basic model objects used by the Interactor.
+> * _Routing:_ contains navigation logic for describing which screens are shown in which order.
+
+So `ManageBoxesAndItems` is essentially the Interactor, `DisplayBoxesAndItems` the Presenter with its partner `HandleBoxAndItemModifications` being an adapter to the port its view defines. `Box` and `Item`, finally, are the entities. There's no navigation, thus no routing.
+
+[viper]: http://www.objc.io/issue-13/viper.html
+
+### Consuming `Box`es and `Item`s instead of obtaining IDs
+
+The old methods which were both _command_ and _query_ are gone. Instead, there is an event handler which receives commands from the user interface or view, and there's a presenter which updates the view according to changes in the domain.
+
+The view _consumes_ changes. It sounds weird a bit, but I didn't come up with a better name, yet.[^change]
+
+  [^change]: Remember you can propose changes to [the book's manuscript][bookcode] on GitHub!
+
+
+Consuming data for a `BoxNode` is pretty easy because the nodes are just appended to the tree:
+
+    public func consume(boxData: BoxData) {
+        let boxNode = self.boxNode(boxData)
+        let indexPath = NSIndexPath(index: nodeCount())
+        itemsController.insertObject(boxNode, atArrangedObjectIndexPath: indexPath)
+        orderTree()
+    }
+    
+Consuming data for `ItemNodes` is a bit more intricate, but still not too complicated:
+
+    public func consume(itemData: ItemData) {
+        if let boxId = itemData.boxId {
+            if let boxNode = existingBoxNode(boxId) {
+                let itemId = itemData.itemId
+                let itemNode = self.itemNode(itemData)
+                
+                boxNode.addItemNode(itemNode)
+                orderTree()
+            }
+        }
+    }
+
+Thanks to `NSTreeController`, `addItemNode`, which is appending the argument to the receiver's `children` property, results in automagical updates of the view.
+
+Walking the first level of `NSTreeNodes` to find the `BoxNode` with a specific ID sounds like a waste of CPU cycles to me, but it's not a problem at all, especially not with smaller lists. No need to think about optimizing anything here just yet.[^8abe3c0a0eee951e70a0375e96d2775cc26a3597]
+
+<!--ct: commits:
+#8abe3c0a0eee951e70a0375e96d2775cc26a3597 replace provisionNewBoxId with createBox/consume(box)
+#ba050fbfeb2adbb6656c0b0477b62e2e5705f5b8 rename application services
+-->
+
+[^8abe3c0a0eee951e70a0375e96d2775cc26a3597]: See [commits 8abe3c0](https://github.com/DivineDominion/mac-appdev-code/commit/8abe3c0a0eee951e70a0375e96d2775cc26a3597) and [ba050fb](https://github.com/DivineDominion/mac-appdev-code/commit/ba050fbfeb2adbb6656c0b0477b62e2e5705f5b8)
+
+### What's all this good for?
+
+Separating event handling from updating the view can have nice benefits. Imagine there's a background thread syncing the database to a server: you can display changes with the existing setup just like that.
+
+To test how good it really is, I delay view updates a bit using `dispatch_after` with the following global helper function:
+
+    func delay(delay:Double, closure:()->()) {
+    dispatch_after(
+            dispatch_time(
+                DISPATCH_TIME_NOW,
+                Int64(delay * Double(NSEC_PER_SEC))
+            ),
+            dispatch_get_main_queue(), closure)
+    }
+
+Now if I press "New Box" multiple times, it inserts the boxes one after another with a delay.
+
+At the moment, there's no way to rename `Box` or `Item` in the domain and push changes to the view. Currently, the view optimistically assumes its updates will persist and displays the change on its own terms, without a round-trip to the domain (or persistence).
+
+With a delay of about 10 seconds, I can even rename existing nodes before new ones come in without any conflicts. Try that with an omnipotent, tightly coupled, blocking read--write view controller.
+
+Keep in mind, though, that this needn't be a sign of high quality. I think the view should optimistically add view components instantaneously even though the persistence takes some time. Putting a delay in `CoreDataBoxRepository` should not delay user interface reactions. We'll look into this problem soon. <!--ct: TODO link to the corresponding part of "error handling"-->
+
+Splitting concerns is good most of the time, but it's not always easily done.
+
+When I added a real user interface to the Word Counter, I used a separation similar to Wireframe/Presenter/Event Handler as **Application Services**, only the Event Handler was really an Interactor with close affinity to the domain, pulling in changes from running **Domain Services**. I wasn't ready to do experiments with the architecture for quite a while. Now I feel confident that a strong domain with **Domain Events** can yield better results. The _pull_-oriented Interactor can fetch a snapshot of the data, but if it changes in the background, the user-facing values are getting stale quickly. A _push_-oriented approach, on the other hand, easily remedies such problems.
+
+So up next is the part most interesting to _Domain-Driven Design_, but the least interesting for the sake of this example project so far: the domain itself.

@@ -14,7 +14,9 @@ part1.txt
 
 part2.txt
 201411251003 naive event handler.txt
+201412070045 naive add remove.txt
 201411251337 ports adapters.txt
+201412070047 viper.txt
 
 part3.txt
 201412041035 events.txt
