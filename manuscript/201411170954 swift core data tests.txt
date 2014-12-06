@@ -10,6 +10,13 @@ The Core Data managed objects are called `ManagedBox` and `ManagedItem`. They mo
 
 I add class-level helper methods to these to make [creating new Core Data entities][objc1] a bit easier. It will work like this: 
 
+{linenos=off}
+    ManagedItem.insertManagedItem(anItemId, 
+        title: "the title", inManagedObjectContext: aManagedObjectContext)
+
+This is a test:
+
+{line-numbers=off}
     ManagedItem.insertManagedItem(anItemId, 
         title: "the title", inManagedObjectContext: aManagedObjectContext)
 
