@@ -1,5 +1,7 @@
-## On Swift
+# On Swift
 
 I think Swift is Apple's move towards more advanced app architecture patterns. The wonders generics do to domain event handling, for example!
+
+_This is an upcoming essay._
 
 <!--ct: TODO add this section-->

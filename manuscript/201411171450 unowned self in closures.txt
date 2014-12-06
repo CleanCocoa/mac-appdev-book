@@ -1,4 +1,4 @@
-## Strong Reference Cycles
+# Strong Reference Cycles
 
 [Swift closures][closures] are prone to creating strong reference cycles when you keep the closure around and reference self from within the closure:
 

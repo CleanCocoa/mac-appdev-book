@@ -1,6 +1,7 @@
+
 {backmatter}
 
-# Appendix
+-# Appendix
 
 The appendix is mostly a collection of blog post-sized writings about problems I discovered.
 
