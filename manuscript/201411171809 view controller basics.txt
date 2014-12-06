@@ -50,8 +50,8 @@ I don't trust my ability to use Interface Builder a lot, and I assume I will get
 I hunted for a bug for a while only to find the Cocoa Binding from `NSOutlineView` to `NSTreeController` is in place _although I don't set it explicitely_. If I _do_, the behavior goes all nuts. It seems that the column bindings make up for the rest. I have no clue how to verify this kind of automatted set-up in the Nib without explicit bindings slipping by. Parsing the Nib XML is out of question.[^dc824da1016025abd8be61fafb560995527dccfb]
 <!--ct: commit #dc824da1016025abd8be61fafb560995527dccfb-->
 
-[^dc824da1016025abd8be61fafb560995527dccfb]: [commit dc824da](https://github.com/DivineDominion/mac-appdev-code/commit/dc824da1016025abd8be61fafb560995527dccfb)
-[^5090735c386896e031551dc9e0c47a3e5d351d83]: [commit 5090735](https://github.com/DivineDominion/mac-appdev-code/commit/5090735c386896e031551dc9e0c47a3e5d351d83)
+[^dc824da1016025abd8be61fafb560995527dccfb]: See [commit dc824da](https://github.com/DivineDominion/mac-appdev-code/commit/dc824da1016025abd8be61fafb560995527dccfb)
+[^5090735c386896e031551dc9e0c47a3e5d351d83]: See [commit 5090735](https://github.com/DivineDominion/mac-appdev-code/commit/5090735c386896e031551dc9e0c47a3e5d351d83)
 
 
 ### Create `XCTestCase` Extensions with Test Helpers
@@ -109,4 +109,4 @@ Finally, once the "add" button does what is is created to do, we know that the t
 <!--ct: commit #c5c351b54e53a5d22b44c20e376bca521f451e54 initial view setup
 #7648d603c832c5d7cd41a041da5d3e4114f7c955 switch to outline view-->
 
-[^c5c351b54e53a5d22b44c20e376bca521f451e54]: [commit c5c351b](https://github.com/DivineDominion/mac-appdev-code/commit/c5c351b54e53a5d22b44c20e376bca521f451e54) and [7648d60](https://github.com/DivineDominion/mac-appdev-code/commit/7648d603c832c5d7cd41a041da5d3e4114f7c955)
+[^c5c351b54e53a5d22b44c20e376bca521f451e54]: See [commit c5c351b](https://github.com/DivineDominion/mac-appdev-code/commit/c5c351b54e53a5d22b44c20e376bca521f451e54) and [7648d60](https://github.com/DivineDominion/mac-appdev-code/commit/7648d603c832c5d7cd41a041da5d3e4114f7c955)

@@ -207,7 +207,7 @@ Walking the first level of `NSTreeNodes` to find the `BoxNode` with a specific I
 #ba050fbfeb2adbb6656c0b0477b62e2e5705f5b8 rename application services
 -->
 
-[^8abe3c0a0eee951e70a0375e96d2775cc26a3597]: [commits 8abe3c0](https://github.com/DivineDominion/mac-appdev-code/commit/8abe3c0a0eee951e70a0375e96d2775cc26a3597) and [ba050fb](https://github.com/DivineDominion/mac-appdev-code/commit/ba050fbfeb2adbb6656c0b0477b62e2e5705f5b8)
+[^8abe3c0a0eee951e70a0375e96d2775cc26a3597]: See [commits 8abe3c0](https://github.com/DivineDominion/mac-appdev-code/commit/8abe3c0a0eee951e70a0375e96d2775cc26a3597) and [ba050fb](https://github.com/DivineDominion/mac-appdev-code/commit/ba050fbfeb2adbb6656c0b0477b62e2e5705f5b8)
 
 ### What's all this good for?
 

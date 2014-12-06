@@ -130,7 +130,7 @@ Now all tests pass: new `Box`es are created and both stored and shown.[^1d4b7c3f
 
 <!--ct: commit #1d4b7c3ffa9fbd71ee7d64e5aacab39446c90acd use application layer service to create Box objects into Core Data-->
 
-[^1d4b7c3ffa9fbd71ee7d64e5aacab39446c90acd]: [commit 1d4b7c3](https://github.com/DivineDominion/mac-appdev-code/commit/1d4b7c3ffa9fbd71ee7d64e5aacab39446c90acd)
+[^1d4b7c3ffa9fbd71ee7d64e5aacab39446c90acd]: See [commit 1d4b7c3](https://github.com/DivineDominion/mac-appdev-code/commit/1d4b7c3ffa9fbd71ee7d64e5aacab39446c90acd)
 
 [nullobj]: http://en.wikipedia.org/wiki/Null_Object_pattern
 
@@ -358,7 +358,7 @@ Obtaining the `Box` via `ManagedBox` didn't re-create the associated items, yet.
 That's all there is to it to create, save, and show items with their default values. Changing the values has no lasting effect, though.
 
 
-[^d8b64eabee134cd516b382956e2aa58c194d5886]: [commits d8b64ea](https://github.com/DivineDominion/mac-appdev-code/commit/d8b64eabee134cd516b382956e2aa58c194d5886),  [b4c63ff](https://github.com/DivineDominion/mac-appdev-code/commit/b4c63ff803672889f7683aae72554d9538c7f335), [6cfabcf](https://github.com/DivineDominion/mac-appdev-code/commit/6cfabcf026b516b69a30873aa30ea68de79a6aa9), and [f9d96aa](https://github.com/DivineDominion/mac-appdev-code/commit/f9d96aa1f19db681ba654f2bdf067bd8a7edf08f)
+[^d8b64eabee134cd516b382956e2aa58c194d5886]: See [commits d8b64ea](https://github.com/DivineDominion/mac-appdev-code/commit/d8b64eabee134cd516b382956e2aa58c194d5886),  [b4c63ff](https://github.com/DivineDominion/mac-appdev-code/commit/b4c63ff803672889f7683aae72554d9538c7f335), [6cfabcf](https://github.com/DivineDominion/mac-appdev-code/commit/6cfabcf026b516b69a30873aa30ea68de79a6aa9), and [f9d96aa](https://github.com/DivineDominion/mac-appdev-code/commit/f9d96aa1f19db681ba654f2bdf067bd8a7edf08f)
 
 ### Renaming Boxes and Items
 
@@ -484,7 +484,7 @@ With these changes in place, the item title change test passes, too.
 
 [^mvc]: Like, 1988-classic. See [Wikipedia's MVC history](http://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller#History) for links to articles on the topic.
 
-[^f4abec848fdd107fff3d4badeaa83877bfaf930e]: [commit f4abec8](https://github.com/DivineDominion/mac-appdev-code/commit/f4abec848fdd107fff3d4badeaa83877bfaf930e)
+[^f4abec848fdd107fff3d4badeaa83877bfaf930e]: See [commit f4abec8](https://github.com/DivineDominion/mac-appdev-code/commit/f4abec848fdd107fff3d4badeaa83877bfaf930e)
 
 
 ### Removing Items and Boxes
