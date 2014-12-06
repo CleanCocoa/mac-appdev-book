@@ -102,7 +102,7 @@ With the changes in place, the `DisplayBoxesAndItems` Application Service now do
         // ...
     }
 
-The `subscribe` method is interesting. Thanks to Swift generics, I can specify an event type using `TheClassName.self` and pipe it through to the specified block to easily access the values.
+The `subscribe` method is interesting. Thanks to [Swift generics][generics], I can specify an event type using `TheClassName.self` and pipe it through to the specified block to easily access the values.
 
 The conversion of `NSNotification` to the appropriate domain event takes place in the `DomainEventPublisher`:
 
@@ -119,7 +119,7 @@ The conversion of `NSNotification` to the appropriate domain event takes place i
 
 It takes some getting used to Swift to read this well. Let's stick to the client code from above and see what subscribing to `BoxProvisionedEvent`s does:
 
-* The type of the `eventKind` argument should the type (not instance!) of a decendant of `DomainEvent`. That's what `BoxProvisionedEvent.self` is. You don't pass in an actual event, but it's class (or "type"). Interestingly, this value is of no use but to set `T`, the generics type placeholder.
+* The type of the `eventKind` argument should the type (not instance!) of a descendant of `DomainEvent`. That's what `BoxProvisionedEvent.self` is. You don't pass in an actual event, but it's class (or "type"). Interestingly, this value is of no use but to set `T`, the generics type placeholder.
 * The `block` yields an event object of type `T` (an instance of `BoxProvisionedEvent`)
 * The `eventType` is an enum value. In this example case, this will be `BoxProvisionedEvent.eventType`, which returns the enum value `DomainEventType.BoxProvisioned`. `DomainEventType`s have a property called `name` to return a string which becomes the notification name:
 
@@ -155,4 +155,6 @@ It took some trial and error to get there, but it's pretty clever if I may say t
 -->
 
 [^d0a8c7b56296961a662bd1681b134dfe550adfff]: [commits d0a8c7b](https://github.com/DivineDominion/mac-appdev-code/commit/d0a8c7b56296961a662bd1681b134dfe550adfff),  [9a8f41d](https://github.com/DivineDominion/mac-appdev-code/commit/9a8f41d29b1bd48eb1d6f7475699da0d0d925c2b),  [a2b0f4c](https://github.com/DivineDominion/mac-appdev-code/commit/a2b0f4c578abbe4407d5cc06b7fc423472cb8151), and [74cf804](https://github.com/DivineDominion/mac-appdev-code/commit/74cf8041d561e6ecbe696dbb8f9c5d6046005405)
+
+[generics]: http://swiftyeti.com/generics/
 

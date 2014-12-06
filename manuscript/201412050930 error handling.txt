@@ -106,7 +106,7 @@ I opt in to using this method in `CoreDataBoxRepository`, too, in order to gener
 
 Using a real logger object would be nice, though. It'd be trivial to swap out the logging mechanisms and logging templates. I don't think it's worth the effort for this project, though.
 
-Using [CocoaLumberjack][] to create log files on disk and print to the console simulteneously is a nice option, too. In fact, I use CocoaLumberjack in the Word Counter to generate ongoing reports during beta tests. If something goes wrong, people can simply e-mail the reports to me. CocoaLumberjack is dead-simple to use, so I won't explain it in the scope of this book, nor will I use it in the code to keep it free from external dependencies.
+Using [CocoaLumberjack][] to create log files on disk and print to the console simultaneously is a nice option, too. In fact, I use CocoaLumberjack in the Word Counter to generate ongoing reports during beta tests. If something goes wrong, people can simply e-mail the reports to me. CocoaLumberjack is dead-simple to use, so I won't explain it in the scope of this book, nor will I use it in the code to keep it free from external dependencies.
 
 With logging in place, it'll be easier to find and fix fatal problems in the code.
 
@@ -141,7 +141,7 @@ Only if the view optimistically adds components to itself do you have to actuall
 
 #### Prevent Problems from Happening
 
-If 99% of Core Data errors are developer errors, better put automatted tests in place and see what happens if for example the user enters faulty data. Data validation is part of the business rules. You should codify them and prevent validation errors from happening instead of trying to save the context with invalid data and recover.
+If 99% of Core Data errors are developer errors, better put automated tests in place and see what happens if for example the user enters faulty data. Data validation is part of the business rules. You should codify them and prevent validation errors from happening instead of trying to save the context with invalid data and recover.
 
 For example, the relation from `ManagedItem` to `ManagedBox` is required. When the user deletes a `ManagedBox`, associated `ManagedItem`s are deleted as well. This way you don't keep orphaned objects around. There's no way to manipulate existing relationships besides deleting entities, so there's no way to get an invalid entity because of missing relationship targets. Check ✓
 
@@ -160,7 +160,7 @@ When I empty a box title text field, the app crashes. I didn't expect this to ha
 * `BoxNode`'s `didSet` property observer
 * `ManagedBox` observing changes to `Box`
 
-Automatted tests to the rescue: 
+Automated tests to the rescue: 
 
 * `testChangingFetchedBoxTitle_ToEmptyString_PersistsChanges()` passes, to changing the `Box` doesn't produce problems for `ManagedBox`
 * `testChangeBoxNodeTitle_ToEmptyString_PersistsChanges()` works, too, verifying that all project code doesn't fail 

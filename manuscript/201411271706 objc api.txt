@@ -1,4 +1,4 @@
-## Access rights VS laisser-faire Objective-C
+## Access rights VS laissez-faire Objective-C
 
 This works well in view controller code:
 

@@ -30,7 +30,7 @@ Another alternative is to model it as such:
 
 The service will be an adapter to both domain and infrastructure this way. It'd work, but it's not what I aim for.
 
-To model the expectation of "provision first, obtain ID second" more explicitely, one could introduce a callback to write the ID to, like so:
+To model the expectation of "provision first, obtain ID second" more explicitly, one could introduce a callback to write the ID to, like so:
 
     provisionBox(andReportBoxId: (BoxId) -> ())
 
@@ -160,7 +160,7 @@ Quoting [Jeff Gilbert and Conrad Stoll][viper] here, the main parts of VIPER are
 > * _Entity:_ contains basic model objects used by the Interactor.
 > * _Routing:_ contains navigation logic for describing which screens are shown in which order.
 
-So `ManageBoxesAndItems` is esentially the Interactor, `DisplayBoxesAndItems` the Presenter with its partner `HandleBoxAndItemModifications` being an adapter to the port its view defines. `Box` and `Item`, finally, are the entities. There's no navigation, thus no routing.
+So `ManageBoxesAndItems` is essentially the Interactor, `DisplayBoxesAndItems` the Presenter with its partner `HandleBoxAndItemModifications` being an adapter to the port its view defines. `Box` and `Item`, finally, are the entities. There's no navigation, thus no routing.
 
 [viper]: http://www.objc.io/issue-13/viper.html
 

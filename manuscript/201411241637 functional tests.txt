@@ -101,11 +101,11 @@ I end up having to use the explicit version:
         XCTFail("no boxes found")
     }
 
-### Wireframing the Path to "Green"
+### Wire-framing the Path to "Green"
 
 Now the test fails, of course.
 
-In borad sketches, this is what's left to do to connect the dots:
+In broad sketches, this is what's left to do to connect the dots:
 
 * I have to make a repository available to the view. I'll do this via **Application Service**s.
 * I have to add an actual Application Service layer. Remember, this is the client of the domain.

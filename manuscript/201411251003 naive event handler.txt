@@ -17,7 +17,7 @@ In other words, view controllers coordinate views to form a more complex user in
 
 An event handler in the application layer is an interested party. It understands nothing about buttons and outlines. Instead, it answers questions like "How many `Item`s are there in this `Box`?" and takes care of events like "Create a new `Box`."
 
-Handling events in the application layer instead of the view controller introduces the option to phrase the events in a way suitable to the task. You can refer to the **Ubiquituous Language** of your project to describe these events in code: talk in terms of "create `Box`" instead of "`addBoxButton` clicked".
+Handling events in the application layer instead of the view controller introduces the option to phrase the events in a way suitable to the task. You can refer to the **Ubiquitous Language** of your project to describe these events in code: talk in terms of "create `Box`" instead of "`addBoxButton` clicked".
 
 ### Leverage the Delegate Pattern
 
@@ -38,7 +38,7 @@ I tend to phrase protocols this way because it makes the role clear and reads pr
 
 How to name such **Application Services**?
 
-I favor good names. Back in Java-land, the code was cluttered with `XYZService`s and `ABCManager`s. These nouns don't convey a lot of meaning. It requires knowlege of the **Ubiquituous Language** to come up with better names. Most of the really good names will be found in the domain, though. Even the domain will have services to carry out complex actions.
+I favor good names. Back in Java-land, the code was cluttered with `XYZService`s and `ABCManager`s. These nouns don't convey a lot of meaning. It requires knowledge of the **Ubiquitous Language** to come up with better names. Most of the really good names will be found in the domain, though. Even the domain will have services to carry out complex actions.
 
 For example, the Word Counter domain includes a `Recorder` and various `Bookkeeper`s. The former takes care of the various ways to track words (all words, words per application, words in project files) while the latter holds on to the actual data in memory, incrementing counters.
 
@@ -450,13 +450,13 @@ Just try read it: "Box and item service handles item list events. Box did change
 
 The real `Box` _should_ change. The user-facing component _did_ change.
 
-How wouly you phrase it?
+How would you phrase it?
 
 I decide to use an active form for this method. Similar to `provisionNewBoxId`, this method will be called `changeBoxTitle`. This diverges from Cocoa naming conventions, but it makes more sense. An overall observation when looking at real _Domain-Driven Design_ project code is that the code reads well. I hope you agree that this is more important than adhering to naming conventions, especially if you don't expose a public API.[^f4abec848fdd107fff3d4badeaa83877bfaf930e]
 <!--ct: commit: #f4abec848fdd107fff3d4badeaa83877bfaf930e persist title changes to Box -->
 
 
-Similarily, I want `changeItemTitle` to look like this:
+Similarly, I want `changeItemTitle` to look like this:
 
     public func changeItemTitle(itemId: ItemId, title: String, inBox boxId: BoxId) {
         let repository = ServiceLocator.boxRepository()
