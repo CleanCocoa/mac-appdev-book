@@ -1,33 +1,36 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
+
   <head>
-    <meta charset="utf-8">
+    <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Exploring Mac App Development Strategies by DivineDominion</title>
+    <meta name="description" content="Exploring Mac App Development Strategies : Patterns &amp; Best Practice for Clean Software Architecture on the Mac with Swift and Tests">
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Exploring Mac App Development Strategies</title>
   </head>
+
   <body>
-    <div class="wrapper">
-      <header>
-        <h1>Exploring Mac App Development Strategies</h1>
-        <p>Patterns &amp; Best Practice for Clean Software Architecture on the Mac with Swift and Tests</p>
 
-        <p class="view"><a href="https://github.com/DivineDominion/mac-appdev-book">View the Project on GitHub <small>DivineDominion/mac-appdev-book</small></a></p>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/DivineDominion/mac-appdev-book">View on GitHub</a>
 
+          <h1 id="project_title">Exploring Mac App Development Strategies</h1>
+          <h2 id="project_tagline">Patterns &amp; Best Practice for Clean Software Architecture on the Mac with Swift and Tests</h2>
 
-        <ul>
-          <li><a href="https://github.com/DivineDominion/mac-appdev-book/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/DivineDominion/mac-appdev-book/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/DivineDominion/mac-appdev-book">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/DivineDominion/mac-appdev-book/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/DivineDominion/mac-appdev-book/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
         <h1>
 <a id="download-the-book" class="anchor" href="#download-the-book" aria-hidden="true"><span class="octicon octicon-link"></span></a>Download the Book</h1>
 
@@ -66,6 +69,7 @@
 </li>
 <li>Part 4: <em>Using Core Data for Convenience (Upcoming!)</em>
 </li>
+<li>Epilogue</li>
 <li>Appendix
 
 <ul>
@@ -97,13 +101,76 @@
 <li><a href="https://github.com/DivineDominion/mac-appdev-book">Book Manuscript on GitHub</a></li>
 <li><a href="https://github.com/DivineDominion/mac-appdev-code">Project Code on GitHub</a></li>
 </ul>
+
+<h1>
+<a id="more-reading" class="anchor" href="#more-reading" aria-hidden="true"><span class="octicon octicon-link"></span></a>More Reading</h1>
+
+<h2>
+<a id="interesting-links" class="anchor" href="#interesting-links" aria-hidden="true"><span class="octicon octicon-link"></span></a>Interesting Links</h2>
+
+<ul>
+<li>
+<a href="https://developer.apple.com/library/mac/samplecode/SourceView/Listings/BaseNode_m.html#//apple_ref/doc/uid/DTS10004441-BaseNode_m-DontLinkElementID_6">SourceView sample code (Objective-C)</a>: Example application by Apple where <code>NSOutlineView</code> is used. Good for getting started, although the example app doesn't run properly anymore -- I don't see any images in the source view.</li>
+<li>
+<a href="http://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html">Clean Architecture</a>: Uncle Bob's explanation of the architectural concepts I tried to adhere to. Goes beyond Hex</li>
+<li>
+<a href="https://www.youtube.com/watch?v=WpkDN78P884">Architecture -- The Lost Years (Video)</a>: This talk introduced me to Hexagonal and Clean Architecture.</li>
+<li>
+<a href="http://objectsonrails.com">Avdi Grimm: Objects on Rails</a>: A free e-book which taught me how to decouple my application from Ruby on Rails. This one got me hooked on thinking past using the framework properly.</li>
+</ul>
+
+<h2>
+<a id="interesting-books" class="anchor" href="#interesting-books" aria-hidden="true"><span class="octicon octicon-link"></span></a>Interesting Books</h2>
+
+<p>I recommend reading the following books, ordered by subjective significance to the topic. The top four are really worth your money, so I added amazon affiliate links to them. If you buy from these links, I get a small kick-back from amazon. It won't cost you anything, though.</p>
+
+<ul>
+<li>
+<p><strong>Vaughn Vernon (2013):  <em><a href="http://www.amazon.com/gp/product/0321834577/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=390957&amp;creativeASIN=0321834577&amp;linkCode=as2&amp;tag=macappdev-20&amp;linkId=T5QYTXVZBTZ2VZPU">Implementing domain driven design</a></em>, Upper Saddle River, NJ: Addison-Wesley.</strong></p>
+
+<p>— Lots of practical examples and explanation for the patterns Evans laid out.</p>
+</li>
+<li>
+<p><strong>Eric Evans (2006):  <em><a href="http://www.amazon.com/gp/product/0321125215/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=390957&amp;creativeASIN=0321125215&amp;linkCode=as2&amp;tag=macappdev-20&amp;linkId=2HZ546ZCPKZ47SQQ">Domain-Driven Design. Tackling complexity in the heart of software</a></em>, Upper Saddle River, NJ: Addison-Wesley.</strong></p>
+
+<p>— Full of good examples and refactorings itself but a little light on actually solving implementation problems.</p>
+</li>
+<li>
+<p><strong>Michael C. Feathers (2011):  <em><a href="http://www.amazon.com/gp/product/0131177052/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=390957&amp;creativeASIN=0131177052&amp;linkCode=as2&amp;tag=chritietwork-20&amp;linkId=VHKZJPCXDDHJK7X7">Working effectively with legacy code</a></em>, Upper Saddle River, NJ: Prentice Hall Professional Technical Reference.</strong></p>
+
+<p>— Helps to learn decoupling code incrementally and how to test hard-to-test parts. That's where I learned to provide means to reset singletons, and that it's better to wrap <code>NSNotificationCenter</code> in order to replace the wrapper in tests than not test notifications at all.</p>
+</li>
+<li>
+<p><strong>Steve Freeman and Nat Pryce (2010):  <em><a href="http://www.amazon.com/gp/product/0321503627/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=390957&amp;creativeASIN=0321503627&amp;linkCode=as2&amp;tag=macappdev-20&amp;linkId=5FQWUPZJHWVNLAD6">Growing object-oriented software, guided by tests</a></em>, Boston: Pearson Education.</strong></p>
+
+<p>— This book has taught me so much about Test-Driven Development! I figured out when to use functional tests, why it's beneficial to start with a failing test on the system level to guide development, and how to create multi-layered applications with test fakes all thanks to this book.</p>
+</li>
+<li>
+<p><strong>Ivar Jacobson, Magnus Christerson, Patrik Jonsson, and Gunnar Övergaard (1990):  <em>Object-Oriented Software Engineering. A Use Case Driven Approach</em>, Wokingham: Addison-Wesley.</strong></p>
+
+<p>— Actually a recommendation by Uncle Bob in <em>Architecture: The Lost Years</em>. It taught me to think about application services and use case objects. The book's focus is on architecture, not on code. Useful practices. You may get this one used for a few dollars. I found it in my local university's library.</p>
+</li>
+<li>Scott Millett (2014):  <em>Practicing Domain-Driven Design. Practical advice for teams implementing the development philosophy of Domain-Driven Design. With code examples in C# .NET</em>, Scott Millett.</li>
+<li>Robert C. Martin (2009):  <em>Clean Code. A Handbook of Agile Software Craftsmanship</em>, Upper Saddle River: Prentice Hall.</li>
+<li>Andy Oram and Greg Wilson (Eds.) (2007):  <em>Beautiful Code</em>, Beijing: O'Reilly.</li>
+<li>
+<p>Sandi Metz (2013):  <em>Practical object-oriented design in Ruby: an agile primer</em>, Upper Saddle River, NJ: Addison-Wesley.</p>
+
+<p>— A really good read. Sadly, it's about Ruby, not about Swift or Objective-C, but you may want to peek into it anyway.</p>
+</li>
+</ul>
       </section>
-      <footer>
-        <p>This project is maintained by <a href="https://github.com/DivineDominion">DivineDominion</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Exploring Mac App Development Strategies maintained by <a href="https://github.com/DivineDominion">DivineDominion</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
-    <script src="javascripts/scale.fix.js"></script>
+
     
+
   </body>
 </html>
