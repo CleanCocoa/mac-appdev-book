@@ -1,20 +1,29 @@
 ## Preparing the UI: Create View Controllers and Test Their Setup
 
-Coming from my Objective-C projects, I continue to create a Nib file for each window. I ignore the notion of Storyboards on Mac OS for now.
+We'll ignore Storyboards for the Mac SDK for now when creating the view. This example project will have just one window and no transitions, so there's no benefit in using Storyboards.
 
-I create the files according to the following principles:
+I adopted the following practice for creating views:
 
-* Use a `NSWindowController` subclass for each window or panel, and use a `NSViewController` subclass for each logical unit of the view.
-* When the unit is re-used, put it into its own Nib file and connect the outlets there.
+* Use a custom `NSWindowController` subclass for each window or panel and give it its own Nib file.
+* Use a designated `NSViewController` subclass for each logical unit of the view. In the case of the Box-and-Item-management view, there is only one such component.
 * When the unit is used only once, wire its outlets up from within the window's Nib.
+* When the unit is re-used, put it into its own Nib file and connect the outlets there instead of the window's Nib.
 
 Not every button needs its own controller, but buttons modifying a list belong to the list's view controller.
+
+So we take the following steps:
 
 * Add `ItemManagementWindowController` and the accompanying Nib file. 
 * Add an `NSOutlineView` to the window and bind it to a `ItemViewController` which worries about data handling exclusively. 
 * Add an `NSTreeController` to the Nib to manage the actual `NSOutlineView` data. It's strongly referenced by the `ItemViewController`.
 
-Remove every notion of `NSWindow` from the `AppDelegate` and show `ItemManagementWindowController`'s window from within `applicationDidFinishLaunching()`. That suffices to show the user interface.
+
+### Remove the Burden of UI from AppDelegate
+
+The Mac Cocoa project template used `AppDelegate` as the owner of the main window. I tend to put `AppDelegate` into Infrastructure. The user interface belongs elsewhere, so factoring the main window out into its own controller will both slim down `AppDelegate` and make the overall app design more supple instantly.
+
+Thus, remove every notion of `NSWindow` from the `AppDelegate` and show `ItemManagementWindowController`'s window from within `applicationDidFinishLaunching()`. That suffices to show the user interface.[^5090735c386896e031551dc9e0c47a3e5d351d83]
+<!--ct: commit #5090735c386896e031551dc9e0c47a3e5d351d83-->
 
 I don't trust my ability to use Interface Builder a lot, and I assume I will get Cocoa Bindings wrong from time to time. Thus, I add regression tests to show I have set up everything as intended:
 
@@ -38,7 +47,14 @@ I don't trust my ability to use Interface Builder a lot, and I assume I will get
 
 <!--ct: 20141124163838 explicit bindings make things worse-->
 
-I hunted for a bug for a while only to find the Cocoa Binding from `NSOutlineView` to `NSTreeController` is in place _although I don't set it explicitely_. If I _do_, the behavior goes all nuts. It seems that the column bindings make up for the rest. I have no clue how to verify this kind of automatted set-up in the Nib without explicit bindings slipping by. Parsing the Nib XML is out of question.<!--ct: commit #dc824da1016025abd8be61fafb560995527dccfb-->
+I hunted for a bug for a while only to find the Cocoa Binding from `NSOutlineView` to `NSTreeController` is in place _although I don't set it explicitely_. If I _do_, the behavior goes all nuts. It seems that the column bindings make up for the rest. I have no clue how to verify this kind of automatted set-up in the Nib without explicit bindings slipping by. Parsing the Nib XML is out of question.[^dc824da1016025abd8be61fafb560995527dccfb]
+<!--ct: commit #dc824da1016025abd8be61fafb560995527dccfb-->
+
+[^dc824da1016025abd8be61fafb560995527dccfb]: [commit dc824da](https://github.com/DivineDominion/mac-appdev-code/commit/dc824da1016025abd8be61fafb560995527dccfb)
+[^5090735c386896e031551dc9e0c47a3e5d351d83]: [commit 5090735](https://github.com/DivineDominion/mac-appdev-code/commit/5090735c386896e031551dc9e0c47a3e5d351d83)
+
+
+### Create `XCTestCase` Extensions with Test Helpers
 
 The method `hasBinding(_,binding:,to:,throughKeyPath:)` is a little helper to inspect the underlying bindings dictionary in a readable fashion:
 
@@ -54,17 +70,17 @@ The method `hasBinding(_,binding:,to:,throughKeyPath:)` is a little helper to in
 
 Now I know that the basic setup is working.
 
-Was the sudden explosion of files worth it?
+### A Note on Splitting Concerns Into Objects and Creating so Many Files
 
-Couldn't we've kept the AppDelegate to manage the window?
+Was the sudden explosion of files worth it? Couldn't we've kept the AppDelegate to manage the window?
 
-I decided to to this move not because it's necessary to keep the code clean right now. It was a premature optimization, you could say.
+I decided to to this move not because it's necessary to keep the code clean right now. It was a premature optimization, you could say, because the app still doesn't do a thing. You'd be right, but the additions are still trivial, so I move a bit faster than strictly necessary.
 
-I did this because I know where I'll be heading. I'm still trying to replicate the basic setup of the Word Counter project but stumble upon Swift's pecularities from time to time.
+I did this move because I know where I'll be heading. I'm still trying to replicate the basic setup of the Word Counter project but stumble upon Swift's pecularities from time to time.
 
 Once we begin to send messages here and there, the split between objects will make a lot more sense. We're getting there.
 
-I am relieved once the "add" button does what is is created to do. To test controls such as buttons, there's no need to simulate clicks in the tests. Instead, it suffices to verify it is wired to an action method and that invoking the method does what it's expected to do.
+To test controls such as buttons, there's no need to simulate clicks in the tests. Instead, it suffices to verify it is wired to an action method and that invoking the method does what it's expected to do.[^c5c351b54e53a5d22b44c20e376bca521f451e54]
 
     // Test that there's a button outlet
     func testAddItemButton_IsConnected() {
@@ -88,5 +104,9 @@ I am relieved once the "add" button does what is is created to do. To test contr
         XCTAssertEqual(itemNodeCount(), 1, "adds item to tree")
     }
 
-<!--ct: commit #c5c351b54e53a5d22b44c20e376bca521f451e54 initial view setup -->
-<!--ct: commit #7648d603c832c5d7cd41a041da5d3e4114f7c955 switch to outline view-->
+Finally, once the "add" button does what is is created to do, we know that the tests are configured correctly.
+
+<!--ct: commit #c5c351b54e53a5d22b44c20e376bca521f451e54 initial view setup
+#7648d603c832c5d7cd41a041da5d3e4114f7c955 switch to outline view-->
+
+[^c5c351b54e53a5d22b44c20e376bca521f451e54]: [commit c5c351b](https://github.com/DivineDominion/mac-appdev-code/commit/c5c351b54e53a5d22b44c20e376bca521f451e54) and [7648d60](https://github.com/DivineDominion/mac-appdev-code/commit/7648d603c832c5d7cd41a041da5d3e4114f7c955)

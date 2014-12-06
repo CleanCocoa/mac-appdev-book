@@ -1,5 +1,22 @@
 ## How to Load Core Data `NSManagedObject`s in Tests
 
+For the most part, I am going to develop the example application in a Test-Driven manner. I will write tests first and add the user interface components and necessary service functionality later. You may call these functional tests.
+
+To get started, though, I will focus on unit tests for both the Core Data objects and the user interface components.
+
+The Core Data managed objects are called `ManagedBox` and `ManagedItem`. They mostly have a title and the relationship to one another:
+
+![Core Data model](assets/20141206190120_coredata.png)
+
+I add class-level helper methods to these to make [creating new Core Data entities][objc1] a bit easier. It will work like this: 
+
+    ManagedItem.insertManagedItem(anItemId, 
+        title: "the title", inManagedObjectContext: aManagedObjectContext)
+
+Now I want to add tests to verify this helper method actually adds an entity to the context. Since the method is trivially simple, the tests will also show that Core Data-specific tests work, with their own in-memory scratchpad `NSManagedContext`.
+
+Turns out this is enough of a challenge for me with Swift.
+
 Swift introduced access right management. The test target wouldn't know about the program's source files unless you do one of two things:
 
 1. Declare classes and methods to test `public`, so they are visible outside the app source module. This may become somewhat tedious.
@@ -11,8 +28,11 @@ Although it's easier to add sources to the test target, this may not be what you
 
 <!--ct: commit #2f0f329e3cbec9f624cc575b717291989c960595 "get CoreDataItemRepo tests to pass"-->
 
-Unit testing becomes harder for Core Data `NSManagedObject` subclasses this way, though. Adding these to the test target will make the tests compile. Upon test execution, you will trigger an [invisible breakpoint in bytecode][cdbp].
+Unit testing becomes harder for Core Data `NSManagedObject` subclasses this way, though. Adding these to the test target will make the tests compile. Upon test execution, though, you will trigger an [invisible breakpoint in bytecode][cdbp].
 
-It may help to add `@objc(YourManagedObjectSubclass)`. It didn't in my case, though. I had to remove the `NSManagedObject` subclass from the test target and make its interface public.
+It may help to add `@objc(YourManagedObjectSubclass)`. It didn't in my case, though. I had to remove the `NSManagedObject` subclass from the project's test target and make its interface public.
+
+From now on, I will resort to making tested code public.
 
 [cdbp]: http://stackoverflow.com/questions/24841856/swift-breakpoint-in-coredata-library
+[objc1]: http://www.objc.io/issue-4/core-data-models-and-model-objects.html

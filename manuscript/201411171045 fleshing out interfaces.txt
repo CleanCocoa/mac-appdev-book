@@ -1,14 +1,24 @@
 ## Introduce Repository and Its Collaborators for Tests
 
-<!--ct: §201411170954-->
+`Box` and `Item` objects will each have their own IDs. To make my life easier, IDs will be unique random 64-bit integers. Each new ID has to be checked against the pool of existing objects to achieve uniqueness. That's the responsibility of a Repository.
 
-When I create subclasses of my own classes in tests, the subclasses can only override methods which are public, since the tests are another module. This way, overriding private methods is not an option to change the behavior of a class. Weirdly enough, it worked in Objective-C.
+To test that the Repository does return unique IDs, we have to test that it first checks a random ID against the pool of existing ones, and then generates new ones until the generated ID is free.
 
-<!--ct: TODO reference pattern in "Legacy Code"-->
+Let's say `nextId()` shall return a unique ID. `integerId()` then is a private method to generate an ID which `nextId()` has to check for uniqueness.
 
-Now that I think of my code as a module with a public interface, test stretegies involving method overrides have to be solved differently.
+To test this with a replacement ID generator, you can do the following:
 
-I want to ensure the repository generates IDs until an ID is free. Duplicates are not allowed. I could override the `integerId()` method and make it public:
+1. Take two pre-defined IDs, then
+2. make the ID generator return the first ID on the first call, the second ID on consecutive calls.
+3. Call `nextId()` only once and assume that the second ID is returned, thus verifying that the Repository does check the ID generator's results and tries again.
+
+I would've wanted to override the ID generating method `integerId()` in a test Repository subclass. When I create subclasses of my own classes in tests, though, the subclasses can only override methods which are public, since the tests reside in another module than the application itself. This way, overriding private methods is not an option to change the behavior of a class. Weirdly enough, it worked well in Objective-C.
+
+<!--ct: TODO reference the pattern from "Legacy Code"-->
+
+Now that I have to think of my code as a module with a public interface, common testing strategies involving method overrides have to be solved differently.
+
+I want to ensure the repository generates IDs until an ID is free. Duplicates are not allowed. I could still override the `integerId()` method and make it public:
 
     // Source module
     public class CoreDataItemRepository: NSObject, ItemRepository {
@@ -32,9 +42,9 @@ I want to ensure the repository generates IDs until an ID is free. Duplicates ar
 
 With this `TestRepository` in hand, I can reserve `ID1` and test that the rest of the default repository implementation ensures another attempt is made at finding a free ID.
 
-Making ID-generation public is a bad idea, though. It's an implementation detail I don't want to expose. I don't want to make decisions like these that early on in the process. When dealing with legacy code, sometimes you have no choice but alter the public interface of a class and promise to yourself to not violate certain rules. 
+Making ID-generation public is a bad idea, though. It's an implementation detail of the Repository I don't want to expose. When dealing with legacy code, sometimes you have no choice but alter the public interface of a class and promise to yourself to not violate certain rules. We're not dealing with legacy code, though. Let's aim for a clean API.
 
-Instead, recognize ID generation as a distinct responsibility and extract it into its own interface:
+First, recognize ID generation as a distinct responsibility and extract it into its own interface:
 
     public protocol GeneratesIntegerId {
         func integerId() -> IntegerId
@@ -106,13 +116,13 @@ Now I can provide a test generator:
         }
     }
 
-An the test:
+And here's the test which puts the test generator into place via Dependency Injection (which, in this case, means we pass the generator to the Repository initializer):
 
     func testNextId_WhenGeneratedIdIsTaken_ReturnsAnotherId() {
         let testGenerator = TestIntegerIdGenerator()
         repository = CoreDataItemRepository(managedObjectContext: self.context, integerIdGenerator: testGenerator)
         let existingId = ItemId(testGenerator.firstAttempt)
-        ManagedItem .insertManagedItem(existingId, title: "irrelevant", inManagedObjectContext: self.context)
+        ManagedItem.insertManagedItem(existingId, title: "irrelevant", inManagedObjectContext: self.context)
         
         let itemId = repository!.nextId()
         
@@ -120,6 +130,6 @@ An the test:
         XCTAssertEqual(itemId, expectedNextId, "Should generate another ID because first one is taken")
     }
 
-Strangely enough, I have the impression that Swift forces me to make good decisions design-wise, wheras I expect more experienced Cocoa developers to consider all of this backward, or ugly. I expect them to think this is all too much like Java: create a lot of interfaces (format protocols) and service objects and stuff like that.
+Strangely enough, I have the impression that Swift forces me to make good decisions design-wise, while I expect more experienced Cocoa developers to consider all of this backward, or ugly. I expect them to think this is all too much like Java: create a lot of interfaces (format protocols) and service objects and stuff like that.
 
-I think the code benefits from small, stateless objects like these. They enrichen the model and keep interface lean.
+The code benefits from small, stateless objects like these. They make the model richer and keep the interface lean.

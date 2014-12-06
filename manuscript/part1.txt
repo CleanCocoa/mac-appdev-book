@@ -2,7 +2,7 @@
 
 After a few experiments and a lot of conceptual drawings, I knew where I wanted to go with the Word Counter. I wouldn't start with a blank slate. I think to have existing code to port makes taking Swift for a test drive easier. You never know whether errors are due to a lack of understanding Swift, the new API, or an actual implementation problem.
 
-I dedicate this part to making the switch and getting everything to run, including:
+I dedicate this part to making the switch to Swift and getting everything to run, including:
 
 1. Get Core Data and related tests running
 2. Prepare the user interface in its own layer
@@ -10,4 +10,4 @@ I dedicate this part to making the switch and getting everything to run, includi
 
 In the second part, I'll cover the actual application's functionality.
 
-This part is mostly made up of longer notes or journal entries. They aren't meant to tell a coherent story. They are meant to provide a view over my shoulder from time to time. I hope to include enough details so everyone can follow easily.
+This part is mostly made up of longer notes or journal entries. They aren't meant to tell a coherent story. They are meant to provide a view over my shoulder instead. I hope to include enough details so you can follow easily.
