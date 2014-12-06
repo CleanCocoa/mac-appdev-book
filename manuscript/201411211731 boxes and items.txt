@@ -1,8 +1,10 @@
-Some stuff seems to work quite right now. To make it more interesting, I add the notion of `Box`es to the example project: a `Box` contains various `Item`s but no other `Box`.
+## Finally, Add `Box` to the `Item`-Centric Application
 
-This is what I modeled in the Word Counter: `Project`s containing `Paths`. Using an `NSOutlineView` is a bit trickier than dealing with a linear `NSTableView`.
+A lot of stuff seems to work quite right now. To make it more interesting, I finally add `Box`es to the example project. Recall that a `Box` contains various `Item`s but no other `Box`.
 
-Thus I found how nice Swift is for modeling data containers. With Objective-C, I'd have to provide custom initializers to distinguish `Box` from `Item` by setting properties like `isLeaf` appropriately. Using Swift, I can take a naive approach and still spend less time dealing with it:
+This mimicks my model of the upcoming Word Counter feature: `Project`s contain `Path`s. Using an `NSOutlineView` with two kinds of nodes is a bit trickier than dealing with a linear `NSTableView`.
+
+From now on I find how nice Swift is for modeling data containers. With Objective-C, I'd have to provide custom initializers for a general `TreeNode` or `BaseNode` to distinguish box from item representations, perhaps by setting properties like `isLeaf` appropriately. Using Swift, I can take the naive approach of modelling classes and still spend less time dealing with it thanks to initial property values:
 
     @objc(TreeNode)
     public protocol TreeNode {
@@ -16,14 +18,14 @@ Thus I found how nice Swift is for modeling data containers. With Objective-C, I
         dynamic var title: String = "New Box"
         dynamic var count: UInt = 0
         dynamic var children: [TreeNode] = []
-        dynamic var isLeaf: Bool = false
+        dynamic var isLeaf: Bool = false     // Denotes it's a Box
     }
 
     class ItemNode: NSObject, TreeNode {
         dynamic var title: String = "New Item"
         dynamic var count: UInt = 0
         dynamic var children: [TreeNode] = []
-        dynamic var isLeaf = true
+        dynamic var isLeaf = true           // Denotes it's an Item
     }
 
 Using `dynamic` here enables KVO, which is a must for `NSObjectController` and Cocoa Bindings. Apart from that annotation, these class definitions provide necessary default values without any `init()` boilerplate necessary.
@@ -32,6 +34,8 @@ Maybe I won't need to address different classes in the end. Maybe it'd suffice t
 
 Why do I keep the classes nevertheless?
 
-I think the mental mapping of classes to things in the model is pretty straightforward. You don't need to decode a lot to understand the difference. This sistinction is modelled explicitely and thus easy to grasp: it would only make me slower to work with an implicit distinction based on attributes on a per-object level. Maybe not a lot slower, but still.
+I think the mental mapping of classes to things in the model is pretty straightforward. You don't need to decode a lot to understand the difference. Remembering to look at a property's value to find out what kind of node it is is harder than reading the object type. You'll benefit from this in the long run. Clean code is code reading more like prose.
 
-Optimization can wait until later. I don't think I introduced unnecessary design complexity here either. you could say it's premature to model the distinction when no code relies on it. Fair enough. But it will in a matter of commits.
+The distinction between a box and item node is modelled explicitely as different types and thus is easy to understand. The alternate approach will only make you slower. Maybe not a lot slower as long as you remember what you're doing, but still.
+
+Optimization can wait until later. I don't think I introduced unnecessary design complexity here either. You could say it's premature to model the distinction when no code relies on it. Fair enough. But it will in just a matter of commits.

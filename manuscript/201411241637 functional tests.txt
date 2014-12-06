@@ -1,11 +1,19 @@
-I'm pretty confident the view does what it should do. It's all just basic stuff until now, although it took enough trial & error to reach this point. (I am talking about you, explicit Cocoa Bindings which break the view's behavior! <!--ct: §20141124163838-->)
+## Functional Testing Helps Transition to Adding Real Features
 
-There are two steps I could take now to quench my curiosity:
+I'm pretty confident the view does what it should do. It's all just basic stuff still, although it took enough trial & error to reach this point. (I am talking about you, explicit Cocoa Bindings which break the view's behavior! <!--ct: TODO link to §20141124163838-->)
 
-1. Verify that view-model updates result in visible `NSOutlineView` updates. Since the data doesn't change behind the scenes, I'm eager to see Cocoa Bindings in action. Then again, I already did test this in another app by changing a visible property after a couple of seconds. It was magic. No need to test Apple's internal frameworks, so I don't go down this path.
-2. Add functional tests to the test harness. This is what I'll do: in kind-of Behavior-Driven Development-style, I'll add a failing test which needs the whole app to work together in order to fulfil the promise. It's a test which is going to fail for quite some time.
+There are two steps I could take now to quench my curiosity.
 
-In the past I wrote failing functional tests for web applications only because they would drive out the REST API or user interaction pretty well. I haven't tried this for iOS or Mac applications, yet.
+First, verify that view-model updates result in visible `NSOutlineView` updates. Since the data doesn't change behind the scenes, I'm eager to see Cocoa Bindings in action. Then again, I already tested such a thing in another app: I changed the title behind with a timer after a couple of seconds. It felt like magic. Key-Value Observing is doing a lot of the hard work here. I can assure you that the Cocoa Bindings are set up correctly. There's no gain in testing Apple's internal frameworks, so I don't do anything in this direction.
+
+Second, I could add functional tests to the test harness. And this is what I'll do: in a fashion you usually find with Behavior-Driven Development (as opposed to Test-Driven Development, where you start at the innermost unit level), I'll add a failing test which will need the whole app to work together in order to pass. It's a test which is going to be failing for quite a while.
+
+In the past I wrote failing functional tests for web applications only because they would drive out the REST API or user interaction pretty well. I haven't tried this for iOS or Mac applications, yet. So let's do this.
+
+If you work by yourself, I think it's okay to check in your code with a failing test as long as it's guiding development. Don't check in failing unit tests just because you can't figure out how to fix the problem immediately.
+
+Having a failing functional test at all may not be okay with your team mates, though. After all, your versioning system should always be in a valid state, ready to build and to pass continuous deployment. Better not check in the failing test itself, then, or work on a local branch exclusively until you rebase your commit history when your feature is ready.
+
 
 ### First Attempt at Capturing the Expected Outcome
 
@@ -23,9 +31,13 @@ I want to go from user interface down to Core Data. That's a first step. This is
         XCTAssertEqual(allBoxes()!.first!.title, "New Box")
     }
 
-There's room for improvement: I expect that there's a record with a given `BoxId` afterwards, and that the view model contains a `BoxNode` with the same identifier. This is how the view, domain, and Core Data stay in sync. But the naive attempt is hideous:  `viewController.itemsController.arrangedObjects.childNodes!!.first.boxId`. I rather defer it to a later point.
+There's room for improvement: I expect that there's a record with a given `BoxId` afterwards, and that the view model contains a `BoxNode` with the same identifier. This is how the view, domain, and Core Data stay in sync. But the naive attempt is hideous:
 
-### Useful optionals-based tests
+    viewController.itemsController.arrangedObjects.childNodes!!.first.boxId
+
+I rather defer such tests until later to avoid these train wreck-calls.
+
+### Making Optionals-based Tests Useful
 
 On a side note, I think Swift's optionals are making tests weird. Consider this line:
 
@@ -66,7 +78,7 @@ We've surpassed runtime errors but end up not testing the `else` case anymore.
 
 Now that's become quite a monster.
 
-An alternate approach is to change `allBoxes()` to `() -> [ManagedBox]!` to get rid of at least the first clause. Swift tells us to stop using optionals when we don't need them. Here's the updated version:
+An alternate approach is to change `allBoxes()` to `() -> [ManagedBox]!` to get rid of at least the first clause. Swift teaches us to stop using optionals when we're positive we don't need them. Instead of `nil`, return an empty array. This makes the result much more predictable for the client. Here's the updated version:
 
     func allBoxes() -> [ManagedBox] {
         let request = NSFetchRequest(entityName: ManagedBox.entityName())
@@ -79,7 +91,7 @@ An alternate approach is to change `allBoxes()` to `() -> [ManagedBox]!` to get 
         return []
     }
 
-It's still unsafe to force-unwrap `first!` when the array is empty. I'd love to create my own assertion shorthand for this and call `XCTFail` in the case of runtime errors -- but I can't actually catch runtime errors in Swift. Very unfortunate. I wonder how Apple writes tests with these limitations.
+It's still unsafe to force-unwrap `first!` when the array is empty. I'd love to create my own assertion shorthand for this and call `XCTFail` in the case of runtime errors -- but I can't actually catch runtime errors in Swift. Very unfortunate. I wonder how Apple herself writes tests under such limitations.
 
 I end up having to use the explicit version:
 
@@ -89,15 +101,15 @@ I end up having to use the explicit version:
         XCTFail("no boxes found")
     }
 
-### Wireframing the path to "green"
+### Wireframing the Path to "Green"
 
 Now the test fails, of course.
 
 In borad sketches, this is what's left to do to connect the dots:
 
 * I have to make a repository available to the view. I'll do this via **Application Service**s.
-* I have to add an actual **Application Service** layer. Remember, this is the client of the domain.
-* The **Application Service** will issue saving `Box`es and `Item`s without knowing about Core Data.
+* I have to add an actual Application Service layer. Remember, this is the client of the domain.
+* The Application Service will issue saving `Box`es and `Item`s without knowing about Core Data.
 * I need a service provider of sorts. Something somewhere has to tell the rest of the application that `CoreDataBoxRepository` is the default `BoxRepository` protocol implementation. The process of setting this up takes place in the application delegate, but there's a global `ServiceLocator` singleton missing to do the actual look-up.
 * I may need to replace the `ServiceLocator`'s objects with test doubles.
 
@@ -125,7 +137,7 @@ The `ServiceLocator` can look like this:
         }
     }
 
-It's not very sophisticated, but it is enough to decouple the layers. An **Application Service** could now perform insertions like this:
+It's not very sophisticated, but it is enough to decouple the layers. An Application Service could now perform insertions like this:
 
     public func provisionBox() -> BoxId {
         let repository = ServiceLocator.boxRepository()

@@ -14,35 +14,53 @@ For example, in this project I try not to unit test every little detail. I want 
 
 ### Test-driven Development on the Unit Level VS Functional Tests
 
-In the past I would've tried hard to develop my code driven by tests. This poses an interesting challenge to the code's design, and it maybe affects the flexibility of the implementation.
+In the past I would've tried hard to develop my code driven by tests _on the unit level_.
 
-Let's say I know I have to add an algorithm which involves iterating over an array to sum up its elements. That's a straight-forward task.
+This poses an interesting challenge to the code's design, and it maybe affects the flexibility of the implementation.
 
-With a naive approach to Test-Driven Development, I'd start with testing the return value of an array like this:
+Let's say I have to add an algorithm `sum(input: [Int]) -> Int` which involves iterating over an array to sum up its elements. That's a straight-forward task none of us would need to think twice about.
 
-* 1 element in: return a fixed value
-* 1 other element in: resort to returning the only value in the array
-* 2 elements in: if the element count is 2, return the sum of both elements
-* 10 elements in: loop over the array and return a sum of its elements
+When doing hardcore Test-Driven Development, though, I'd to test the return value this algorithm according to the [Transformation Priority Premise][martin-tpp] like this:
 
-Only in the last case I actually _have_ to resort to using a loop to get the easiest implementation to satisfy the expectations. I've truly developed the code guided by tests, avoiding to jump too far ahead at every point in time. Uncle Bob poses the _Transformation Priority Premise_[^martin2013tpp] which totally makes sense to me.
+1. Pass test for 1 element in: return a fixed value
+2. Pass test for 1 different element in: resort to returning the only value in the array
+3. For 2 elements in: if the element count is 2, return the sum of both elements
+4. 10 elements in: loop over the array and return a sum of its elements
 
-But what do you do with the earlier tests? Are all of them needed to verify that the algorithm works as expected?
+Only in the last case I actually _have_ to resort to using a loop to get the easiest implementation to satisfy the expectations. I've truly developed the code guided by tests, avoiding to jump too far ahead at every point in time. 
 
-  [^martin2013tpp]: Robert C. Martin (2013):  _[The Transformation Priority Premise](http://blog.8thlight.com/uncle-bob/2013/05/27/TheTransformationPriorityPremise.html)_.
+The _Transformation Priority Premise_ totally makes sense to me: avoid premature optimization. Think simple. If you haven't read it, yet, I suggest you [do so right now.][martin-tpp]
 
+But what do you do with the earlier tests once you're at stage 4? Are all of them needed to verify that the algorithm works as expected?
+
+Keeping only the 4th test doesn't suffice: you could hard code the sum of the 10 elements from your test as the return value. In other words, you fall back to the "return constant" step. What if you pass in a different array? Wrong result! You need more than one test at any given point in time to verify the algorithm keeps computing the values like it did before.
+
+Transferring this insight to not so trivial code poses the following challenge: find out which tests were necessary during _discovery_ and ditch these. Keep the rest. Too many tests can actually hurt your application because they make it harder to do changes. Testing only _The Right Thing_ is hard. Maybe there's no guiding principle at all. At least I haven't found any.
+
+[martin-tpp]: http://blog.8thlight.com/uncle-bob/2013/05/27/TheTransformationPriorityPremise.html
+
+
+### Tests Should Prioritize Refactoring
 
 <!--ct: §201408131755 Tests sollten Refaktorisierungen priorisieren-->
 
-I am puzzled. I thought that having more tests is always better, because you cover more and more edge cases with each test. But too rigid testing makes code too hard to change.
+So I am puzzled. I thought that having more tests is always better, because you cover more and more edge cases with each test. But then again, too rigid testing makes code too hard to change.
 
-<!--ct: TODO add 'refactoring' link-->
+One necessary condition of successful [refactoring][] is that you have to be able to change the implementation without changing the behavior, thus breaking collaborators's expectations. Too explicit a test can be broken by refactoring code. So [tests can make refactoring harder.][objc2]
 
-One necessary condition of successful [refactoring][] is that you have to be able to change the implementation without changing the behavior, thus breaking collaborators's expectations. Too explicit a test can be broken by refactoring code. So [tests can make refactoring harder.][objc1]
+> Refactoring is s a disciplined technique for restructuring an existing body of code, altering its internal structure without changing its external behavior.
+> --- [Martin Fowler](http://www.refactoring.com/)
 
-It's hard for me to find a balance. But since I [publish the code of this project][bookcode], maybe with the help of other developers all of us can learn something about weighing test coverage.
+It's hard for me to find a balance. But since I [publish the code of this project][bookcode], maybe with the help of other developers all of us can learn something about weighing test coverage. I'd apprecite a good discussion on the topic.
 
+In short, my guideline is the following:
 
-  [objc1]: http://www.objc.io/issue-15/bad-testing-practices.html
+* Use tests to find out how components work together,
+* verify expected behavior through tests, making sure to cover edge cases,
+* remove discovery tests, and
+* remove tests which make too many assumptions about the internals in favor for black-box testing to make refactoring easier.
 
-  [refactoring]:
+With the years, I tend to do more and more functional testing or integration testing and try not to be too anal about unit tests, or else I end up with at least two places for any change I want to make.
+
+[objc2]: http://www.objc.io/issue-15/bad-testing-practices.html
+[refactoring]: http://c2.com/cgi/wiki?WhatIsRefactoring
