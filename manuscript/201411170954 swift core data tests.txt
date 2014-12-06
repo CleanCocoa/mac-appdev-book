@@ -6,7 +6,7 @@ To get started, though, I will focus on unit tests for both the Core Data object
 
 The Core Data managed objects are called `ManagedBox` and `ManagedItem`. They mostly have a title and the relationship to one another:
 
-![Core Data model](assets/20141206190120_coredata.png)
+![Core Data model](images/20141206190120_coredata.png)
 
 I add class-level helper methods to these to make [creating new Core Data entities][objc1] a bit easier. It will work like this: 
 
@@ -22,7 +22,7 @@ Swift introduced access right management. The test target wouldn't know about th
 1. Declare classes and methods to test `public`, so they are visible outside the app source module. This may become somewhat tedious.
 2. Add source files to the test target. This equals checking the "Tests" target in the Utilities browser's (⌘⌥1) "Target Membership" list.
 
-![Managing source file target memberships](assets/20141117095632_target-membership.png)
+![Managing source file target memberships](images/20141117095632_target-membership.png)
 
 Although it's easier to add sources to the test target, this may not be what you want to do. It is beneficial to think about what should be visible to the outside world and what is an internal detail only.[^2f0f329e3cbec9f624cc575b717291989c960595]
 <!--ct: commit #2f0f329e3cbec9f624cc575b717291989c960595 "get CoreDataItemRepo tests to pass"-->

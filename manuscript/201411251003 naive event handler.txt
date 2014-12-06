@@ -23,7 +23,7 @@ Handling events in the application layer instead of the view controller introduc
 
 The delegate pattern is widespread in Apple's own framework. You implement a `NSTableViewDelegate` to handle `NSTableView`-specific events. You also need a `NSTableViewDataSource` to provide (initial) data to the table. The table _asks_ for this information. You don't have to shove it down its throat upon initialization. This way, the table can worry about performance issues like caching table cells and ask for parts of the data at your disposal only.
 
-![20141125103816 Components  Event Handler](assets/20141125103816_components--event_handler.jpg)
+![Event Handler](images/20141125103816_components--event_handler.jpg)
 
 It's pretty easy to add this to the code there is already.
 

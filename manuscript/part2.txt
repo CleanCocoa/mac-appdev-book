@@ -9,7 +9,7 @@ I left off with the following:
 * The domain is particularly boring. It has no behavior at all. Until now, the whole demo application is centered around getting user input to the data store. This will not change until the next part. It's nonsensical to work this way of course when the domain should be the very key component of the application.
 * There's no event handling, at all, as in "User adds a Box to the list". There's no layer between user interface and domain. 
 
-![20141125103807 Components](assets/20141125103807_components.jpg)
+![Components](images/20141125103807_components.jpg)
 
 This part will focus on the integration and various methods of passing messages between components of the app. There are a few attractive options to consider:
 
