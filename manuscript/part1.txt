@@ -1,3 +1,6 @@
+
+{mainmatter}
+
 # Part 1: Bootstrapping -- Setting Up the Project, Core Data, and Unit Tests
 
 After a few experiments and a lot of conceptual drawings, I knew where I wanted to go with the Word Counter. I wouldn't start with a blank slate. I think to have existing code to port makes taking Swift for a test drive easier. You never know whether errors are due to a lack of understanding Swift, the new API, or an actual implementation problem.

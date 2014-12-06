@@ -1,4 +1,4 @@
-## Use of automatted tests
+## Use of Automatted Tests
 
 Considering the circumstances and the high uncertainty of my situation, tests have more benefits than verifying the behavior of components:
 
