@@ -24,9 +24,9 @@ Swift introduced access right management. The test target wouldn't know about th
 
 ![Managing source file target memberships](assets/20141117095632_target-membership.png)
 
-Although it's easier to add sources to the test target, this may not be what you want to do. It is beneficial to think about what should be visible to the outside world and what is an internal detail only.
-
+Although it's easier to add sources to the test target, this may not be what you want to do. It is beneficial to think about what should be visible to the outside world and what is an internal detail only.[^2f0f329e3cbec9f624cc575b717291989c960595]
 <!--ct: commit #2f0f329e3cbec9f624cc575b717291989c960595 "get CoreDataItemRepo tests to pass"-->
+
 
 Unit testing becomes harder for Core Data `NSManagedObject` subclasses this way, though. Adding these to the test target will make the tests compile. Upon test execution, though, you will trigger an [invisible breakpoint in bytecode][cdbp].
 
@@ -36,3 +36,5 @@ From now on, I will resort to making tested code public.
 
 [cdbp]: http://stackoverflow.com/questions/24841856/swift-breakpoint-in-coredata-library
 [objc1]: http://www.objc.io/issue-4/core-data-models-and-model-objects.html
+
+[^2f0f329e3cbec9f624cc575b717291989c960595]: [commit 2f0f329](https://github.com/DivineDominion/mac-appdev-code/commit/2f0f329e3cbec9f624cc575b717291989c960595)

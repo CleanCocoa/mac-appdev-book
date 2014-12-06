@@ -145,12 +145,14 @@ It takes some getting used to Swift to read this well. Let's stick to the client
 
 When a `BoxProvisioned` event is published, it is transformed into a `NSNotification`. The notification is posted as usual. The wrapper around the client's subscribing block receives the notification, de-serializes a `BoxProvisioned` event again, and provides this to the client.
 
-It took some trial and error to get there, but it's pretty clever if I may say as much.
+It took some trial and error to get there, but it's pretty clever if I may say that much myself.[^d0a8c7b56296961a662bd1681b134dfe550adfff]
 
-<!--ct: 
+<!--ct: commit
 #d0a8c7b56296961a662bd1681b134dfe550adfff use real DomainEvents instead of notifications
 #9a8f41d29b1bd48eb1d6f7475699da0d0d925c2b add TestDomainEventPublisher and NullNotificationCenter for isolating tests
 #a2b0f4c578abbe4407d5cc06b7fc423472cb8151 test ProvisioningService sending domain events
 #74cf8041d561e6ecbe696dbb8f9c5d6046005405 refactor code for domain events
 -->
+
+[^d0a8c7b56296961a662bd1681b134dfe550adfff]: [commits d0a8c7b](https://github.com/DivineDominion/mac-appdev-code/commit/d0a8c7b56296961a662bd1681b134dfe550adfff),  [9a8f41d](https://github.com/DivineDominion/mac-appdev-code/commit/9a8f41d29b1bd48eb1d6f7475699da0d0d925c2b),  [a2b0f4c](https://github.com/DivineDominion/mac-appdev-code/commit/a2b0f4c578abbe4407d5cc06b7fc423472cb8151), and [74cf804](https://github.com/DivineDominion/mac-appdev-code/commit/74cf8041d561e6ecbe696dbb8f9c5d6046005405)
 

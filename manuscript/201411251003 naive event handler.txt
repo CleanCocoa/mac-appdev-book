@@ -126,9 +126,11 @@ To make the test pass, `CoreDataBoxRepository` needs a `count() -> Int` method:
 
 Here, still, I don't handle errors. Why is that so? Because I don't have an actual application at my disposal which could respond to anything. I could either `fail()` and stop the application on such errors or implement my own error handling facilities. The latter is what I'll do in part 3.
 
-Now all tests pass: new `Box`es are created and both stored and shown. 
+Now all tests pass: new `Box`es are created and both stored and shown.[^1d4b7c3ffa9fbd71ee7d64e5aacab39446c90acd]
 
 <!--ct: commit #1d4b7c3ffa9fbd71ee7d64e5aacab39446c90acd use application layer service to create Box objects into Core Data-->
+
+[^1d4b7c3ffa9fbd71ee7d64e5aacab39446c90acd]: [commit 1d4b7c3](https://github.com/DivineDominion/mac-appdev-code/commit/1d4b7c3ffa9fbd71ee7d64e5aacab39446c90acd)
 
 [nullobj]: http://en.wikipedia.org/wiki/Null_Object_pattern
 
@@ -335,7 +337,7 @@ This simple use case-oriented **Application Service** object relieves the `AppDe
         }
     }
 
-This works well in tests. And all of a sudden the application persists the user's changes -- at least when it comes to adding `Box`es.
+This works well in tests. And all of a sudden the application persists the user's changes -- at least when it comes to adding `Box`es.[^d8b64eabee134cd516b382956e2aa58c194d5886]
 
 <!--ct: commits:
 d8b64eabee134cd516b382956e2aa58c194d5886 prepare populating the view with data via use cases
@@ -354,6 +356,9 @@ Obtaining the `Box` via `ManagedBox` didn't re-create the associated items, yet.
     box.items = items
 
 That's all there is to it to create, save, and show items with their default values. Changing the values has no lasting effect, though.
+
+
+[^d8b64eabee134cd516b382956e2aa58c194d5886]: [commits d8b64ea](https://github.com/DivineDominion/mac-appdev-code/commit/d8b64eabee134cd516b382956e2aa58c194d5886),  [b4c63ff](https://github.com/DivineDominion/mac-appdev-code/commit/b4c63ff803672889f7683aae72554d9538c7f335), [6cfabcf](https://github.com/DivineDominion/mac-appdev-code/commit/6cfabcf026b516b69a30873aa30ea68de79a6aa9), and [f9d96aa](https://github.com/DivineDominion/mac-appdev-code/commit/f9d96aa1f19db681ba654f2bdf067bd8a7edf08f)
 
 ### Renaming Boxes and Items
 
@@ -447,9 +452,9 @@ The real `Box` _should_ change. The user-facing component _did_ change.
 
 How wouly you phrase it?
 
-I decide to use an active form for this method. Similar to `provisionNewBoxId`, this method will be called `changeBoxTitle`. This diverges from Cocoa naming conventions, but it makes more sense. An overall observation when looking at real _Domain-Driven Design_ project code is that the code reads well. I hope you agree that this is more important than adhering to naming conventions, especially if you don't expose a public API.
-
+I decide to use an active form for this method. Similar to `provisionNewBoxId`, this method will be called `changeBoxTitle`. This diverges from Cocoa naming conventions, but it makes more sense. An overall observation when looking at real _Domain-Driven Design_ project code is that the code reads well. I hope you agree that this is more important than adhering to naming conventions, especially if you don't expose a public API.[^f4abec848fdd107fff3d4badeaa83877bfaf930e]
 <!--ct: commit: #f4abec848fdd107fff3d4badeaa83877bfaf930e persist title changes to Box -->
+
 
 Similarily, I want `changeItemTitle` to look like this:
 
@@ -478,6 +483,9 @@ To obtain the parent item's `BoxId`, I walk the tree controller's arranged objec
 With these changes in place, the item title change test passes, too.
 
 [^mvc]: Like, 1988-classic. See [Wikipedia's MVC history](http://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller#History) for links to articles on the topic.
+
+[^f4abec848fdd107fff3d4badeaa83877bfaf930e]: [commit f4abec8](https://github.com/DivineDominion/mac-appdev-code/commit/f4abec848fdd107fff3d4badeaa83877bfaf930e)
+
 
 ### Removing Items and Boxes
 
