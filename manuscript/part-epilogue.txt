@@ -1,0 +1,14 @@
+# Epilogue
+
+That's it. For now.
+
+Me, I have found out that I should try to implement the `ManagedBox`/`Box` distinction in the Word Counter to put Core Data in the outermost layer because it works really well once set up.
+
+But then again, I haven't written part 4 on a true Core Data implementation, yet. Once that part is ready, I'll update my résumé of course.
+
+Writing this book changed how I approached coding the example application. It helped to aim for telling a coherent story, and it helped being able to look at notes from the day before. 
+
+Ususally, I have a Day One reminder set to remind me of journalling once per hour. When I'm coding, I use these reminders to reflect on a current trail of thought, or a problem I try to solve. Writing makes you think clearly.
+
+Maybe this is a tool you could make use of, too: write about your programming projects regularly. Reflect upon decisions and write down alterate paths. By pointing at alternatives throughout this book, I have discovered how hard it has been to stick to a plan without knowing the options. Writing about the options relieved me from the stress of not knowing what might happen if I do something else instead because now I knew without having to do any coding.
+

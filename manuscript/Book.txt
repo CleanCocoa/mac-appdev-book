@@ -1,3 +1,5 @@
+part-intro.txt
+201412061628 who.txt
 201411171435 motivation.txt
 201411171431 architecture.txt
 
@@ -19,6 +21,9 @@ part3.txt
 201412051558 multiple consumers.txt
 
 part4.txt
+
+part-epilogue.txt
+201412061727 assessment.txt
 
 part-appendix.txt
 201412051148 links.txt

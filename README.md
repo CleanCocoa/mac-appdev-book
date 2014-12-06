@@ -20,6 +20,7 @@ Outline
     * Handling Errors
     * Doing real work in the background
 * Part 4: _Using Core Data for Convenience (Upcoming!)_
+* Epilogue
 * Appendix
     * Interesting links
     * On Swift

@@ -1,0 +1,29 @@
+## Objectives Accomplished?
+
+In the introduction, I told you about the learning objectives I had in mind:
+
+1. Your will learn to recognize the core of your application, the Domain, where the business rules belong.
+2. Consequently, you will learn how to put your view controllers on a diet and to mentally think of them as a user interface detail.
+3. In the end, you'll be comfortable with using your own "POSO"s (Plain Old Swift Objects) instead of looking for a solution in the Cocoa framework.
+
+Now please take a few minutes and answer for yourself a few questions to solidify the new information and to find out where additional information is beneficial.
+
+### Self-assessment
+
+Please write down your answers in any way you like just to make sure your mind doesn't skip a thing and to enhance the learning effect.
+
+These are the questions I suggest:
+
+* Which were your breakthroughs, your personal Eureka-moments?
+* What did you learn about how you write code? 
+* What are you comfortable with doing now but couldn't think of earlier?
+* Which of the three objectives do you think I did not help accomplish?
+* Which opportunity have I missed? What should I have addressed?
+
+Thank you for taking the time to help make this book worth your while!
+
+### Feedback
+
+I'd love to hear from you and find out what you have learned. You may event mail me your reflection if you want.
+
+Visit the [project website][hp-contact] and say hi!

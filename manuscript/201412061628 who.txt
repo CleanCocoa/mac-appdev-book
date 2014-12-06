@@ -1,0 +1,20 @@
+## Who is this book for?
+
+You want to write clean code for Mac. You want to create your own app and not be forced to follow common (anti-)patterns of application design.
+
+I assume you are a bit like me: you enjoy coding and you want to create applications for Mac or iOS. I also assume you're stuck just like I was: there's no guidance from Apple's side on how to architect a complex application.
+
+The documentation and example code is good and useful, but it doesn't show us what to do when the app grows. How do you deal with large databases? How should you implement background services? -- I don't answer these particular questions in this book. But I try to make my code ready to scale.
+
+For example, through experience I know that I want to do the least possible heavy lifting in a view controller, be it an `NSViewController` or `UIViewController`. No one tells us what to do instead.
+
+To read this book, you don't need to be a Cocoa wiz. You don't even need to be proficient with either Swift or Objective-C: I don't use crazy stuff like method swizzling or operator overloading or anything that's hard to grasp, really. In the course of this book I learned the Swift programming language myself, and I try to explain what I found out so you may follow along. Chances are you already know Swift better than I. That's cool with me.
+
+Here's what I hope you will learn from this book:
+
+* Your will learn to recognize the core of your application, the Domain, where the business rules belong.
+* Consequently, you will learn how to put your view controllers on a diet and to mentally think of them as a user interface detail.
+* In the end, you'll be comfortable with using your own "POSO"s (Plain Old Swift Objects) instead of looking for a solution in the Cocoa framework.
+
+In short, the message is this: don't look for help from Apple's side, but create a solid software architecture _you_ are comfortable with, and plug in the components from external sources where necessary.
+

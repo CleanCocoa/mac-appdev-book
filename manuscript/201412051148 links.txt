@@ -4,3 +4,40 @@ SourceView sample code (Objective-C)
 :   <https://developer.apple.com/library/mac/samplecode/SourceView/Listings/BaseNode_m.html#//apple_ref/doc/uid/DTS10004441-BaseNode_m-DontLinkElementID_6>
 :   Example application by Apple where `NSOutlineView` is used. Good for getting started, although the example app doesn't run properly anymore -- I don't see any images in the source view.
 
+Clean Architecture
+: <http://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html>
+: <http://blog.8thlight.com/uncle-bob/2011/11/22/Clean-Architecture.html>
+: Uncle Bob's explanation of the architectural concepts I tried to adhere to. Goes beyond Hex
+
+Uncle Bob: Architecture -- The Lost Years (Video)
+: <https://www.youtube.com/watch?v=WpkDN78P884>
+: This talk introduced me to Hexagonal and Clean Architecture.
+
+Avdi Grimm: Objects on Rails
+: <http://objectsonrails.com>
+: A free e-book which taught me how to decouple my application from Ruby on Rails. This one got me hooked on thinking past using the framework properly.
+
+
+## Interesting Books
+
+I recommend reading the following books, ordered by subjective significance to the topic. The top three are really worth your money, so I added amazon affiliate links in them. If you buy from this link, I get a small kick-back from amazon.
+
+* Vaughn Vernon (2013):  _[Implementing domain driven design](http://www.amazon.com/gp/product/0321834577/ref=as_li_tl?ie=UTF8&camp=1789&creative=390957&creativeASIN=0321834577&linkCode=as2&tag=macappdev-20&linkId=T5QYTXVZBTZ2VZPU)_, Upper Saddle River, NJ: Addison-Wesley.
+    
+    --- Lots of practical examples and explanation for the patterns Evans laid out.
+* Eric Evans (2006):  _[Domain-Driven Design. Tackling complexity in the heart of software](http://www.amazon.com/gp/product/0321125215/ref=as_li_tl?ie=UTF8&camp=1789&creative=390957&creativeASIN=0321125215&linkCode=as2&tag=macappdev-20&linkId=2HZ546ZCPKZ47SQQ)_, Upper Saddle River, NJ: Addison-Wesley.
+    
+    --- Full of good examples and refactorings itself but a little light on actually solving implementation problems.
+* Michael C. Feathers (2011):  _[Working effectively with legacy code](http://www.amazon.com/gp/product/0131177052/ref=as_li_tl?ie=UTF8&camp=1789&creative=390957&creativeASIN=0131177052&linkCode=as2&tag=chritietwork-20&linkId=VHKZJPCXDDHJK7X7)_, Upper Saddle River, NJ: Prentice Hall Professional Technical Reference.
+    
+    --- Helps to learn decoupling code incrementally and how to test hard-to-test parts. That's where I learned to provide means to reset singletons, and that it's better to wrap `NSNotificationCenter` in order to replace the wrapper in tests than not test notifications at all.
+* Ivar Jacobson, Magnus Christerson, Patrik Jonsson, and Gunnar Övergaard (1990):  _Object-Oriented Software Engineering. A Use Case Driven Approach_, Wokingham: Addison-Wesley.
+    
+    --- Actually a recommendation by Uncle Bob in _Architecture: The Lost Years_. It taught me to think about application services and use case objects. The book's focus is on architecture, not on code. Useful practices. You may get this one used for a few dollars. I found it in my local university's library.
+* Scott Millett (2014):  _Practicing Domain-Driven Design. Practical advice for teams implementing the development philosophy of Domain-Driven Design. With code examples in C# .NET_, Scott Millett.
+* Robert C. Martin (2009):  _Clean Code. A Handbook of Agile Software Craftsmanship_, Upper Saddle River: Prentice Hall.
+* Andy Oram and Greg Wilson (Eds.) (2007):  _Beautiful Code_, Beijing: O'Reilly.
+* Sandi Metz (2013):  _Practical object-oriented design in Ruby: an agile primer_, Upper Saddle River, NJ: Addison-Wesley.
+    
+    --- A really good read. Sadly, it's about Ruby, not about Swift or Objective-C, but you may want to peek into it anyway.
+
