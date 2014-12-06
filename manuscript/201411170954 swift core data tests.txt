@@ -23,7 +23,7 @@ Turns out this is enough of a challenge for me with Swift.
 Swift introduced access right management. The test target wouldn't know about the program's source files unless you do one of two things:
 
 1. Declare classes and methods to test `public`, so they are visible outside the app source module. This may become somewhat tedious.
-2. Add source files to the test target. This equals checking the "Tests" target in the Utilities browser's (⌘⌥1) "Target Membership" list.
+2. Add source files to the test target. This equals checking the "Tests" target in the Utilities browser's (Cmd+Alt+1) "Target Membership" list.
 
 ![Managing source file target memberships](images/20141117095632_target-membership.png)
 

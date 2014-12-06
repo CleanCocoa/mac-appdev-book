@@ -27,3 +27,5 @@ Thank you for taking the time to help make this book worth your while!
 I'd love to hear from you and find out what you have learned. You may event mail me your reflection if you want.
 
 Visit the [project website][hp-contact] and say hi!
+
+[hp-contact]: http://divinedominion.github.io/mac-appdev-book/#contact

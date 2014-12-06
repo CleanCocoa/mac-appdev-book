@@ -46,11 +46,15 @@ Making ID-generation public is a bad idea, though. It's an implementation detail
 
 First, recognize ID generation as a distinct responsibility and extract it into its own interface:
 
+{linenos=off}
+
     public protocol GeneratesIntegerId {
         func integerId() -> IntegerId
     }
 
 Provide a default but private implementation. I used `struct` instead of `class` because there's no _state_ associated with this object. It's simply an object with a single method, no state, no past, and no dependencies:
+
+{linenos=off}
 
     struct DefaultIntegerIdGenerator: GeneratesIntegerId {
         func integerId() -> IntegerId {
@@ -59,6 +63,8 @@ Provide a default but private implementation. I used `struct` instead of `class`
     }
 
 The `CoreDataItemRepository`'s interface doesn't have to change unless needed. Simply create another designated initializer and mark the old one as a "convenience" initializer:
+
+{title="Repository using ID generator object which can be stubbed in tests"}
 
     public class CoreDataItemRepository: NSObject, ItemRepository {
         let managedObjectContext: NSManagedObjectContext
