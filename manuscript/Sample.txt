@@ -5,6 +5,8 @@ sample-stripped.txt
 201412061816 the example.txt
 201411171431 architecture.txt
 
+part-content.txt
+
 part1.txt
 sample-stripped.txt
 201411241637 functional tests.txt
