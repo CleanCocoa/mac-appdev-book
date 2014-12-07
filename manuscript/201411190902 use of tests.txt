@@ -8,7 +8,7 @@ Considering the circumstances and the high uncertainty of my situation, tests ha
 
 <!--ct: TODO reference to "Legacy Code"s 'discovery tests'-->
 
-Discovery Tests[#feathers2011legco][] are tests which aren't necessarily meant to stay. They take the place of `NSLog`ging values in production code. Instead of fiddling with the app itself, running it, and looking at values at breakpoints, you write expectations about implementation details and fiddle with the code until the tests pass. Afterwards, you get rid of the tests if you think they're not covering what should be tested.
+Discovery Tests are tests which aren't necessarily meant to stay. They take the place of `NSLog`ging values in production code. Instead of fiddling with the app itself, running it, and looking at values at breakpoints, you write expectations about implementation details and fiddle with the code until the tests pass. Afterwards, you get rid of the tests if you think they're not covering what should be tested.
 
 For example, in this project I try not to unit test every little detail. I want to add more functional tests which involve a whole graph of actual objects interacting with each other. So I'll have to consider removing tests which don't add a lot of benefit for the overhead of keeping them in sync with production code.
 
@@ -64,3 +64,4 @@ With the years, I tend to do more and more functional testing or integration tes
 
 [objc2]: http://www.objc.io/issue-15/bad-testing-practices.html
 [refactoring]: http://c2.com/cgi/wiki?WhatIsRefactoring
+[bookcode]: https://github.com/DivineDominion/mac-appdev-code

@@ -1,7 +1,7 @@
 
 {pagebreak}
 
-## Interesting Books
+## Interesting Books {booklist}
 
 I recommend reading the following books, ordered by subjective significance to the topic. 
 

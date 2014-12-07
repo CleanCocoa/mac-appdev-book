@@ -90,7 +90,7 @@ Creating `Item`s thus becomes part of the boundary of `Box`.
 
 This aspect of the domain changes how to think about the box and item **Repositories**.
 
-Until now, I had collection-oriented repositories in mind.[see Chapter 12, "Repositories"][#vernon2013ddd] You query the repository for objects, change them, and not worry about saving. The repository does it behind the scenes. If I worked with Core Data managed objects directly, that's exactly what would happen. But I don't, so I have to ensure that changes to a `Box` find their way to the Core Data store.
+Until now, I had collection-oriented repositories in mind.[^repo] You query the repository for objects, change them, and not worry about saving. The repository does it behind the scenes. If I worked with Core Data managed objects directly, that's exactly what would happen. But I don't, so I have to ensure that changes to a `Box` find their way to the Core Data store.
 
 There's three options:
 
@@ -99,6 +99,8 @@ There's three options:
 3. Use `NSManagedObject` directly to manipulate the persisted data. Every change gets persisted automagically.
 
 I think (1) is a waste of time in this case. (2) is a viable option I'll explore more. Discovering these difficulties in practice, I decide to take on (3) in another part, namely part 4.
+
+[^repo]: See Chapter 12, "Repositories", in [Vernon (2013).](#booklist)
 
 #### Tracking `Box` changes from within `ManagedBox`
 
