@@ -1,2 +1,2 @@
 
-#- Developing a Clean App by Example
+-# Developing a Clean App by Example
