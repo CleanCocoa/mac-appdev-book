@@ -1,3 +1,6 @@
+
+{pagebreak}
+
 ### Adding `Item`s as Part of Their Larger Aggregate `Box`
 
 Adding items takes a bit more lines to test, but it's nothing special:
@@ -24,6 +27,9 @@ Adding items takes a bit more lines to test, but it's nothing special:
             XCTFail("no boxes found")
         }
     }
+
+
+{pagebreak}
 
 Appending `ItemNode` to the current selection (or its parent) `BoxNode` works by finding the `BoxNode`'s index path. The associated `NSTreeNode` provides all details to obtain the `BoxId`.
 

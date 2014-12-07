@@ -31,8 +31,6 @@ To get this deep in Swift, I have to do this instead:
 
 I settled for sending IDs only because putting ID and title makes things complicated for the "Item was created" event. There, I'd have to use nested dictionaries. A JSON representation would look like this:
 
-<!--ct: TODO does "JSON" language work in leanpub?-->
-
 {title="JSON representation of the event data", linenos=off, lang=json}
     {
         box: {
@@ -53,6 +51,9 @@ It's almost always a bad idea to simply assume that the event publisher provided
 You have to perform sanity checks to catch invalid events anyway, in Objective-C just as much as in Swift.
 
 Using real event objects will work wonders. Serializing them into dictionaries and de-serializing `userInfo` into events will encapsulate the sanity checks and provide usable interfaces tailored to each event's use.
+
+{pagebreak}
+
 
 ### Event Value Types
 

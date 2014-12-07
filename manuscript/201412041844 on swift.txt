@@ -1,4 +1,4 @@
-# On Swift
+# On Swift _(Upcoming!)_
 
 I think Swift is Apple's move towards more advanced app architecture patterns. The wonders generics do to domain event handling, for example!
 

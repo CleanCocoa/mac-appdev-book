@@ -8,6 +8,9 @@ This is nothing new to the code, actually. For example, `BoxRepository` is a por
 
 I want to refactor `HandlesItemListEvents` to pay more attention to command--query separation.
 
+{pagebreak}
+
+
 ### Concerns with the naive approach
 
 Have a look at the event handling protocol again:

@@ -18,6 +18,8 @@ So we take the following steps:
 * Add an `NSTreeController` to the Nib to manage the actual `NSOutlineView` data. It's strongly referenced by the `ItemViewController`.
 
 
+{pagebreak}
+
 ### Remove the Burden of UI from AppDelegate
 
 The Mac Cocoa project template used `AppDelegate` as the owner of the main window. I tend to put `AppDelegate` into Infrastructure. The user interface belongs elsewhere, so factoring the main window out into its own controller will both slim down `AppDelegate` and make the overall app design more supple instantly.

@@ -1,4 +1,4 @@
-## Multiple Consumers: Reaping the Benefits of Domain Events
+## Multiple Consumers: Reaping the Benefits of Domain Events _(Upcoming!)_
 
 I this chapter, I'll write:
 

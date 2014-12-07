@@ -1,4 +1,4 @@
-## Finally, Add `Box` to the `Item`-Centric Application
+## Finally, Add `Box`es to the Strictly `Item`-Centric Application
 
 A lot of stuff seems to work quite right now. To make it more interesting, I finally add `Box`es to the example project. Recall that a `Box` contains various `Item`s but no other `Box`.
 

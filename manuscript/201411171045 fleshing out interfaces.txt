@@ -111,7 +111,10 @@ The `CoreDataItemRepository`'s interface doesn't have to change unless needed. S
         }
     }
 
-Now I can provide a test generator:
+
+{pagebreak}
+
+Now I can provide a test generator which helps to verify the Repository's behavior:
 
     class TestIntegerIdGenerator : NSObject, GeneratesIntegerId {
         let firstAttempt: IntegerId = 1234

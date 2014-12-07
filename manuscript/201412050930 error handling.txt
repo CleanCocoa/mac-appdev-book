@@ -202,7 +202,7 @@ Once discovered, the problem is easily remedied by using an `NSValueTransformer`
 
 There don't seem to be any more runtime errors related to renaming objects. The objects stay valid in a Core Data validation way.
 
-#### Enforce rules in the user interface
+#### Enforce Rules in the User Interface
 
 To prevent empty titles, we have to codify this rule somehow. Business rules belong to the domain. Empty titles don't cause problems to the domain, though, so I don't think this should become a business rule. Instead, this is a rule of the application and/or user interface designer. Empty titles look weird and can be possibly harder to click.
 
@@ -253,7 +253,7 @@ That's why we have to dispatch the actual title change in `changeNodeTitleToPlac
 
 Now empty tree nodes are avoided by virtue of the user interface.
 
-#### Alternate paths for transformations
+#### Alternate Paths for Transformations _(Upcoming!)_
 
 <!--ct: TODO write in detail about this-->
 
