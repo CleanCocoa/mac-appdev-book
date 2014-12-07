@@ -1,6 +1,6 @@
 # Access Rights VS Laissez-faire Objective-C
 
-This works well in view controller code:
+The following class hierarchy works well in view controller code until you throw in a `TestNode` subclass in your tests to stub a `BoxNode`, say.:
 
     @objc(TreeNode)
     public protocol TreeNode {
@@ -18,7 +18,7 @@ This works well in view controller code:
 
     class ItemNode: NSObject, TreeNode { /* ... */ }
 
-It does until you throw in a `TestNode` in your tests to stub a `BoxNode`, say. Then, downcasting to `BoxNode` in production code results in a runtime error. But you _have_ to downcast in order to access the `boxId` property: since Swift doesn't support the inherently unsafe `performSelector:withObject:` which in the past worked on objects of type `id` just fine, there's no other way to get to properties not exposed via the type.
+Then, downcasting to `BoxNode` in production code results in a runtime error. But you _have_ to downcast in order to access the `boxId` property: since Swift doesn't support the inherently unsafe `performSelector:withObject:` which in the past worked on objects of type `id` just fine, there's no other way to get to properties not exposed via the type.
 
 Two options:
 
@@ -27,6 +27,7 @@ Two options:
 
 Thus I end up with too many public interfaces and a test stub looking like this:
 
+{title="Not-so-concise test replacement class"}
     class TestBoxNode: BoxNode {
         convenience init() {
             self.init(boxId: BoxId(0))

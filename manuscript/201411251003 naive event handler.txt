@@ -27,6 +27,7 @@ The delegate pattern is widespread in Apple's own framework. You implement a `NS
 
 It's pretty easy to add this to the code there is already.
 
+{linenos=off}
     public protocol HandlesItemListEvents: class {
         func provisionNewBoxId() -> BoxId;
         func provisionNewItemId(inBox boxId: BoxId) -> ItemId;
@@ -34,6 +35,7 @@ It's pretty easy to add this to the code there is already.
 
 I tend to phrase protocols this way because it makes the role clear and reads pretty well:
 
+{linenos=off}
     class BoxService: HandlesItemListEvents { /* ... */ }
 
 How to name such **Application Services**?
@@ -69,6 +71,7 @@ The functional test still fails because the `BoxAndItemService` is never actuall
 
 `AppDelegate` sets up the view controller like this:
 
+{linenos=off}
     lazy var windowController = ItemManagementWindowController()
     lazy var boxAndItemService = BoxAndItemService()
     

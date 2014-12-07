@@ -46,6 +46,7 @@ Since there's no client but the tests using `count()` at the moment, there's no 
 
 Not being able to create new objects is worse:
 
+{linenos=off}
     class ProvisioningService {
         func provisionBox() {
             let boxId = repository.nextId()
@@ -85,6 +86,7 @@ Core Data errors can be [manifold][cderr] and they usually come in batches. To l
 
 The `save()` method of `PersistentStack` will look like this afterwards:
 
+{linenos=off}
     var error: NSError? = nil
     if managedObjectContext.hasChanges && !managedObjectContext.save(&error) {
         NSLog("Failed to save to data store: \(error!.localizedDescription)")
@@ -122,6 +124,7 @@ With logging in place, it'll be easier to find and fix fatal problems in the cod
 
 Reporting a problem upon `save()` can be pretty straightforward:
 
+{linenos=off}
     NSApplication.sharedApplication().presentError(error!)
 
 Apart from showing a modal dialog, this doesn't help much. If you keep a log file using CocoaLumberjack, for example, you should replace this with a decent interface to help mail the error log to the developer.
@@ -205,7 +208,7 @@ Since the domain doesn't care about the title, it doesn't matter _how_ we enforc
 
 If we had just one kind of tree node, the `NonNilStringValueTransformer` could do the job. But a value transformer cannot access information about the node and thus cannot distinguish between "Box" and "Item".
 
-But the title-change event handler could:
+But the title-change event handler could draw the distinction:
 
     func treeNodeDidChange(treeNode: TreeNode, title: String) {
         if title.isEmpty {
@@ -260,13 +263,19 @@ Now empty tree nodes are avoided by virtue of the user interface.
 Read errors don't (necessarily) imply data loss. I let `CoreDataBoxRepository` broadcast a notification to interested parties:
 
     func postReadErrorNotification() {
-        notificationCenter.postNotificationName(kCoreDataReadErrorNotificationName, object: self)
+        notificationCenter.postNotificationName(
+            kCoreDataReadErrorNotificationName, 
+            object: self)
     }
     
 Since this application has no value to the user if reading data isn't possible, I decide to quit the app on these occasions. `AppDelegate` for now seems to be the best-suited object to terminate the application on errors:
 
+{title="Subscribing to error notifications"}
     func subscribeToCoreDataReadErrors() {
-        readErrorCallback = notificationCenter.addObserverForName(kCoreDataReadErrorNotificationName, object: nil, queue: NSOperationQueue.mainQueue()) { notification in
+        readErrorCallback = notificationCenter.addObserverForName(
+                kCoreDataReadErrorNotificationName, 
+                object: nil, 
+                queue: NSOperationQueue.mainQueue()) { notification in
             
             let question = NSLocalizedString("Could not read data. Report and Quit?", comment: "Read error quit question message")
             let info = NSLocalizedString("The application cannot read data and thus better not continues to operate. Changes will be saved if possible.", comment: "Read error quit question info");

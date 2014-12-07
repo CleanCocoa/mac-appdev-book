@@ -27,6 +27,7 @@ Thus, remove every notion of `NSWindow` from the `AppDelegate` and show `ItemMan
 
 I don't trust my ability to use Interface Builder a lot, and I assume I will get Cocoa Bindings wrong from time to time. Thus, I add regression tests to show I have set up everything as intended:
 
+
     // ItemViewControllerTests.swift
     func testItemsController_IsConnected() {
         XCTAssertNotNil(viewController.itemsController, "items controller should be connected in Nib")

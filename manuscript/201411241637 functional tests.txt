@@ -33,6 +33,7 @@ I want to go from user interface down to Core Data. That's a first step. This is
 
 There's room for improvement: I expect that there's a record with a given `BoxId` afterwards, and that the view model contains a `BoxNode` with the same identifier. This is how the view, domain, and Core Data stay in sync. But the naive attempt is hideous:
 
+{linenos=off}
     viewController.itemsController.arrangedObjects.childNodes!!.first.boxId
 
 I rather defer such tests until later to avoid these train wreck-calls.
@@ -41,10 +42,12 @@ I rather defer such tests until later to avoid these train wreck-calls.
 
 On a side note, I think Swift's optionals are making tests weird. Consider this line:
 
+{linenos=off}
     XCTAssertEqual(allBoxes()!.first!.title, "New Box")
 
 `allBoxes()` is of kind `() -> [ManagedBox]?`, that is, it returns an array or nil. To use it this way was pretty straightforward in Objective-C:
 
+{linenos=off}
     func allBoxes() -> [ManagedBox]? {
         let request = NSFetchRequest(entityName: ManagedBox.entityName())
         return context.executeFetchRequest(request, error: nil) as [ManagedBox]?
@@ -52,12 +55,14 @@ On a side note, I think Swift's optionals are making tests weird. Consider this 
 
 The thing is, force-unwrapping a `nil` optional results in a runtime error. Objective-C would've told us that "nil doesn't equal whatever". Swift won't. So I have to take care of this case:
 
+{linenos=off}
     if let boxes = allBoxes() {
         XCTAssertEqual(boxes.first!.title, "New Box")
     }
 
 What if the fetch request was valid, but the result set empty?
 
+{linenos=off}
     if let boxes = allBoxes() {
         if let box = boxes.first as? ManagedBox {
             XCTAssertEqual(box.title, "New Box")
@@ -66,6 +71,7 @@ What if the fetch request was valid, but the result set empty?
 
 We've surpassed runtime errors but end up not testing the `else` case anymore.
 
+{linenos=off}
     if let boxes = allBoxes() {
         if let box: ManagedBox = allBoxes().first {
             XCTAssertEqual(box.title, "New Box")
@@ -80,6 +86,7 @@ Now that's become quite a monster.
 
 An alternate approach is to change `allBoxes()` to `() -> [ManagedBox]!` to get rid of at least the first clause. Swift teaches us to stop using optionals when we're positive we don't need them. Instead of `nil`, return an empty array. This makes the result much more predictable for the client. Here's the updated version:
 
+{title="Don't allow optionals if there's no need to"}
     func allBoxes() -> [ManagedBox] {
         let request = NSFetchRequest(entityName: ManagedBox.entityName())
         let results: [AnyObject]? = context.executeFetchRequest(request, error: nil)
@@ -95,6 +102,7 @@ It's still unsafe to force-unwrap `first!` when the array is empty. I'd love to 
 
 I end up having to use the explicit version:
 
+{linenos=off}
     if let box: ManagedBox = allBoxes().first
         XCTAssertEqual(box.title, "New Box")
     } else {
@@ -115,6 +123,7 @@ In broad sketches, this is what's left to do to connect the dots:
 
 The `ServiceLocator` can look like this:
 
+{title="ServiceLocator singleton to select default implementations"}
     class ServiceLocator {
         // Use thread-safe Struct-based singleton until 
         // static class constants are possible

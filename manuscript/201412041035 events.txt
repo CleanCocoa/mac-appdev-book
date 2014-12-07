@@ -6,19 +6,24 @@ Using `NSNotificationCenter` is easy and a well-known practice. I don't like how
 
 In Objective-C, I'd send and access the "Box was created" event info like this:
 
+{linenos=off}
     // Sending
+    NSDictionary *userInfo = @[@"boxId": @(boxId.identifier)]
     [notificationCenter postNotificationName: kBoxProvisioned,
                                       object: self,
-                                    userInfo: @[@"boxId": @(boxId.identifier)]]
+                                    userInfo: userInfo]
     
     // Receiving
-    [BoxId boxIdWithIdentifier: notification.userInfo["boxId"].longLongValue]
+    int64_t identifier = notification.userInfo["boxId"].longLongValue
+    [BoxId boxIdWithIdentifier: identifier]
 
 To get this deep in Swift, I have to do this instead:
-    
+
+{linenos=off}
     // Sending
-    notificationCenter.postNotificationName(kBoxProvisioned, object: self,
-        userInfo: ["boxId" : NSNumber(longLong: boxId.identifier)])
+    let userInfo = ["boxId" : NSNumber(longLong: boxId.identifier)]
+    notificationCenter.postNotificationName(kBoxProvisioned, 
+        object: self, userInfo: userInfo)
     
     // Receiving
     let boxInfo = notification.userInfo!["boxId"] as NSNumber
@@ -26,6 +31,9 @@ To get this deep in Swift, I have to do this instead:
 
 I settled for sending IDs only because putting ID and title makes things complicated for the "Item was created" event. There, I'd have to use nested dictionaries. A JSON representation would look like this:
 
+<!--ct: TODO does "JSON" language work in leanpub?-->
+
+{title="JSON representation of the event data", linenos=off, lang=json}
     {
         box: {
             id: ...
@@ -50,7 +58,10 @@ Using real event objects will work wonders. Serializing them into dictionaries a
 
 An event should be a value type, and thus a struct. It assembles a `userInfo` dictionary. For `NSNotificationCenter` convenience, it also assembles a `NSNotification` object:
 
+{title="Domain Event serializing itself into userInfo dictionary"}
+    // Provide a typealias for brevity and readability
     typealias UserInfo = [NSObject : AnyObject]
+    
     struct BoxProvisionedEvent: DomainEvent {
         let boxId: BoxId
         let title: String
@@ -106,7 +117,9 @@ The `subscribe` method is interesting. Thanks to [Swift generics][generics], I c
 
 The conversion of `NSNotification` to the appropriate domain event takes place in the `DomainEventPublisher`:
 
-    public func subscribe<T: DomainEvent>(eventKind: T.Type, queue: NSOperationQueue, usingBlock block: (T!) -> Void) -> NSObjectProtocol {
+    public func subscribe<T: DomainEvent>(eventKind: T.Type, 
+            queue: NSOperationQueue, 
+            usingBlock block: (T!) -> Void) -> NSObjectProtocol {
         let eventType: DomainEventType = T.eventType
         return notificationCenter.addObserverForName(eventType.name, object: nil, queue: queue) {
             (notification: NSNotification!) -> Void in
@@ -120,9 +133,10 @@ The conversion of `NSNotification` to the appropriate domain event takes place i
 It takes some getting used to Swift to read this well. Let's stick to the client code from above and see what subscribing to `BoxProvisionedEvent`s does:
 
 * The type of the `eventKind` argument should the type (not instance!) of a descendant of `DomainEvent`. That's what `BoxProvisionedEvent.self` is. You don't pass in an actual event, but it's class (or "type"). Interestingly, this value is of no use but to set `T`, the generics type placeholder.
-* The `block` yields an event object of type `T` (an instance of `BoxProvisionedEvent`)
-* The `eventType` is an enum value. In this example case, this will be `BoxProvisionedEvent.eventType`, which returns the enum value `DomainEventType.BoxProvisioned`. `DomainEventType`s have a property called `name` to return a string which becomes the notification name:
+* The `block` (line 3) yields an event object of type `T` (an instance of `BoxProvisionedEvent`)
+* The `eventType` (line 4) is an enum value. In this example case, this will be `BoxProvisionedEvent.eventType`, which returns the enum value `DomainEventType.BoxProvisioned`. `DomainEventType`s have a property called `name` to return a string which becomes the notification name:
 
+    {linenos=off}
         enum DomainEventType: String {
             case BoxProvisioned = "Box Provisioned"
             case BoxItemProvisioned = "Box Item Provisioned"
@@ -133,7 +147,8 @@ It takes some getting used to Swift to read this well. Let's stick to the client
         }
         
 * The actual observer is a wrapper around the `block` specified by the client. The wrapper creates an event of type `T`. All `DomainEvent`s must provide the deserializing initializer `init(userInfo: [NSObject : AnyObject])`, and so does `T`:
-
+    
+    {linenos=off}
         protocol DomainEvent {
             /// The `DomainEventType` to identify this kind of DomainEvent
             class var eventType: DomainEventType { get }

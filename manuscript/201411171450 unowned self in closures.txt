@@ -2,12 +2,14 @@
 
 [Swift closures][closures] are prone to creating strong reference cycles when you keep the closure around and reference self from within the closure:
 
+{linenos=off}
     var closure = {
         self.doSomething()
     }
 
 Thanks to ARC, Xcode will complain if you omit `self` in this case, although you can invoke `doSomething()` without further ado from everywhere else in the same class. That's true if you use closures for lazy initialized properties, too:
 
+{title="Illustrating reference cycles. Lazy properties are safe"}
     class Person {
         // Strong reference to the closure
         var onWakeUp: () -> Void = {}

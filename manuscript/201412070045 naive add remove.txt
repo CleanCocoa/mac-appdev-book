@@ -25,6 +25,7 @@ Adding items takes a bit more lines to test, but it's nothing special:
 
 Appending `ItemNode` to the current selection (or its parent) `BoxNode` works by finding the `BoxNode`'s index path. The associated `NSTreeNode` provides all details to obtain the `BoxId`.
 
+{title="Appending item nodes"}
     func appendItemNodeToBoxIndexPath(parentIndexPath: NSIndexPath) {
         let parentTreeNode = boxTreeNodeAtIndexPath(parentIndexPath)
         let itemIndexPath = indexPath(appendedToTreeNode: parentTreeNode)
@@ -32,7 +33,9 @@ Appending `ItemNode` to the current selection (or its parent) `BoxNode` works by
     
         itemsController.insertObject(item, atArrangedObjectIndexPath: itemIndexPath)
     }
+    
     // ...
+    
     func itemNode(belowBoxTreeNode boxTreeNode: NSTreeNode)-> ItemNode {
         let boxNode = boxTreeNode.representedObject as BoxNode
         let itemId = eventHandler.provisionNewItemId(inBox: boxNode.boxId)
@@ -42,6 +45,7 @@ Appending `ItemNode` to the current selection (or its parent) `BoxNode` works by
 
 Now that `ItemViewController` asks for a new `ItemId`, we could simply replicate `provisionNewBoxId()` and ask the `CoreDataItemRepository` for a new ID, insert it, and all is well.
 
+{title="How BoxAndItemService should not provision item IDs"}
     public func provisionNewItemId(inBox boxId: BoxId) -> ItemId {
         let repository = ServiceLocator.itemRepository()
         let itemId = repository.nextId()
@@ -62,6 +66,7 @@ At the moment and with the current domain design in hand, it doesn't make sense 
 
 Creating `Item`s thus becomes part of the boundary of `Box`.
 
+{title="How BoxAndItemService should really provision item IDs"}
     public func provisionNewItemId(inBox boxId: BoxId) -> ItemId? {
         let repository = ServiceLocator.boxRepository()
         if let box = repository.boxWithId(boxId) {
@@ -92,7 +97,7 @@ To leverage Key-Value Observing in Swift, I have to change `Box` to this:
 
     public class Box: NSObject {
         public let boxId: BoxId
-        public dynamic var title: String
+        public dynamic var title: String  // Enable KVO & changes
     
         public init(boxId: BoxId, title: String) {
             self.boxId = boxId
@@ -102,6 +107,7 @@ To leverage Key-Value Observing in Swift, I have to change `Box` to this:
 
 `ManagedBox` observation is set up in a lazy property initializer. This way, the `Box` can use `ManagedBox`es values when it's requested. Since the Core Data managed object context keeps fetched values around until saving, subsequent fetch requests will produce the same `ManagedBox` and thus the same `Box`:
 
+{title="Setting up KVO on a private Box representation"}
     private var kBoxContext = 0
 
     public class ManagedBox: NSManagedObject {
@@ -138,6 +144,7 @@ To leverage Key-Value Observing in Swift, I have to change `Box` to this:
 
 This works pretty well for fetched boxes:
 
+{linenos=off}
     public class CoreDataBoxRepository: NSObject, BoxRepository {
         // ...
         public func boxWithId(boxId: BoxId) -> Box? {
@@ -155,6 +162,7 @@ To add an `Item` to a `Box`, the view controller has to know about items in the 
 
 Showing the view and populating its data can be modeled as a use case: `ManageBoxesAndItems`. Another naming candidate is `ShowBoxManagementWindow` or similar to express the intent, but `ManageBoxesAndItems` better captures the user's intention.
 
+{title="Use case Application Service"}
     public class ManageBoxesAndItems {
         var windowController: ItemManagementWindowController!
         // ...
@@ -176,6 +184,7 @@ Showing the view and populating its data can be modeled as a use case: `ManageBo
 
 `BoxData` is (yet) another simple struct to pass values to the view, and another chance to be thankful for Swift:
 
+{title="Data Transfer Objects"}
     public struct BoxData {
         let boxId: BoxId
         let title: String
@@ -187,7 +196,9 @@ Showing the view and populating its data can be modeled as a use case: `ManageBo
         let title: String
     }
 
-The view controller `ItemViewController` then creates `BoxNode`s and `ItemNode`s in its `displayBoxData`. The window controller simply forwards the message.
+In Swift, I favor simple structs over dictionary representations of objects. The compiler will help setting instances up properly. In Objective-C, on the other hand, I often hesitate to add yet another class to the code base.
+
+The view controller `ItemViewController` now can create `BoxNode`s and `ItemNode`s in its `displayBoxData` based on the data provided. The window controller simply forwards the message.
 
 This simple use case-oriented **Application Service** object relieves the `AppDelegate` from a lot of responsibilities. To show the window at startup, it simply invokes the use case service:
 
@@ -241,6 +252,7 @@ In classic Model--View--Controller fashion,[^mvc] every view component has its o
 
 I don't want to water-down the existing design just for the sake of convenience. Instead, I opt in to delegate `didSet` messages up to the `ItemViewController`.
 
+{title="Introduce a tree node-specific change observer"}
     public protocol HandlesItemListChanges: class {
         func treeNodeDidChange(treeNode: TreeNode, title: String)
     }
@@ -259,6 +271,7 @@ I don't want to water-down the existing design just for the sake of convenience.
 
 Until now, `BoxNode` did set up its own child nodes when it was reconstituted from `BoxData`. I move this part out into `ItemViewController` to set the `eventHandler` property to `self` there:
 
+{title="Add this to ItemViewController:"}
     public func displayBoxData(boxData: [BoxData]) {
         removeExistingNodes()
         for data in boxData {
@@ -294,7 +307,7 @@ Until now, `BoxNode` did set up its own child nodes when it was reconstituted fr
 
 Another option is to pipe the value for every node's `eventHandler` upon reconstitution, so the method signature becomes `BoxNode.init(_: BoxData, eventHandler: HandlesItemListChanges?)`.
 
-The Application Service is pretty simple, still:
+The Application Service still is pretty simple:
 
     public class BoxAndItemService: HandlesItemListEvents {
         // ...
@@ -355,6 +368,7 @@ With these changes in place, the item title change test passes, too.
 
 Adding this is pretty straight-forward now that changing is in place already. The interface I aim for is this:
 
+{linenos=off}
     func removeBox(boxId: BoxId)
     func removeItem(itemId: ItemId, fromBox boxId: BoxId)
 
@@ -364,7 +378,7 @@ The tests have to verify the following:
 * Removing a `BoxNode` removes the `ManagedBox`
 * Removing a `BoxNode` removes its `ManagedItems` with it
 
-There's nothing interesting to do. I still like to show the **Application Service**'s implementation because I think it shows best how well the parts integrate:
+There's nothing new to do to accomplish what's left. I like to show you the Application Service's implementation because I think it conveys best how well the parts integrate:
 
     public class BoxAndItemService: HandlesItemListEvents {
         var repository: BoxRepository! {
@@ -383,3 +397,4 @@ There's nothing interesting to do. I still like to show the **Application Servic
         // ...
     }
 
+Clean code often sports succinct method bodies. These methods are pretty short and I think they read well. To me, reading them is feedback in itself: the services seem to play together nicely.

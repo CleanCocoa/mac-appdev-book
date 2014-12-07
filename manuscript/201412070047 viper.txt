@@ -73,8 +73,9 @@ Separating event handling from updating the view can have nice benefits. Imagine
 
 To test how good it really is, I delay view updates a bit using `dispatch_after` with the following global helper function:
 
+{title="Delay helper in Utilites"}
     func delay(delay:Double, closure:()->()) {
-    dispatch_after(
+        dispatch_after(
             dispatch_time(
                 DISPATCH_TIME_NOW,
                 Int64(delay * Double(NSEC_PER_SEC))
