@@ -30,24 +30,29 @@ I don't trust my ability to use Interface Builder a lot, and I assume I will get
 
     // ItemViewControllerTests.swift
     func testItemsController_IsConnected() {
-        XCTAssertNotNil(viewController.itemsController, "items controller should be connected in Nib")
+        XCTAssertNotNil(viewController.itemsController)
     }
     
     func testItemsController_CocoaBindings() {
         let controller = viewController.itemsController
         let outlineView = viewController.outlineView
-        let titleColumn = outlineView.tableColumnWithIdentifier(kTitleColumnName)
-        let countColumn = outlineView.tableColumnWithIdentifier(kCountColumnName)
+        let titleCol = outlineView.tableColumnWithIdentifier(kTitleColumnName)
+        let countCol = outlineView.tableColumnWithIdentifier(kCountColumnName)
         
-        XCTAssertTrue(hasBinding(controller, binding: NSSortDescriptorsBinding, to: viewController, throughKeyPath: "self.itemsSortDescriptors"), "items controller should obtain sortDescriptors from view controller through bindings")
-        XCTAssertTrue(hasBinding(outlineView, binding: NSContentBinding, to: controller, throughKeyPath: "arrangedObjects"), "outline view should have binding to items controller's arrangedObjects")
+        XCTAssertTrue(hasBinding(controller, binding: NSSortDescriptorsBinding, 
+            to: viewController, throughKeyPath: "self.itemsSortDescriptors"))
+        XCTAssertTrue(hasBinding(outlineView, binding: NSContentBinding, 
+            to: controller, throughKeyPath: "arrangedObjects"))
         
-        XCTAssertTrue(hasBinding(titleColumn!, binding: NSValueBinding, to: controller, throughKeyPath: "arrangedObjects.title"), "bind title column to title property")
-        XCTAssertTrue(hasBinding(countColumn!, binding: NSValueBinding, to: controller, throughKeyPath: "arrangedObjects.count"), "bind count column to count property")
+        XCTAssertTrue(hasBinding(titleCol!, binding: NSValueBinding, 
+            to: controller, throughKeyPath: "arrangedObjects.title"))
+        XCTAssertTrue(hasBinding(countCol!, binding: NSValueBinding, 
+            to: controller, throughKeyPath: "arrangedObjects.count"))
     }
 
 <!--ct: 20141124163838 explicit bindings make things worse-->
 
+{#20141124163838}
 I hunted for a bug for a while only to find the Cocoa Binding from `NSOutlineView` to `NSTreeController` is in place _although I don't set it explicitely_. If I _do_, the behavior goes all nuts. It seems that the column bindings make up for the rest. I have no clue how to verify this kind of automatted set-up in the Nib without explicit bindings slipping by. Parsing the Nib XML is out of question.[^dc824da1016025abd8be61fafb560995527dccfb]
 <!--ct: commit #dc824da1016025abd8be61fafb560995527dccfb-->
 
@@ -60,9 +65,13 @@ I hunted for a bug for a while only to find the Cocoa Binding from `NSOutlineVie
 The method `hasBinding(_,binding:,to:,throughKeyPath:)` is a little helper to inspect the underlying bindings dictionary in a readable fashion:
 
     extension XCTestCase {
-        func hasBinding(object: NSObject, binding:String, to boundObject: NSObject, throughKeyPath keyPath:String) -> Bool {
+        func hasBinding(object: NSObject, 
+                binding:String, 
+                to boundObject: NSObject, 
+                throughKeyPath keyPath:String) -> Bool {
             if let info = object.infoForBinding(binding) {
-                return (info[NSObservedObjectKey] as NSObject == boundObject) && (info[NSObservedKeyPathKey] as String == keyPath)
+                return (info[NSObservedObjectKey] as NSObject == boundObject) &&
+                    (info[NSObservedKeyPathKey] as String == keyPath)
             }
         
             return false
@@ -85,12 +94,13 @@ To test controls such as buttons, there's no need to simulate clicks in the test
 
     // Test that there's a button outlet
     func testAddItemButton_IsConnected() {
-        XCTAssertNotNil(viewController.addItemButton, "add item button not connected")
+        XCTAssertNotNil(viewController.addItemButton)
     }
     
     // Test that it is connected to an action method
     func testAddItemButton_IsWiredToAction() {
-        XCTAssertEqual(viewController.addItemButton.action, Selector("addItem:"), "'add item' button should be wired to addItem:");
+        XCTAssertEqual(viewController.addItemButton.action, 
+            Selector("addItem:"));
     }
     
     // Specify preconditions in "Initially" context

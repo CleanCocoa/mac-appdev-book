@@ -89,7 +89,8 @@ The functional test still fails because the `BoxAndItemService` is never actuall
             let boxId = eventHandler.provisionNewBoxId()
             let box = BoxNode(boxId: boxId)
             let indexPath = NSIndexPath(index: nodeCount())
-            itemsController.insertObject(box, atArrangedObjectIndexPath: indexPath)
+            itemsController.insertObject(box, 
+                atArrangedObjectIndexPath: indexPath)
             orderTree()
         }
     }
@@ -117,7 +118,8 @@ To make the test pass, `CoreDataBoxRepository` needs a `count() -> Int` method:
         fetchRequest.includesSubentities = false
         
         var error: NSError? = nil
-        let count = managedObjectContext.countForFetchRequest(fetchRequest, error: &error)
+        let count = managedObjectContext.countForFetchRequest(fetchRequest, 
+            error: &error)
         
         if count == NSNotFound {
             //FIXME: handle error

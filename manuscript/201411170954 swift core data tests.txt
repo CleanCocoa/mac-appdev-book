@@ -14,6 +14,9 @@ I add class-level helper methods to these to make [creating new Core Data entiti
     ManagedItem.insertManagedItem(anItemId, title: "the title",
         inManagedObjectContext: aManagedObjectContext)
 
+
+{pagebreak}
+
 Now I want to add tests to verify this helper method actually adds an entity to the context. Since the method is trivially simple, the tests will also show that Core Data-specific tests work, with their own in-memory scratchpad `NSManagedContext`.
 
 Turns out this is enough of a challenge for me with Swift.

@@ -79,7 +79,8 @@ An event should be a value type, and thus a struct. It assembles a `userInfo` di
         }
     
         func notification() -> NSNotification {
-            return NSNotification(name: kBoxProvisioned, object: nil, userInfo: userInfo())
+            return NSNotification(name: kBoxProvisioned, object: nil, 
+                userInfo: userInfo())
         }
     }
 
@@ -93,8 +94,9 @@ With the changes in place, the `DisplayBoxesAndItems` Application Service now do
         func subscribe() {
             let mainQueue = NSOperationQueue.mainQueue()
         
-            boxProvisioningObserver = publisher.subscribe(BoxProvisionedEvent.self, queue: mainQueue) {
-                [unowned self] (event: BoxProvisionedEvent!) in
+            boxProvisioningObserver = publisher.subscribe(
+                    BoxProvisionedEvent.self, queue: mainQueue) {
+                [unowned self] event in
 
                 let boxData = BoxData(boxId: event.boxId, title: event.title)
                 self.consumeBox(boxData) // Notice how misleading this reads?
@@ -121,8 +123,8 @@ The conversion of `NSNotification` to the appropriate domain event takes place i
             queue: NSOperationQueue, 
             usingBlock block: (T!) -> Void) -> NSObjectProtocol {
         let eventType: DomainEventType = T.eventType
-        return notificationCenter.addObserverForName(eventType.name, object: nil, queue: queue) {
-            (notification: NSNotification!) -> Void in
+        return notificationCenter.addObserverForName(eventType.name, 
+                object: nil, queue: queue) { notification in
         
             let userInfo = notification.userInfo!
             let event: T = T(userInfo: userInfo)

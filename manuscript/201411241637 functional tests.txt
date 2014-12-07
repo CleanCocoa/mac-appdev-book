@@ -1,6 +1,7 @@
 ## Functional Testing Helps Transition to Adding Real Features
 
-I'm pretty confident the view does what it should do. It's all just basic stuff still, although it took enough trial & error to reach this point. (I am talking about you, explicit Cocoa Bindings which break the view's behavior! <!--ct: TODO link to §20141124163838-->)
+I'm pretty confident the view does what it should do. It's all just basic stuff still, although it took enough trial & error to reach this point. (I am talking about you, [explicit Cocoa Bindings](#20141124163838) which break the view's behavior!)
+<!--ct: TODO test link to §20141124163838-->
 
 There are two steps I could take now to quench my curiosity.
 
@@ -89,7 +90,8 @@ An alternate approach is to change `allBoxes()` to `() -> [ManagedBox]!` to get 
 {title="Don't allow optionals if there's no need to"}
     func allBoxes() -> [ManagedBox] {
         let request = NSFetchRequest(entityName: ManagedBox.entityName())
-        let results: [AnyObject]? = context.executeFetchRequest(request, error: nil)
+        let results: [AnyObject]? = \
+            context.executeFetchRequest(request, error: nil)
         
         if let boxes = results as? [ManagedBox] {
             return boxes
@@ -141,8 +143,9 @@ The `ServiceLocator` can look like this:
         }
         
         func boxRepository() -> BoxRepository {
-            assert(managedObjectContext != nil, "managedObjectContext must be set up")
-            return CoreDataBoxRepository(managedObjectContext: managedObjectContext!)
+            let moc = managedObjectContext
+            assert(moc != nil, "managedObjectContext must be set up")
+            return CoreDataBoxRepository(managedObjectContext: moc!)
         }
     }
 

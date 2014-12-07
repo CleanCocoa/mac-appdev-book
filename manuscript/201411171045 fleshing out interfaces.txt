@@ -18,6 +18,9 @@ I would've wanted to override the ID generating method `integerId()` in a test R
 
 Now that I have to think of my code as a module with a public interface, common testing strategies involving method overrides have to be solved differently.
 
+
+{pagebreak}
+
 I want to ensure the repository generates IDs until an ID is free. Duplicates are not allowed. I could still override the `integerId()` method and make it public:
 
     // Source module
@@ -44,6 +47,9 @@ With this `TestRepository` in hand, I can reserve `ID1` and test that the rest o
 
 Making ID-generation public is a bad idea, though. It's an implementation detail of the Repository I don't want to expose. When dealing with legacy code, sometimes you have no choice but alter the public interface of a class and promise to yourself to not violate certain rules. We're not dealing with legacy code, though. Let's aim for a clean API.
 
+
+{pagebreak}
+
 First, recognize ID generation as a distinct responsibility and extract it into its own interface:
 
 {linenos=off}
@@ -68,10 +74,12 @@ The `CoreDataItemRepository`'s interface doesn't have to change unless needed. S
         let integerIdGenerator: GeneratesIntegerId
     
         public convenience init(managedObjectContext: NSManagedObjectContext) {
-            self.init(managedObjectContext: managedObjectContext, integerIdGenerator: DefaultIntegerIdGenerator())
+            self.init(managedObjectContext: managedObjectContext, 
+                integerIdGenerator: DefaultIntegerIdGenerator())
         }
     
-        public init(managedObjectContext: NSManagedObjectContext, integerIdGenerator: GeneratesIntegerId) {
+        public init(managedObjectContext: NSManagedObjectContext, 
+                integerIdGenerator: GeneratesIntegerId) {
             self.managedObjectContext = managedObjectContext
             self.integerIdGenerator = integerIdGenerator
         
@@ -123,14 +131,17 @@ And here's the test which puts the test generator into place via Dependency Inje
 
     func testNextId_WhenGeneratedIdIsTaken_ReturnsAnotherId() {
         let testGenerator = TestIntegerIdGenerator()
-        repository = CoreDataItemRepository(managedObjectContext: self.context, integerIdGenerator: testGenerator)
+        repository = CoreDataItemRepository(managedObjectContext: self.context, 
+            integerIdGenerator: testGenerator)
         let existingId = ItemId(testGenerator.firstAttempt)
-        ManagedItem.insertManagedItem(existingId, title: "irrelevant", inManagedObjectContext: self.context)
+        ManagedItem.insertManagedItem(existingId, title: "irrelevant", 
+            inManagedObjectContext: self.context)
         
         let itemId = repository!.nextId()
         
         let expectedNextId = ItemId(testGenerator.secondAttempt)
-        XCTAssertEqual(itemId, expectedNextId, "Should generate another ID because first one is taken")
+        XCTAssertEqual(itemId, expectedNextId, 
+            "Should generate another ID because first one is taken")
     }
 
 Strangely enough, I have the impression that Swift forces me to make good decisions design-wise, while I expect more experienced Cocoa developers to consider all of this backward, or ugly. I expect them to think this is all too much like Java: create a lot of interfaces (format protocols) and service objects and stuff like that.

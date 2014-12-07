@@ -54,7 +54,8 @@ Not being able to create new objects is worse:
     
             repository.addBox(box)
     
-            eventPublisher.publish(BoxProvisionedEvent(boxId: boxId, title: box.title))
+            let event = BoxProvisionedEvent(boxId: boxId, title: box.title)
+            eventPublisher.publish(event)
         }
         // ...
     }
@@ -97,7 +98,8 @@ The `save()` method of `PersistentStack` will look like this afterwards:
 With `logDetailledErrors()`[^201412051124] defined in "Utilities.swift" for global access as:
 
     func logDetailledErrors(error: NSError) {
-        if let detailedErrors: [NSError] = error.userInfo?[NSDetailedErrorsKey]? as? [NSError] {
+        let key = NSDetailedErrorsKey
+        if let detailedErrors: [NSError] = error.userInfo?[key]? as? [NSError] {
             for detailedError in detailedErrors {
                 NSLog("  DetailedError: \(detailedError.userInfo)")
             }
@@ -277,10 +279,15 @@ Since this application has no value to the user if reading data isn't possible, 
                 object: nil, 
                 queue: NSOperationQueue.mainQueue()) { notification in
             
-            let question = NSLocalizedString("Could not read data. Report and Quit?", comment: "Read error quit question message")
-            let info = NSLocalizedString("The application cannot read data and thus better not continues to operate. Changes will be saved if possible.", comment: "Read error quit question info");
-            let quitButton = NSLocalizedString("Report and Quit", comment: "Report and Quit button title")
-            let cancelButton = NSLocalizedString("Cancel", comment: "Cancel button title")
+            let question = NSLocalizedString("Could not read data. Report \
+                and Quit?", comment: "Read error quit question message")
+            let info = NSLocalizedString("The application cannot read data and \
+                thus better not continues to operate. Changes will be saved \
+                if possible.", comment: "Read error quit question info");
+            let quitButton = NSLocalizedString("Report and Quit", 
+                comment: "Report and Quit button title")
+            let cancelButton = NSLocalizedString("Cancel", 
+                comment: "Cancel button title")
             let alert = NSAlert()
             alert.messageText = question
             alert.informativeText = info

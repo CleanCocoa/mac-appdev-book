@@ -4,7 +4,9 @@ Adding items takes a bit more lines to test, but it's nothing special:
 
     func testAddItem_WithBoxInRepo_CreatesItemBelowBox() {
         let existingId = BoxId(1337)
-        ManagedBox.insertManagedBox(existingId, title: "irrelevant", inManagedObjectContext: context)
+        ManagedBox.insertManagedBox(existingId, 
+            title: "irrelevant", 
+            inManagedObjectContext: context)
         XCTAssertEqual(boxRepository!.count(), 1, "repo contains a box")
     
         // When
@@ -31,7 +33,8 @@ Appending `ItemNode` to the current selection (or its parent) `BoxNode` works by
         let itemIndexPath = indexPath(appendedToTreeNode: parentTreeNode)
         let item = itemNode(belowBoxTreeNode: parentTreeNode)
     
-        itemsController.insertObject(item, atArrangedObjectIndexPath: itemIndexPath)
+        itemsController.insertObject(item, 
+            atArrangedObjectIndexPath: itemIndexPath)
     }
     
     // ...
@@ -117,16 +120,25 @@ To leverage Key-Value Observing in Swift, I have to change `Box` to this:
         public lazy var box: Box = {
         
             let box = Box(boxId: self.boxId(), title: self.title)
-            box.addObserver(self, forKeyPath: "title", options: .New, context: &kBoxContext)
+            box.addObserver(self, 
+                forKeyPath: "title", 
+                options: .New, 
+                context: &kBoxContext)
         
             self._box = box
             return box
         }()
     
-        public override func observeValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutablePointer<Void>) {
+        public override func observeValueForKeyPath(keyPath: String, 
+                ofObject object: AnyObject, 
+                change: [NSObject : AnyObject], 
+                context: UnsafeMutablePointer<Void>) {
         
             if context != &kBoxContext {
-                super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
+                super.observeValueForKeyPath(keyPath, 
+                    ofObject: object, 
+                    change: change, 
+                    context: context)
                 return
             }
         
@@ -204,10 +216,11 @@ This simple use case-oriented **Application Service** object relieves the `AppDe
 
     class AppDelegate: NSObject, NSApplicationDelegate {
         // ...
-        lazy var manageBoxesAndItems: ManageBoxesAndItems! = ManageBoxesAndItems()
+        lazy var manageBoxesAndItems = ManageBoxesAndItems()
     
         func applicationDidFinishLaunching(aNotification: NSNotification) {
-            ServiceLocator.sharedInstance.managedObjectContext = persistentStack.managedObjectContext
+            ServiceLocator.sharedInstance.managedObjectContext = \
+                persistentStack.managedObjectContext
             manageBoxesAndItems.showBoxManagementWindow()
         }
     }
@@ -292,7 +305,7 @@ Until now, `BoxNode` did set up its own child nodes when it was reconstituted fr
     }
     
     func itemNodes(allItemData: [ItemData]) -> [ItemNode] {
-        var result: [ItemNode] = allItemData.map() { (itemData: ItemData) -> ItemNode in
+        var result: [ItemNode] = allItemData.map() { itemData in
             self.itemNode(itemData)
         }
         return result
@@ -335,7 +348,9 @@ I decide to use an active form for this method. Similar to `provisionNewBoxId`, 
 
 Similarly, I want `changeItemTitle` to look like this:
 
-    public func changeItemTitle(itemId: ItemId, title: String, inBox boxId: BoxId) {
+    public func changeItemTitle(itemId: ItemId, 
+            title: String, 
+            inBox boxId: BoxId) {
         let repository = ServiceLocator.boxRepository()
     
         if let box = repository.boxWithId(boxId) {

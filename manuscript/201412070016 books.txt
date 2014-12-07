@@ -26,6 +26,9 @@ Steve Freeman and Nat Pryce (2010):  _Growing object-oriented software, guided b
   --- _This book has taught me so much about Test-Driven Development! I figured out when to use functional tests, why it's beneficial to start with a failing test on the system level to guide development, and how to create multi-layered applications with test fakes all thanks to this book._
 
 
+{pagebreak}
+
+
 Ivar Jacobson, Magnus Christerson, Patrik Jonsson, and Gunnar Övergaard (1990):  _Object-Oriented Software Engineering. A Use Case Driven Approach_, Wokingham: Addison-Wesley.  
   --- _Actually a recommendation by Uncle Bob in _Architecture: The Lost Years_. It taught me to think about application services and use case objects. The book's focus is on architecture, not on code. Useful practices. You may get this one used for a few dollars. I found it in my local university's library._
 
