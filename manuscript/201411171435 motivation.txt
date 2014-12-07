@@ -1,4 +1,4 @@
-# Motivation to Write This Book
+## Motivation to Write This Book
 
 Hi, I'm Christian and I develop [the Word Counter for Mac][wcapp]. It's my first big Mac application, and I charge money for a license, which makes me nervous. 
 
@@ -8,7 +8,7 @@ Selling my app makes me nervous because I suddenly feel obliged to deliver the b
 
 That's a lot of pressure. I grew more comfortable with it when my confidence in the code grew.
 
-## Untangling Cocoa from the App
+### Untangling Cocoa from the App
 
 So now it's fall 2014. I want to add a new feature to the Word Counter.
 
@@ -28,7 +28,7 @@ That's when I decided to use either a SQLite library or opt-in to Core Data to r
 
 [wcapp]: http://wordcounterapp.com
 
-## Challenges
+### Challenges
 
 I didn't have any experience displaying data using `NSOutlineView`s. I didn't have a lot of experience with Core Data. I couldn't copy too much of existing code to glue the user interface to existing data because the user wasn't able to set up a lot in the app until then.
 
@@ -56,13 +56,5 @@ The basic architecture I want to advocate is sometimes called "[Clean Architectu
 
 Keep in mind I am still making sense of this myself. I bet I get a concept or two wrong.
 
-That's why you may feel free to contribute to this book and the project via GitHub:
-
-- [Book Manuscript on GitHub](https://github.com/DivineDominion/mac-appdev-book)
-- [Project Code on GitHub][bookcode]
-
-I hope reading this book will be as useful to you as writing it was to me.
-
-[bookcode]: https://github.com/DivineDominion/mac-appdev-code
 [cleanar]: http://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html
 [hexagonal]: http://alistair.cockburn.us/Hexagonal+architecture

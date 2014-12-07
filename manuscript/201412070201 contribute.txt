@@ -1,0 +1,12 @@
+## Contributing to the Book Manuscript and Example Project
+
+I believe in sharing. That's why I am open-sourcing the whole book plus example code. You pay for the product, but the information is freely available for every brave soul trying to make sense of Mac app development.
+
+I hope reading this book will be as useful to you as writing it was to me. I learned a lot on the way, and there's even more to learn.
+
+Your feedback is very welcome, and I appreciate pull requests on GitHub for both the manuscript and the example project: if you spot a typo or a code error, help me fix it!
+
+Feel free to contribute to this book and the overall project via GitHub:
+
+- [Book Manuscript on GitHub](https://github.com/DivineDominion/mac-appdev-book)
+- [Project Code on GitHub][https://github.com/DivineDominion/mac-appdev-code]
