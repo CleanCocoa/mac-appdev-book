@@ -32,6 +32,24 @@
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
         <h1>
+<a id="buy-the-book" class="anchor" href="#buy-the-book" aria-hidden="true"><span class="octicon octicon-link"></span></a>Buy the Book</h1>
+
+<p>I wrote and released a book called "Exploring Mac App Development Strategies" which helps developers design reusable code and untangle Core Data from their app, for example.</p>
+
+<p><strong><a href="https://leanpub.com/develop-mac-apps-clean-architecture-swift">Get the book from Leanpub at $9.99</a></strong> or name your price.</p>
+
+<h2>
+<a id="core-ideas-and-theses" class="anchor" href="#core-ideas-and-theses" aria-hidden="true"><span class="octicon octicon-link"></span></a>Core Ideas and Theses</h2>
+
+<p>Here's the core ideas I want to share with you and have your feedback on:</p>
+
+<ol>
+<li>Apple's Core Data is a very invasive framework. It works best when you couple everything, beginning at the user interface, to Core Data entities. Cocoa Bindings make a lot of the magic possible, but they come at a cost: the Core Data entities (or <code>NSManagedObject</code> subclasses, for that matter) are bound to do a lot of different things for different "clients", wheras by 'client' I mean consuming views, background services, and the like. It'd be easier to maintain the code if you model entities for each "<a href="http://martinfowler.com/bliki/BoundedContext.html">Bounded Context</a>" separately.</li>
+<li>Adopting Domain-Driven Design thinking, small service objects are favorable. It's easy to create Data Transfor Objects in Swift using <code>struct</code>s, for example. Core Data should be pushed outside the domain (i.e. where the business logic is hosted) and become an implementation detail.</li>
+<li>Once you free your app from the entanglement by Core Data (and other Apple suggested best practices which don't scale well), you will be able to leverage powerful design patterns. I created domain event wrappers around <code>NSNotification</code> to make event handling easier and failure-proof. Using events to propagate changes (instead of using Bindings, for example) makes concurrent programming easier.</li>
+</ol>
+
+<h1>
 <a id="download-the-book" class="anchor" href="#download-the-book" aria-hidden="true"><span class="octicon octicon-link"></span></a>Download the Book</h1>
 
 <p>You can look at the manuscript for free. In fact, you can even change it to your liking and re-distribute it.</p>
