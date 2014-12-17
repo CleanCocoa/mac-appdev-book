@@ -51,7 +51,7 @@ One necessary condition of successful [refactoring][] is that you have to be abl
 > Refactoring is s a disciplined technique for restructuring an existing body of code, altering its internal structure without changing its external behavior.
 > --- [Martin Fowler](http://www.refactoring.com/)
 
-It's hard for me to find a balance. But since I [publish the code of this project][bookcode], maybe with the help of other developers all of us can learn something about weighing test coverage. I'd apprecite a good discussion on the topic.
+It's hard for me to find a balance. But since I [publish the code of this project][bookcode], maybe with the help of other developers all of us can learn something about weighing test coverage. I'd appreciate a good discussion on the topic.
 
 In short, my guideline is the following:
 
