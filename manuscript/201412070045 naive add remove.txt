@@ -290,6 +290,10 @@ I don't want to water-down the existing design just for the sake of convenience.
         // ...
     }
 
+You can make use of this Model--View--View Model-based approach with any kind of components. You can bind strings to text fields, for example, without using the way too heavy Cocoa Bindings (which I find hard to set up in code). Property observers are really powerful. Srdan Rasic shared a really good implementation of an [all-purpose value object wrapper][rasic-mvvm] with MVVM implementation.
+
+[rasic-mvvm]: http://rasic.info/bindings-generics-swift-and-mvvm/
+
 Until now, `BoxNode` did set up its own child nodes when it was reconstituted from `BoxData`. I move this part out into `ItemViewController` to set the `eventHandler` property to `self` there:
 
 {title="Add this to ItemViewController:"}

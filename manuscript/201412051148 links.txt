@@ -2,6 +2,8 @@
 
 ## Interesting Links
 
+You should really check out the following:
+
 SourceView sample code (Objective-C)
 :   <https://developer.apple.com/library/mac/samplecode/SourceView/Listings/BaseNode_m.html#//apple_ref/doc/uid/DTS10004441-BaseNode_m-DontLinkElementID_6>
 :   Example application by Apple where `NSOutlineView` is used. Good for getting started, although the example app doesn't run properly anymore -- I don't see any images in the source view.
@@ -19,4 +21,6 @@ Avdi Grimm: Objects on Rails
 : <http://objectsonrails.com>
 : A free e-book which taught me how to decouple my application from Ruby on Rails. This one got me hooked on thinking past using the framework properly.
 
+Other links of interest on the topic of software architecture:
 
+* [What service objects are not](https://medium.com/@KamilLelonek/what-service-objects-are-not-7abef8aa2f99) (Ruby)

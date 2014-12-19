@@ -25,6 +25,8 @@ In the **Domain** of the Word Counter, for example, there reside a lot of other 
 
 In our example application, on the other hand, there won't be much going on at the beginning. We will focus on storing data. There'll be a **Domain Service** to provision new `Box`es and `Item`s, that is, creating new Entities. This Domain Service adds the Entities to the Repository so other objects can obtain them later on.
 
+**Services**, by the way, are objects which encapsulate behavior but don't have identity. You may argue they shouldn't even have _state_. They execute commands, but they shouldn't answer queries. The Service Locator in Infrastructure is as much a Service Object as the object representing a use case or user story-driven action. That's as general a definition I can give without limiting its application too much.
+
 ### Infrastructure
 
 Then there's the interface for other layers. There's concrete Repository implementations in the **Infrastructure** layer. When the Domain Service reaches "outward" through the Repository interface, it sends data through the Domain's "ports". The concrete Core Data Repository implementation is an "adapter" to one of these ports.
