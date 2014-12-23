@@ -23,9 +23,11 @@ To me, setting up a presenter for a domain model objects sounds like preparing "
 You may have heard of the ["Tell, Don't Ask" Principle](https://pragprog.com/articles/tell-dont-ask). Rephrased, it means you should focus on _commands_ and get rid of as much information _queries_ as possible. (We will encounter Command--Query Separation in various forms throughout this book.)
 <!--ct: TODO add section about CQRS as a central hub of information-->
 
-James Ladd (@jamesladd) coined the phrase "East-Oriented Code". Where "Tell, Don't Ask" opens up to ambiguity at first, the principle of "East-Oriented Code" doesn't. It says that all your information should travel eastward, to the right, that is, no information should flow to the _left_ as you read your code.
+James Ladd (@jamesladd) coined the phrase "East-Oriented Code". Where "Tell, Don't Ask" opens up to ambiguity at first, the principle of "East-Oriented Code" doesn't. It says that all your information should travel eastward, to the right, that is, no information should flow to the _left_ as you read your code.[^east]
 
-Here's an example of mixed-up information flow:
+  [^east]: James has posts on the topic on [his blog](http://jamesladdcode.com/category/its-all-about-writing-software/). So has Stephen Haberman written [about writer objects instead of getters](http://www.draconianoverlord.com/2013/04/12/east-oriented-programming.html). You may want to watch [a Ruby video](confreaks.com/videos/4825-RubyConf2014-eastward-ho-a-clear-path-through-ruby-with-oo) on the topic for good examples.
+
+Take a look at an example of mixed-up information flow:
 
 {linenos=off}
     let fullName: String = person.fullName
@@ -58,6 +60,12 @@ According to one accompanying convention of the "East-Oriented Code" principle, 
     person.displayName(theDisplay)
         .storeShoppingCart(theCartHandler)
         .issueRefunds()
+
+[James' principles](http://jamesladdcode.com/?p=302) in a nutshell:
+
+> 1. All **public** methods should be void, boolean or return a reference to the current object (this in Java).
+> 2. Objects that implement the Factory or Builder pattern or similar are an exception.
+> 3. East is better suited to composite objects, not primitive objects.
 
 If returning `self` causes problems or breaks your tests, your code isn't ready for focussing on a command-centric approach. Don't worry, though: that should be a driver of change and useful refactorings.
 
