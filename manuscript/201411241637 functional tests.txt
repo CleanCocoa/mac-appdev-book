@@ -1,7 +1,6 @@
 ## Functional Testing Helps Transition to Adding Real Features
 
 I'm pretty confident the view does what it should do. It's all just basic stuff still, although it took enough trial & error to reach this point. (I am talking about you, [explicit Cocoa Bindings](#20141124163838) which break the view's behavior!)
-<!--ct: TODO test link to §20141124163838-->
 
 There are two steps I could take now to quench my curiosity.
 

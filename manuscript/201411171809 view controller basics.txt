@@ -20,7 +20,7 @@ So we take the following steps:
 
 {pagebreak}
 
-### Remove the Burden of UI from AppDelegate
+### Remove the Burden of UI from AppDelegate {#20141124163838}
 
 The Mac Cocoa project template used `AppDelegate` as the owner of the main window. I tend to put `AppDelegate` into Infrastructure. The user interface belongs elsewhere, so factoring the main window out into its own controller will both slim down `AppDelegate` and make the overall app design more supple instantly.
 
@@ -54,7 +54,6 @@ I don't trust my ability to use Interface Builder a lot, and I assume I will get
 
 <!--ct: 20141124163838 explicit bindings make things worse-->
 
-{#20141124163838}
 I hunted for a bug for a while only to find the Cocoa Binding from `NSOutlineView` to `NSTreeController` is in place _although I don't set it explicitely_. If I _do_, the behavior goes all nuts. It seems that the column bindings make up for the rest. I have no clue how to verify this kind of automatted set-up in the Nib without explicit bindings slipping by. Parsing the Nib XML is out of question.[^dc824da1016025abd8be61fafb560995527dccfb]
 <!--ct: commit #dc824da1016025abd8be61fafb560995527dccfb-->
 
