@@ -11,7 +11,7 @@ I want to refactor `HandlesItemListEvents` to pay more attention to command--que
 {pagebreak}
 
 
-### Concerns with the naive approach
+### Concerns with the naive approach {#refactoring-to-commands}
 
 Have a look at the event handling protocol again:
 

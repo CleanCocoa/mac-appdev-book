@@ -1,4 +1,4 @@
-## List of Patterns You Might not Know Yet
+## Patterns & Principles
 
 
 ### Model--View--View Model (MVVM)
@@ -17,3 +17,48 @@ In the Ruby on Rails world, the presenter has become a service object which hold
 To me, setting up a presenter for a domain model objects sounds like preparing "a model for the view." After all, you pass the presenter in! But I learned to think about it from a different perspective. Utilizing dependency inversion, the presenter is indeed injected into the view, but its interface is specified by means of the view component arrangement. In other words, you set up a presenter which the view specifies, so the presenter actually belongs in the user interface layer.
 
 [presmodel]: http://martinfowler.com/eaaDev/PresentationModel.html
+
+### East-Oriented Code
+
+You may have heard of the ["Tell, Don't Ask" Principle](https://pragprog.com/articles/tell-dont-ask). Rephrased, it means you should focus on _commands_ and get rid of as much information _queries_ as possible. (We will encounter Command--Query Separation in various forms throughout this book.)
+<!--ct: TODO add section about CQRS as a central hub of information-->
+
+James Ladd (@jamesladd) coined the phrase "East-Oriented Code". Where "Tell, Don't Ask" opens up to ambiguity at first, the principle of "East-Oriented Code" doesn't. It says that all your information should travel eastward, to the right, that is, no information should flow to the _left_ as you read your code.
+
+Here's an example of mixed-up information flow:
+
+{linenos=off}
+    let fullName: String = person.fullName
+    theDisplay.nameLabel!.text = fullName
+
+Here, `person.fullName` clearly is a query. Setting the text of the display's label is bound to a query, too. For the dramatic effect, I made it so that you even have to unwrap the optional `nameLabel`. So `theDisplay.nameLabel!` is a query, too. Setting the text is actually a command.
+
+Making your code "East-Oriented" means you should at least get rid of queries. Don't ask for information or view components -- tell your objects to perform changes instead:
+
+{linenos=off}
+    person.displayName(theDisplay)
+
+Now `person` may hide its `fullName` from the outside, because you shouldn't query it anyway. Internally, it could do this:
+
+{linenos=off}
+    func displayName(aDisplay: DisplaysNames) -> Person {
+        let data = ["firstName" : firstName, "lastName" : lastName]
+        aDisplay.displayName(data)
+        
+        return self
+    }
+
+The `DisplaysNames` protocol can specify alternate `displayName` methods which accepts more than a single data parameter instead. But then `Person` would have to know about this, and passing initials or middle names will require different methods instead of different keys in the data container. I like the flexibility of this approach to illustrate the principle.
+
+So why did I suddenly return the `Person` object's instance itself in the end? Shouldn't a command be of return type `Void`?
+
+According to one accompanying convention of the "East-Oriented Code" principle, we should `return self` in commands in order to chain them:
+
+{linenos=off}
+    person.displayName(theDisplay)
+        .storeShoppingCart(theCartHandler)
+        .issueRefunds()
+
+If returning `self` causes problems or breaks your tests, your code isn't ready for focussing on a command-centric approach. Don't worry, though: that should be a driver of change and useful refactorings.
+
+I will apply a lot of this later in the book, when it comes to [use commands instead of queries](#refactoring-to-commands) to provision now `Box` objects in the domain.

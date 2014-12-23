@@ -17,6 +17,10 @@ Uncle Bob: Architecture -- The Lost Years (Video)
 : <https://www.youtube.com/watch?v=WpkDN78P884>
 : This talk introduced me to Hexagonal and Clean Architecture.
 
+Jim Gay: Clean (Ruby) Code
+: Video: [East-Oriented Code](http://confreaks.com/videos/4825-RubyConf2014-eastward-ho-a-clear-path-through-ruby-with-oo) at RubyConf 2014
+: Book: ["Clean Ruby"](http://clean-ruby.com) -- full of good examples which you can apply to Swift, too, and even more so to Objective-C and its meta-programming capabilities.
+
 Avdi Grimm: Objects on Rails
 : <http://objectsonrails.com>
 : A free e-book which taught me how to decouple my application from Ruby on Rails. This one got me hooked on thinking past using the framework properly.
