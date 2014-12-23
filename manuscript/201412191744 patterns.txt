@@ -61,4 +61,4 @@ According to one accompanying convention of the "East-Oriented Code" principle, 
 
 If returning `self` causes problems or breaks your tests, your code isn't ready for focussing on a command-centric approach. Don't worry, though: that should be a driver of change and useful refactorings.
 
-I will apply a lot of this later in the book, when it comes to [use commands instead of queries](#refactoring-to-commands) to provision now `Box` objects in the domain.
+I will apply a lot of this later in the book, when it comes to [using commands instead of queries](#refactoring-to-commands) to provision now `Box` objects in the domain.

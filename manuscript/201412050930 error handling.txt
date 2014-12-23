@@ -16,7 +16,7 @@ Essentially, you'd move the `treeNodeDidChange` delegate or event handler callba
 
 The gain from this huge object overhead is this: each delegate will know which view component it's tied to. No need to broadcast the node's identity with each change. The user interface layer wouldn't have to deal with `BoxId`s anymore. 
 
-There could be a central dispatcher of sorts in the application layer to receive domain changes. The dispatcher would hold a dictionary of `BoxId`--to-`NodeObserver` mappings. When the entities change, the dispatcher will inform the appropriate `NodeObserver`.
+There could be a central dispatcher of sorts in the application layer to receive domain changes. The dispatcher would hold a dictionary of `BoxId`--to--`NodeObserver` mappings. When the entities change, the dispatcher will inform the appropriate `NodeObserver`.
 
 Then again, `NodeObserver`s could listen to domain events themselves and incorporate changes for related entities. This is a highly decentralized architecture. It has a strong appeal, and I'd love to redesign the layer integration in a future edition of this book accordingly to see how well it works.[^fut] I think this will allow for a responsive user interface and thus greatly enhance the overall user experience.
 
