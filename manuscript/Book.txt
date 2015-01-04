@@ -1,6 +1,5 @@
-newsletter.txt
-
 part-intro.txt
+newsletter.txt
 201412061628 who.txt
 201412070201 contribute.txt
 201411171435 motivation.txt

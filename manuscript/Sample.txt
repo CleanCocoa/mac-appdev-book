@@ -1,4 +1,5 @@
 part-intro.txt
+newsletter.txt
 sample-stripped.txt
 201412061628 who.txt
 201412070201 contribute.txt
