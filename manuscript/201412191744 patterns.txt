@@ -18,7 +18,9 @@ To me, setting up a presenter for a domain model objects sounds like preparing "
 
 [presmodel]: http://martinfowler.com/eaaDev/PresentationModel.html
 
-### East-Oriented Code
+### East-Oriented Code {#east}
+
+<!--ct: 201412250933 east oriented code-->
 
 You may have heard of the ["Tell, Don't Ask" Principle](https://pragprog.com/articles/tell-dont-ask). Rephrased, it means you should focus on _commands_ and get rid of as much information _queries_ as possible. (We will encounter Command--Query Separation in various forms throughout this book.)
 <!--ct: TODO add section about CQRS as a central hub of information-->
@@ -33,7 +35,9 @@ Take a look at an example of mixed-up information flow:
     let fullName: String = person.fullName
     theDisplay.nameLabel!.text = fullName
 
-Here, `person.fullName` clearly is a query. Setting the text of the display's label is bound to a query, too. For the dramatic effect, I made it so that you even have to unwrap the optional `nameLabel`. So `theDisplay.nameLabel!` is a query, too. Setting the text is actually a command.
+Here, `person.fullName` clearly is a query. Setting the text of the display's label is bound to a query, too. For the dramatic effect, I made it so that we even have to unwrap the optional `nameLabel`. Setting the text is actually a command. But `theDisplay.nameLabel!` is a query, too. And a complicated one, even.
+
+[Sandi Metz](http://www.sandimetz.com/blog/2014/12/19/suspicions-of-nil) summarizes the problem of optionals (or `nil` objects in other languages than Swift) like this: `nil` makes you return "objects which conform to different API's". In Ruby, this is even more apparent, because a `nil` object responds to some methods. In Objective-C, it responds to everything and fails silently. In Swift, we have to deal with runtime errors. It's more verbose, and I think it's a good idea to not allow to return `nil` whenever possible because we have to deal with two types of things instead of one.
 
 Making your code "East-Oriented" means you should at least get rid of queries. Don't ask for information or view components -- tell your objects to perform changes instead:
 
