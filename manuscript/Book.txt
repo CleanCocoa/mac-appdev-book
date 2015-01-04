@@ -1,3 +1,5 @@
+newsletter.txt
+
 part-intro.txt
 201412061628 who.txt
 201412070201 contribute.txt
@@ -35,6 +37,7 @@ part-epilogue.txt
 part-appendix.txt
 201412051148 links.txt
 201412070016 books.txt
+newsletter.txt
 201411171450 unowned self in closures.txt
 201411271706 objc api.txt
 201412041844 on swift.txt

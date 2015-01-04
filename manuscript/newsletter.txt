@@ -1,0 +1,21 @@
+{pagebreak}
+
+<!--ct:
+Icon alternatives:
+envelope-o 
+graduation-cap
+gift
+coffee
+heart
+-->
+
+{icon=gift}
+G> ## Get Free Stuff from my Lab {#newsletter-signup}
+G>
+G> Sign up to get a private preview of my upcoming programming books, be invited to software betas, and get priority access to my online courses:
+G>
+G> <http://christiantietze.de/newsletter>
+G> 
+G> I'm working on other projects, too, and will keep you in the loop.
+
+{pagebreak}
