@@ -150,7 +150,7 @@ Only if the view optimistically adds components to itself do you have to actuall
 
 If 99% of Core Data errors are developer errors, better put automated tests in place and see what happens if for example the user enters faulty data. Data validation is part of the business rules. You should codify them and prevent validation errors from happening instead of trying to save the context with invalid data and recover.
 
-For example, the relation from `ManagedItem` to `ManagedBox` is required. When the user deletes a `ManagedBox`, associated `ManagedItem`s are deleted as well. This way you don't keep orphaned objects around. There's no way to manipulate existing relationships besides deleting entities, so there's no way to get an invalid entity because of missing relationship targets. Check ✓
+For example, the relation from `ManagedItem` to `ManagedBox` is required. When the user deletes a `ManagedBox`, associated `ManagedItem`s are deleted as well. This way you don't keep orphaned objects around. There's no way to manipulate existing relationships besides deleting entities, so there's no way to get an invalid entity because of missing relationship targets. Check.
 
 A title is required, too. This isn't enforced in the user interface at the moment, so let's deal with that as an example.
 
