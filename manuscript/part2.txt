@@ -1,6 +1,8 @@
 # Part 2: Sending Messages Inside the App
 
-I tried to prepare all of the app's components so far in isolation and not worry much about the integration. That's changing in this part.
+I tried to prepare all of the app's components so far in isolation and not worry much about the integration. That's changing in this part. The app window is going to look like this:
+
+![Final App Window](images/201501051800_window.png)
 
 I left off with the following:
 
