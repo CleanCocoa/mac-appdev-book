@@ -1,4 +1,4 @@
-## Introducing Events in Place of Notifications
+## Introducing Events in Place of Notifications {#domainevents}
 
 Using `NSNotificationCenter` is easy and a well-known practice. I don't like how working with a notifications `userInfo` dictionary changed with Swift and its enforcement of strong typing.
 

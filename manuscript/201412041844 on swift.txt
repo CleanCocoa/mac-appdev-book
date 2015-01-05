@@ -1,7 +1,36 @@
-# On Swift _(Upcoming!)_
+# On Swift
 
-I think Swift is Apple's move towards more advanced app architecture patterns. The wonders generics do to domain event handling, for example!
+I think Swift is Apple's move towards more advanced app architecture patterns. Consider the wonders generics do to [handling domain events](#domainevents), for example. Compared to dealing with the `NSDictionary` `userInfo` directly, domain event objects are a very convenient way to access event-specific information in a failure-proof manner.
 
-_This is an upcoming essay._
+Objective-C did lend a lot of its flexibility from Smalltalk. Swift ditches everything related to sending messages to `nil`, and you better check twice if a dictionary actually contained the key--value-pair you expected.
 
-<!--ct: TODO add this section-->
+<!--ct: §201412250933 east oriented code-->
+
+Remember what I pointed out in the section about [_East-Oriented Code_](#east): returning `nil` makes you return two things which conform to different APIs. To make optionals explicit is a useful change to simplify our APIs.
+
+Mattt Thompson already proclaimed that [the death of Cocoa][cocoadeath] is going to happen. Most of what we know from AppKit, UIKit, and all the other frameworks doesn't play well with Swift's strictness. When I write code in Swift, I try to eliminate optionals in methods because I think this move makes using the method in question easier. But Cocoa was designed with Objective-C in mind, and so we all have to unwrap optionals, double-check on return values, and pass `inout` error pointers here and there.
+
+I, too, guess that this is going to change in the future. When the language matures, new frameworks will emerge. Maybe just a Cocoa 2.0, Swift style. Maybe something else entirely, fusing Mac and iOS even more. We don't know yet, but it's likely, because Swift changed so much.
+
+[cocoadeath]: http://nshipster.com/the-death-of-cocoa/
+
+Talking about _East-Oriented Code_ and Swift making optionals explicit, I think Swift does a truly great job enforcing to send commands instead of query for values. I think optionals are okay for properties, but they are less handy when it comes to return values.
+
+If a method may or may not produce a specific result, you can either return an optional value, which is the usual way to do things, or you return nothing (but `self`, maybe) and use callbacks or output ports. When a condition isn't met, simply stop execution before you reach the line invoking the callback. When execution takes longer and should be deferred to another thread, simply use the callback there.
+
+Favoring callbacks or output ports of any kind over return values makes it easier to branch processes off into concurrent threads. The client object has to be designed to deal with latency anyway because a callback isn't as reliably immediate as a return value.
+
+Transforming the example project's Application Services to favor delegation over returning values made me realize how well the code reads this way. I don't have to search the clients of a method to find out where the information goes. 
+
+A query doesn't know who's listening. A command knows where the information is flowing.
+
+Of course we have to be cautious: being able to read a method well is nice. But understanding the overall architecture is important, too. Focusing on the method level can lead to sub-optimization, that is improving a part of the system at the expense of the system's overall quality. In plain English, it doesn't help if we can see which collaborating object is receiving a message as long as the overall flow is unclear. If you end up with a big pile of objects sending commands, you'll hardly understand what's happening.
+
+I'd say Objective-C is more forgiving than Swift. And thus Swift's strictness points out potential risks or sources of bugs. I think it's a pain to override private methods in test doubles. So I end up delegating sub-tasks to helper objects which can be replaced. This, in turn, makes me wonder why I didn't do it in the first place. Maybe it is because declaring classes in Objective-C was way more cumbersome.
+
+The advanced application architecture patters I think of revolve around creating little value objects and more service objects.
+
+You could do this in Objective-C, too, with the usual overhead of creating a `.h` and a `.m` file for each class you want to re-use and not keep private to a particular client's `.m` file. There's a huge difference between enabling developers to do a thing and making it easy for them to do it. If it's easier, it will be used more.
+
+Each language paves the way we think about programming problems. Swift, to me, is about making it easier to create classes and structs. And Swift is about favoring commands over optional return values. Thus, Swift is more about "Tell, Don't Ask", and preferring Hexagonal Architecture and clean & concise code.
+
