@@ -27,7 +27,7 @@ You may have heard of the ["Tell, Don't Ask" Principle](https://pragprog.com/art
 
 James Ladd (@jamesladd) coined the phrase "East-Oriented Code". Where "Tell, Don't Ask" opens up to ambiguity at first, the principle of "East-Oriented Code" doesn't. It says that all your information should travel eastward, to the right, that is, no information should flow to the _left_ as you read your code.[^east]
 
-  [^east]: James has posts on the topic on [his blog](http://jamesladdcode.com/category/its-all-about-writing-software/). So has Stephen Haberman written [about writer objects instead of getters](http://www.draconianoverlord.com/2013/04/12/east-oriented-programming.html). You may want to watch [a Ruby video](confreaks.com/videos/4825-RubyConf2014-eastward-ho-a-clear-path-through-ruby-with-oo) on the topic for good examples.
+  [^east]: James has posts on the topic on [his blog](http://jamesladdcode.com/category/its-all-about-writing-software/). So has Stephen Haberman written [about writer objects instead of getters](http://www.draconianoverlord.com/2013/04/12/east-oriented-programming.html). You may want to watch [a Ruby video](http://confreaks.com/videos/4825-RubyConf2014-eastward-ho-a-clear-path-through-ruby-with-oo) on the topic for good examples.
 
 Take a look at an example of mixed-up information flow:
 
