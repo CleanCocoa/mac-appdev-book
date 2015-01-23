@@ -20,7 +20,7 @@ Adhering to dependency inversion, the concrete presenter is indeed injected into
 
 Your client code doesn't need to know what the view does or which components it's made of. It only needs to understand the presenter's interface. The presenter in this case is a model _of_ the view: it doesn't care about the Domain Model. It only cares about the view's specification. 
 
-You can change an easy-to-grasp view model to make the view with all its complex components change. A presenter hides away the complexity of the user interface and requires data only. To the client code, the rest happens magically.
+Change the properties on this _model of the view_ to update the UI. A presenter hides away the complexity of the user interface. To the client code, the rest happens magically.
 
 [presmodel]: http://martinfowler.com/eaaDev/PresentationModel.html
 
