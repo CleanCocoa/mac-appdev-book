@@ -17,7 +17,7 @@ What's at the core?
 
 I buy into _Domain Driven Design_ principles and say: the domain is at the core. That's where `Box` and `Item` exist. These domain objects don't know a thing about Core Data.
 
-`Box` is an **Aggregate** with a title propery and a collection of `Item`s. It's an **Entity** inasmuch as it has identity over time. The user should be able to change the title of existing `Box`es later on. That's sufficient to make it an **Entity**.
+`Box` is an **Aggregate** with a title property and a collection of `Item`s. It's an **Entity** inasmuch as it has identity over time. The user should be able to change the title of existing `Box`es later on. That's sufficient to make it an **Entity**.
 
 `Box`es shall be accessed via a collection-like **Repository**. The `BoxRepository` specifies the interface to get all boxes, remove existing ones, or add new ones.
 
