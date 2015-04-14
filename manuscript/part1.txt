@@ -1,6 +1,10 @@
 # Part 1: Bootstrapping -- Setting Up the Project, Core Data, and Unit Tests
 
-After a few experiments and a lot of conceptual drawings, I knew where I wanted to go with the Word Counter. I wouldn't start with a blank slate. I think to have existing code to port makes taking Swift for a test drive easier. You never know whether errors are due to a lack of understanding Swift, the new API, or an actual implementation problem.
+After a few experiments and a lot of conceptual drawings, I knew where I wanted to go with the Word Counter. I wouldn't start with a blank slate.
+
+Initially, you may not know if errors are due because you can't use Swift properly, or if it's an actual implementation problem. I guess having existing code to port makes it easier to take Swift for a test drive.
+
+This part is not about designing and crafting the application in a "clean" manner. This part is about understanding the new ecosystem of Swift and how it integrates with Xcode and existing Cocoa frameworks.
 
 I dedicate this part to making the switch to Swift and getting everything to run, including:
 
@@ -8,6 +12,6 @@ I dedicate this part to making the switch to Swift and getting everything to run
 2. Prepare the user interface in its own layer
 3. Have tests in place for the app's domain
 
-In the second part, I'll cover the actual application's functionality.
+In the second part, I'll cover the actual application's functionality. We'll be going to explore a lot of architecutral patterns in-depth there.
 
 This part is mostly made up of longer notes or journal entries. They aren't meant to tell a coherent story. They are meant to provide a view over my shoulder instead. I hope to include enough details so you can follow easily.

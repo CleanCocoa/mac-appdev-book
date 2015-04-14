@@ -34,9 +34,9 @@ Although it's easier to add sources to the test target, this may not be what you
 
 Unit testing becomes harder for Core Data `NSManagedObject` subclasses this way, though. Adding these to the test target will make the tests compile. Upon test execution, though, you will trigger an [invisible breakpoint in bytecode][cdbp].
 
-It may help to add `@objc(YourManagedObjectSubclass)`. It didn't in my case, though. I had to remove the `NSManagedObject` subclass from the project's test target and make its interface public.
+According to some folks, it may help to simply add `@objc(YourManagedObjectSubclass)`. It didn't in my case, though. I also had to make its interface public and remove it from the test target. So I end up with both the Objective-C bridge of `NSManagedObject` subclasses and public interfaces for all the stuff which shall be tested.
 
-From now on, I will resort to making tested code public.
+From now on, I will resort to making tested code public. It seems reasonable: tests are in a different bundle, and tests should work with the public API only.
 
 [cdbp]: http://stackoverflow.com/questions/24841856/swift-breakpoint-in-coredata-library
 [objc1]: http://www.objc.io/issue-4/core-data-models-and-model-objects.html

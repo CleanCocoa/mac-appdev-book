@@ -26,7 +26,7 @@ To get this deep in Swift, I have to do this instead:
         object: self, userInfo: userInfo)
     
     // Receiving
-    let boxInfo = notification.userInfo!["boxId"] as NSNumber
+    let boxInfo = notification.userInfo!["boxId"] as! NSNumber
     let boxId = BoxId(boxInfo.longLongValue)
 
 I settled for sending IDs only because putting ID and title makes things complicated for the "Item was created" event. There, I'd have to use nested dictionaries. A JSON representation would look like this:

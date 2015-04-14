@@ -140,7 +140,7 @@ I'm not all that keen about the way `NSNotificationCenter`s work. Dealing with t
 I think `provisionItem` doesn't read too well, but it's not the worst method in human history either. Getting the data out is really bad, though:
 
 {linenos=off}
-    let boxInfo = notification.userInfo!["boxId"] as NSNumber
+    let boxInfo = notification.userInfo!["boxId"] as! NSNumber
     let boxId = BoxId(boxInfo.longLongValue)
 
 It's very hard to read, compared to:

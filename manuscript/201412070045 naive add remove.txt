@@ -46,7 +46,7 @@ Appending `ItemNode` to the current selection (or its parent) `BoxNode` works by
     // ...
     
     func itemNode(belowBoxTreeNode boxTreeNode: NSTreeNode)-> ItemNode {
-        let boxNode = boxTreeNode.representedObject as BoxNode
+        let boxNode = boxTreeNode.representedObject as! BoxNode
         let itemId = eventHandler.provisionNewItemId(inBox: boxNode.boxId)
 
         return ItemNode(itemId: itemId)
@@ -151,7 +151,7 @@ To leverage Key-Value Observing in Swift, I have to change `Box` to this:
             }
         
             if keyPath == "title" {
-                self.title = change[NSKeyValueChangeNewKey] as String
+                self.title = change[NSKeyValueChangeNewKey] as! String
             }
         }
     
@@ -245,7 +245,7 @@ f9d96aa1f19db681ba654f2bdf067bd8a7edf08f remove CoreDataItemRepository
 Obtaining the `Box` via `ManagedBox` didn't re-create the associated items, yet. It's easily achieved via `map()`, though:
 
     let box = Box(boxId: self.boxId(), title: self.title)
-    let managedItems = self.items.allObjects as [ManagedItem]
+    let managedItems = self.items.allObjects as! [ManagedItem]
     let items = managedItems.map() { (item: ManagedItem) -> Item in
         return item.item
     }
@@ -376,7 +376,7 @@ To obtain the parent item's `BoxId`, I walk the tree controller's arranged objec
 
     public func parentBoxNode(inArray nodes: [BoxNode]) -> BoxNode? {
         for boxNode in nodes {
-            if contains(boxNode.children as [ItemNode], self) {
+            if contains(boxNode.children as! [ItemNode], self) {
                 return boxNode
             }
         }

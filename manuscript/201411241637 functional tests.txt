@@ -50,10 +50,19 @@ On a side note, I think Swift's optionals are making tests weird. Consider this 
 {linenos=off}
     func allBoxes() -> [ManagedBox]? {
         let request = NSFetchRequest(entityName: ManagedBox.entityName())
-        return context.executeFetchRequest(request, error: nil) as [ManagedBox]?
+        return context.executeFetchRequest(request, error: nil) as? [ManagedBox]
     }
 
-The thing is, force-unwrapping a `nil` optional results in a runtime error. Objective-C would've told us that "nil doesn't equal whatever". Swift won't. So I have to take care of this case:
+The thing is, force-unwrapping a `nil` optional results in a runtime error. Objective-C would've told us that "nil doesn't equal whatever". Swift won't. 
+
+With Swift 1.2, you have to decide how to cast the result of the fetch request:
+
+- `as! [ManagedBox]?`, indicating you expect (!) an optional array, or
+- `as? [ManagedBox]`, indicating it may be a ManagedBox array or something else entirely, but if it isn't, return nil.
+
+I think the second version fits the purpose better, although the first one expresses the intent clearly, too. I read `as?` as "maybe", so it becomes "maybe return an array of `ManagedBox` objects", which is good.
+
+Now take care of the optional array return value in the test case:
 
 {linenos=off}
     if let boxes = allBoxes() {
