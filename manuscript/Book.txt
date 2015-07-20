@@ -40,3 +40,4 @@ newsletter.txt
 201411171450 unowned self in closures.txt
 201411271706 objc api.txt
 201412041844 on swift.txt
+201507201555 adopting swift 2.txt

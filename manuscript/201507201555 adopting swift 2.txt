@@ -1,0 +1,72 @@
+# Adopting Swift 2.0: Errors
+
+The Swift application template for a Core Data application looked aweful at first. The language was new, so it was hard to read. Also, Swift 1.0 was way more clunky than Swift 2.0 is now. 
+
+In order to set up a `PersistentStack`, the `AppDelegate` was meant to create the store URL:
+
+{linenos=off}
+    let storeURL = self.applicationDocumentsDirectory
+        .URLByAppendingPathComponent("ItemModel.sqlite")
+
+`applicationDocumentsDirectory` is a lazy property. Before it's initialized, the `AppDelegate` ensures that the resulting path atually points to an existing directory. That's when I added this guard clause:
+
+{linenos=off}
+    guardApplicationDocumentsDirectory(directory)
+
+That method, though, became a 40 line long monster of entangled conditions, mostly because file operations in general can fail with an error.
+
+With Swift 2.0, that became even worse.[^appdel] Until this pain turned into feedback and forced me to refactor the code. Protocol extensions aside, error handling will be the one big change in your project. 
+
+You know by now that optionals essentially are `Optional` enum instances. You can think of the addition of `throw` to change a function's return value of, say, `String`, to an enum called `Either<String, ErrorType>`. The do-catch construct then is a `switch` statement with the usual pattern matching.
+
+That's how [the `Result` enum][result] helped Swift programmers -- until 2.0 arrived. It's how the Haskell programmers work with errors. 
+
+Since we can make it so error throwing propagates, it should suffice to catch errors at the highest level possible:
+
+{linenos=off}
+    private func guardApplicationDocumentsDirectory(directory: NSURL) {
+        
+        do {
+            if try !directoryExists(directory) {
+                try createDirectory(directory)
+            }
+        } catch let error as NSError {
+            NSApplication.sharedApplication().presentError(error)
+            abort()
+        }
+    }
+
+In both `directoryExists(_:)` and `createDirectory(_:)` of the `AppDelegate`, I wrap errors of the system in my own to add context, then I re-throw these.
+
+For example:
+
+    private func createDirectory(directory: NSURL) throws {
+        
+        let fileManager = NSFileManager.defaultManager()
+        
+        do {
+            try fileManager.createDirectoryAtPath(directory.path!, withIntermediateDirectories: true, attributes: nil)
+        } catch let fileError as NSError {
+            
+            var userInfo = [NSObject : AnyObject]()
+            userInfo[NSLocalizedDescriptionKey] = "Failed to create the application documents directory"
+            userInfo[NSLocalizedFailureReasonErrorKey] = "Creation of \(directory.path) failed."
+            userInfo[NSUnderlyingErrorKey] = fileError
+            
+            throw NSError(domain: kErrorDomain, code: 1, userInfo: userInfo)
+        }
+    }
+
+Without wrapping the error, a simple method suffices:
+
+    private func createDirectory(directory: NSURL) throws {
+        
+        let fileManager = NSFileManager.defaultManager()
+        try fileManager.createDirectoryAtPath(directory.path!, withIntermediateDirectories: true, attributes: nil)
+    }
+
+Since Swift requires us to add the `try` keyword in front of every call to a throwing function, there's no way to overlook points of potential failure.
+
+[^appdel]: See what Xcode 7's Swift 2.0 conversion tool made out of that, surrounding failing calls with do-try-catch, [on GitHub](https://github.com/DivineDominion/mac-appdev-code/blob/06f6416a4a084182e9a9530e9592c79e6954b91d/DDDViewDataExample/AppDelegate.swift).
+
+[result]: http://nomothetis.svbtle.com/error-handling-in-swift

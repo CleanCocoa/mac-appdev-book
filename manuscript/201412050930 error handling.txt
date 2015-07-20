@@ -79,19 +79,25 @@ This leaves the unlikely but problematic case of write-failures (disk full or st
 2. Recover from the problem.
 3. Maybe report the problem.
 
-Let's go through these steps, although in a different order.
+Let's go through these steps one by one, although in a different order.
 
 #### Log the Problem
 
 Core Data errors can be [manifold][cderr] and they usually come in batches. To log all of them, iterate over the error's `userInfo[NSDetailedErrorsKey]`.
 
-The `save()` method of `PersistentStack` will look like this afterwards:
+The `save()` method of `PersistentStack` will in part look like this after adding basic logging facilities:
 
 {linenos=off}
-    var error: NSError? = nil
-    if managedObjectContext.hasChanges && !managedObjectContext.save(&error) {
-        NSLog("Failed to save to data store: \(error!.localizedDescription)")
+    guard managedObjectContext.hasChanges else {
+        return
+    }
         
+    do {
+        try managedObjectContext.save()
+    } catch let error as NSError {
+        NSApplication.sharedApplication().presentError(error)
+
+        NSLog("Failed to save to data store: \(error.localizedDescription)")
         logDetailledErrors(error)
     }
 
@@ -177,7 +183,7 @@ Now what's with the text field? Does it try to set the title to nil instead of a
     public class BoxNode: NSObject, TreeNode {
         public dynamic var title: String? = "Box Node" {
             willSet {
-                let nilvalue: String = newValue == nil ? "1" : "0"
+                let nilvalue: String = hasValue(newValue) ? "0" : "1"
                 NSLog("\(title) --> \(newValue) (nil: \(nilvalue))")
             }
             // ...
@@ -190,7 +196,7 @@ Once discovered, the problem is easily remedied by using an `NSValueTransformer`
     @objc(NonNilStringValueTransformer)
     public class NonNilStringValueTransformer: NSValueTransformer {
         override public func transformedValue(value: AnyObject?) -> AnyObject? {
-            if value == nil {
+            if !hasValue(value) {
                 return ""
             }
         

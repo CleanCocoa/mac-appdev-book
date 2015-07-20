@@ -100,7 +100,7 @@ The underlying protocol is really simple:
 {linenos=off}
     protocol DomainEvent {
         /// The `DomainEventType` to identify this kind of DomainEvent
-        class var eventName: String { get }
+        static var eventName: String { get }
 
         init(userInfo: UserInfo)
         func userInfo() -> UserInfo

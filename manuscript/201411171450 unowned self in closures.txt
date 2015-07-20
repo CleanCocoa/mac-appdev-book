@@ -3,7 +3,7 @@
 [Swift closures][closures] are prone to creating strong reference cycles when you keep the closure around and reference self from within the closure:
 
 {linenos=off}
-    var closure = {
+    let closure = {
         self.doSomething()
     }
 

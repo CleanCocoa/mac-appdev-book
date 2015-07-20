@@ -317,7 +317,7 @@ Until now, `BoxNode` did set up its own child nodes when it was reconstituted fr
     }
     
     func itemNodes(allItemData: [ItemData]) -> [ItemNode] {
-        var result: [ItemNode] = allItemData.map() { itemData in
+        let result: [ItemNode] = allItemData.map() { itemData in
             self.itemNode(itemData)
         }
         return result

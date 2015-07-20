@@ -24,7 +24,7 @@ I want to go from user interface down to Core Data. That's a first step. This is
         XCTAssertEqual(repository!.count(), 0, "repo starts empty")
         
         // When
-        viewController!.addBox(self)
+        viewController.addBox(self)
     
         // Then
         XCTAssertEqual(repository!.count(), 1, "stores box record")
@@ -108,16 +108,20 @@ An alternate approach is to change `allBoxes()` to `() -> [ManagedBox]!` to get 
         return []
     }
 
-It's still unsafe to force-unwrap `first!` when the array is empty. I'd love to create my own assertion shorthand for this and call `XCTFail` in the case of runtime errors -- but I can't actually catch runtime errors in Swift. Very unfortunate. I wonder how Apple herself writes tests under such limitations.
+It's still unsafe to force-unwrap `first!` when the array is empty.
 
-I end up having to use the explicit version:
+I'd love to create my own assertion shorthand for this and call `XCTFail` in the case of runtime errors -- but I can't actually catch runtime errors in Swift. Very unfortunate. I wonder how Apple herself writes tests under such limitations.
+
+I end up having to use a very explicit version:
 
 {linenos=off}
-    if let box: ManagedBox = allBoxes().first
+    let box: ManagedBox = allBoxes().first
+    XCTAssert(box != nil)
+    if let box = box {
         XCTAssertEqual(box.title, "New Box")
-    } else {
-        XCTFail("no boxes found")
     }
+
+This pattern feeld more clunky, but once you get used to it, it's okay (and the best alternative there is). You obtain an optional, assert that it contains a value, and then shadow-unwrap the optional inside the scope of the `if` statement's block where you can create assertions about its contents. 
 
 ### Wire-framing the Path to "Green"
 
@@ -152,7 +156,7 @@ The `ServiceLocator` can look like this:
         
         func boxRepository() -> BoxRepository {
             let moc = managedObjectContext
-            assert(moc != nil, "managedObjectContext must be set up")
+            precondition(moc != nil, "managedObjectContext must be set up")
             return CoreDataBoxRepository(managedObjectContext: moc!)
         }
     }
