@@ -1,6 +1,6 @@
-# Adopting Swift 2.0: Errors
+# Adopting Swift 2.0 Errors
 
-The Swift application template for a Core Data application looked aweful at first. The language was new, so it was hard to read. Also, Swift 1.0 was way more clunky than Swift 2.0 is now. 
+The Swift application template for a Core Data application looked awful at first. The language was new, so it was hard to read. Also, Swift 1.0 was way more clunky than Swift 2.0 is now. 
 
 In order to set up a `PersistentStack`, the `AppDelegate` was meant to create the store URL:
 
@@ -8,7 +8,7 @@ In order to set up a `PersistentStack`, the `AppDelegate` was meant to create th
     let storeURL = self.applicationDocumentsDirectory
         .URLByAppendingPathComponent("ItemModel.sqlite")
 
-`applicationDocumentsDirectory` is a lazy property. Before it's initialized, the `AppDelegate` ensures that the resulting path atually points to an existing directory. That's when I added this guard clause:
+`applicationDocumentsDirectory` is a lazy property. Before it's initialized, the `AppDelegate` ensures that the resulting path actually points to an existing directory. That's when I added this guard clause:
 
 {linenos=off}
     guardApplicationDocumentsDirectory(directory)
