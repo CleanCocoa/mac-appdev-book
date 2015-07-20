@@ -247,9 +247,11 @@ There's one benefit in handling title resets in the view controller to enforcing
                     title = "Box" // This value is stored, but not displayed
                 }
             
-                if let controller = self.eventHandler {
-                    controller.treeNodeDidChange(self, title: title)
+                guard let controller = self.eventHandler else {
+                    return
                 }
+                
+                controller.treeNodeDidChange(self, title: title)
             }
         }
         // ...

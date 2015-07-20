@@ -130,9 +130,11 @@ With the changes in place, the `DisplayBoxesAndItems` Application Service now do
         }
         
         func consumeBox(boxData: BoxData) {
-            if let consumer = self.consumer {
-                consumer.consume(boxData)
+            guard let consumer = self.consumer else {
+                return
             }
+            
+            consumer.consume(boxData)
         }
         
         // ...

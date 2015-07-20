@@ -85,14 +85,16 @@ The functional test still fails because the `BoxAndItemService` is never actuall
 `ItemManagementWindowController` simply passes the `BoxAndItemService` down to the `ItemViewController` which actually needs it.
 
     @IBAction public func addBox(sender: AnyObject) {
-        if let eventHandler = self.eventHandler {
-            let boxId = eventHandler.provisionNewBoxId()
-            let box = BoxNode(boxId: boxId)
-            let indexPath = NSIndexPath(index: nodeCount())
-            itemsController.insertObject(box, 
-                atArrangedObjectIndexPath: indexPath)
-            orderTree()
+        guard let eventHandler = self.eventHandler else {
+            return 
         }
+            
+        let boxId = eventHandler.provisionNewBoxId()
+        let box = BoxNode(boxId: boxId)
+        let indexPath = NSIndexPath(index: nodeCount())
+        itemsController.insertObject(box, 
+            atArrangedObjectIndexPath: indexPath)
+        orderTree()
     }
 
 Now that `addBox(_:)` in `ItemViewController` depends on `eventHandler` being set, the tests have to provide it. The `AddingItemsTests` suite will use the actual `BoxAndItemService`, but the `ItemViewControllerTests` won't. They're unit tests. To make them pass, the unit tests will provide a `NullEventHandler`: a stub to satisfy the dependency.

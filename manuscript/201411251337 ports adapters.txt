@@ -66,9 +66,11 @@ My very first take:
         }
         
         func reportBoxIdToConsumer(boxId: BoxId) {
-            if let port = boxIdConsumer {
-                port.consume(boxId)
+            guard let port = boxIdConsumer else {
+                return
             }
+            
+            port.consume(boxId)
         }
     }
 
@@ -81,9 +83,11 @@ What `reportBoxToConsumer(_:Box)` does is equal to the intent of the observer pa
 
 {linenos=off}
     func reportBoxToConsumer(box: Box) {
-        if let port = boxConsumer {
-            port.consume(box)
+        guard let port = boxConsumer else {
+            return
         }
+        
+        port.consume(box)
     }
 
 Now that's a first step into the right direction. But I notice the **Application Service** `BoxAndItemService` is now doing these things:

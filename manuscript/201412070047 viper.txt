@@ -46,15 +46,17 @@ Consuming data for a `BoxNode` is pretty easy because the nodes are just appende
 Consuming data for `ItemNodes` is a bit more intricate, but still not too complicated:
 
     public func consume(itemData: ItemData) {
-        if let boxId = itemData.boxId {
-            if let boxNode = existingBoxNode(boxId) {
-                let itemId = itemData.itemId
-                let itemNode = self.itemNode(itemData)
-                
-                boxNode.addItemNode(itemNode)
-                orderTree()
-            }
+        guard let boxId = itemData.boxId, 
+            boxNode = existingBoxNode(boxId) else {
+            
+            return
         }
+        
+        let itemId = itemData.itemId
+        let itemNode = self.itemNode(itemData)
+        
+        boxNode.addItemNode(itemNode)
+        orderTree()
     }
 
 Thanks to `NSTreeController`, `addItemNode`, which is appending the argument to the receiver's `children` property, results in automagical updates of the view.

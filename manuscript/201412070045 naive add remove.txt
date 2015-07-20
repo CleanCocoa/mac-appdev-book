@@ -16,15 +16,15 @@ Adding items takes a bit more lines to test, but it's nothing special:
         viewController!.addItem(self)
     
         // Then
-        if let box: ManagedBox = allBoxes().first {
+        let box = allBoxes().first
+        XCTAssert(hasValue(box))
+        if let box = box {
             XCTAssertEqual(box.items.count, 1, "contains an item")
         
             if let item: ManagedItem = box.items.anyObject() as? ManagedItem {
                 XCTAssertEqual(item.title, "New Item")
                 XCTAssertEqual(item.box, box)
             }
-        } else {
-            XCTFail("no boxes found")
         }
     }
 
@@ -78,14 +78,15 @@ Creating `Item`s thus becomes part of the boundary of `Box`.
 {title="How BoxAndItemService should really provision item IDs"}
     public func provisionNewItemId(inBox boxId: BoxId) -> ItemId? {
         let repository = ServiceLocator.boxRepository()
-        if let box = repository.boxWithId(boxId) {
-            let itemId = repository.nextItemId()
-            box.addItem(itemId, title: "New Item")
-            
-            return itemId
+
+        guard let box = repository.boxWithId(boxId) else {
+            return nil
         }
 
-        return nil
+        let itemId = repository.nextItemId()
+        box.addItem(itemId, title: "New Item")
+        
+        return itemId
     }
 
 This aspect of the domain changes how to think about the box and item **Repositories**.
@@ -168,11 +169,11 @@ This works pretty well for fetched boxes:
     public class CoreDataBoxRepository: NSObject, BoxRepository {
         // ...
         public func boxWithId(boxId: BoxId) -> Box? {
-            if let managedBox = managedBoxWithUniqueId(boxId.identifier) {
-                return managedBox.box
+            guard let managedBox = managedBoxWithUniqueId(boxId.identifier) else {
+                return nil
             }
         
-            return nil
+            return managedBox.box
         }
     }
 
@@ -281,9 +282,11 @@ I don't want to water-down the existing design just for the sake of convenience.
     public class BoxNode: NSObject, TreeNode {
         public dynamic var title: String = "New Box" {
             didSet {
-                if let controller = self.eventHandler {
-                    controller.treeNodeDidChange(self, title: title)
+                guard let controller = self.eventHandler else {
+                    return 
                 }
+                
+                controller.treeNodeDidChange(self, title: title)
             }
         }
         public weak var eventHandler: HandlesItemListChanges?
@@ -340,9 +343,11 @@ The Application Service still is pretty simple:
         public func boxDidChange(boxId: BoxId, title: String) {
             let repository = ServiceLocator.boxRepository()
         
-            if let box = repository.boxWithId(boxId) {
-                box.title = title
+            guard let box = repository.boxWithId(boxId) else {
+                return
             }
+            
+            box.title = title
         }
     }
 
@@ -372,11 +377,27 @@ Similarly, I want `changeItemTitle` to look like this:
         }
     }
 
+Thanks to the `guard` statement of Swift 2.0, it can be written in a flattened way:
+
+    public func changeItemTitle(itemId: ItemId, 
+            title: String, 
+            inBox boxId: BoxId) {
+        let repository = ServiceLocator.boxRepository()
+    
+        guard let box = repository.boxWithId(boxId), 
+            item = box.itemWithId(itemId) else {
+                
+            return 
+        }
+        
+        item.title = title
+    }
+    
 To obtain the parent item's `BoxId`, I walk the tree controller's arranged objects to generate a collection of `BoxNode`s. Then, I let the `ItemNode` decide where it belongs: 
 
     public func parentBoxNode(inArray nodes: [BoxNode]) -> BoxNode? {
         for boxNode in nodes {
-            if contains(boxNode.children as! [ItemNode], self) {
+            if (boxNode.children as! [ItemNode]).contains(self) {
                 return boxNode
             }
         }
@@ -417,9 +438,11 @@ There's nothing new to do to accomplish what's left. I like to show you the Appl
         }
     
         public func removeItem(itemId: ItemId, fromBox boxId: BoxId) {
-            if let box = repository.box(boxId: boxId) {
-                box.removeItem(itemId: itemId)
+            guard let box = repository.box(boxId: boxId) else {
+                return
             }
+            
+            box.removeItem(itemId: itemId)
         }
         // ...
     }

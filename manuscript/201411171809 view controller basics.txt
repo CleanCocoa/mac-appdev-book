@@ -71,12 +71,13 @@ The method `hasBinding(_,binding:,to:,throughKeyPath:)` is a little helper to in
                 binding:String, 
                 to boundObject: NSObject, 
                 throughKeyPath keyPath:String) -> Bool {
-            if let info = object.infoForBinding(binding) {
-                return (info[NSObservedObjectKey] as! NSObject == boundObject) &&
-                    (info[NSObservedKeyPathKey] as! String == keyPath)
+            
+            guard let info = object.infoForBinding(binding) else {
+                return false
             }
-        
-            return false
+
+            return (info[NSObservedObjectKey] as! NSObject == boundObject) &&
+                (info[NSObservedKeyPathKey] as! String == keyPath)
         }
     }
 
