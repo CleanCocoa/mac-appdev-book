@@ -1,19 +1,26 @@
 ## Functional Testing Helps Transition to Adding Real Features
 
-I'm pretty confident the view does what it should do. It's all just basic stuff still, although it took enough trial & error to reach this point. (I am talking about you, [explicit Cocoa Bindings](#x20141124163838) which break the view's behavior!)
+I'm pretty confident the view does what it should do. It's all just basic stuff, although it took enough trial & error to reach this point. (I am talking about you, [explicit Cocoa Bindings](#x20141124163838) which break the view's behavior!)
 
 There are two steps I could take now to quench my curiosity.
 
-First, verify that view-model updates result in visible `NSOutlineView` updates. Since the data doesn't change behind the scenes, I'm eager to see Cocoa Bindings in action. Then again, I already tested such a thing in another app: I changed the title behind with a timer after a couple of seconds. It felt like magic. Key-Value Observing is doing a lot of the hard work here. I can assure you that the Cocoa Bindings are set up correctly. There's no gain in testing Apple's internal frameworks, so I don't do anything in this direction.
+First, verify that view model updates result in visible `NSOutlineView` updates. Since the data doesn't change behind the scenes, I'm eager to see Cocoa Bindings in action. Then again, I already tested such a thing in another app: I changed the title behind with a timer after a couple of seconds. It felt like magic. Key-Value Observing is doing a lot of the hard work here. I can assure you that the Cocoa Bindings are set up correctly. There's no gain in testing Apple's internal frameworks, so I don't do anything in this direction.
 
 Second, I could add functional tests to the test harness. And this is what I'll do: in a fashion you usually find with Behavior-Driven Development (as opposed to Test-Driven Development, where you start at the innermost unit level), I'll add a failing test which will need the whole app to work together in order to pass. It's a test which is going to be failing for quite a while.
 
 In the past I wrote failing functional tests for web applications only because they would drive out the REST API or user interaction pretty well. I haven't tried this for iOS or Mac applications, yet. So let's do this.
 
-If you work by yourself, I think it's okay to check in your code with a failing test as long as it's guiding development. Don't check in failing unit tests just because you can't figure out how to fix the problem immediately.
+If you work by yourself, I think it's okay to check in your code with a failing test as long as it's guiding development. Don't check in failing unit tests just because you can't figure out how to fix the problem immediately. Everything goes as long as you don't push the changes to a remote repository. Until that point, you can always alter the commit history.
 
 Having a failing functional test at all may not be okay with your team mates, though. After all, your versioning system should always be in a valid state, ready to build and to pass continuous deployment. Better not check in the failing test itself, then, or work on a local branch exclusively until you rebase your commit history when your feature is ready.
 
+The bad thing about functional tests or integration tests is this: if all you had were functional tests, you'd have to write a _ton_ of them. With every condition, with every fork in the path of execution, the amount of functional tests to write grows by a factor of 2. Functional tests grow exponentially. That's bad.
+
+So don't rely too much on them. Unit tests are the way to go. 
+
+And make sure you watch [J. B. Rainsberger's "Integrated Tests are a Scam"](https://vimeo.com/80533536) some day soon. It's really worth it.
+
+That being said, let's create a functional test to learn how things work together and guide development.
 
 ### First Attempt at Capturing the Expected Outcome
 

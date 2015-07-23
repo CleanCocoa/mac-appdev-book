@@ -2,9 +2,9 @@
 
 A lot of stuff seems to work quite right now. To make it more interesting, I finally add `Box`es to the example project. Recall that a `Box` contains various `Item`s but no other `Box`.
 
-This mimicks my model of the upcoming Word Counter feature: `Project`s contain `Path`s. Using an `NSOutlineView` with two kinds of nodes is a bit trickier than dealing with a linear `NSTableView`.
+From now on I find how nice Swift is for modeling data containers. Creating an explicit view model requires far less boilerplate code.
 
-From now on I find how nice Swift is for modeling data containers. With Objective-C, I'd have to provide custom initializers for a general `TreeNode` or `BaseNode` to distinguish box from item representations, perhaps by setting properties like `isLeaf` appropriately. Using Swift, I can take the naive approach of modelling classes and still spend less time dealing with it thanks to initial property values:
+With Objective-C, I had to provide custom initializers for a general `TreeNode` or `BaseNode` to distinguish box from item representations, perhaps by setting properties like `isLeaf` in `init` appropriately. Using Swift, I can take the naive approach of modelling classes and still spend less time dealing with it thanks to initial property values:
 
     @objc(TreeNode)
     public protocol TreeNode {
@@ -32,10 +32,10 @@ Using `dynamic` here enables KVO, which is a must for `NSObjectController` and C
 
 Maybe I won't need to address different classes in the end. Maybe it'd suffice to properly set up a `BaseNode` in order to distinguish `Box`es from `Item`s in the view model.
 
-Why do I keep the classes nevertheless?
+Why do I keep multiple classes nevertheless?
 
-I think the mental mapping of classes to things in the model is pretty straightforward. You don't need to decode a lot to understand the difference. Remembering to look at a property's value to find out what kind of node it is is harder than reading the object type. You'll benefit from this in the long run. Clean code is code reading more like prose.
+I think the mental mapping of classes to things in the model is pretty straightforward. You don't need to decode a lot to understand the difference. Remembering to look at a property's value to find out what kind of node it is is harder than reading the object type. You'll benefit from this in the long run. Clean code equals code reading like prose. (Kind of.)
 
-The distinction between a box and item node is modelled explicitely as different types and thus is easy to understand. The alternate approach will only make you slower. Maybe not a lot slower as long as you remember what you're doing, but still.
+The distinction between a box and item node is modelled explicitely as different types and thus is easy to understand. The alternate approach will only make you slower. Maybe not a lot slower for the time you remember what you've done, but in the long run. Your future self is just another reader of a foreigner's code.
 
 Optimization can wait until later. I don't think I introduced unnecessary design complexity here either. You could say it's premature to model the distinction when no code relies on it. Fair enough. But it will in just a matter of commits.

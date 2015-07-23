@@ -46,9 +46,9 @@ Transferring this insight to not so trivial code poses the following challenge: 
 
 So I am puzzled. I thought that having more tests is always better, because you cover more and more edge cases with each test. But then again, too rigid testing makes code too hard to change.
 
-One necessary condition of successful [refactoring][] is that you have to be able to change the implementation without changing the behavior, thus breaking collaborators's expectations. Too explicit a test can be broken by refactoring code. So [tests can make refactoring harder.][objc2]
+One necessary condition of successful [refactoring][] is that you have to be able to change the implementation without changing the behavior, thus breaking collaborators's expectations. On one hand, too explicit a test can be broken by refactoring code. So [tests can actually make refactoring harder.][objc2] On the other hand, refactoring code without tests is always a gamble: you can break behavior without noticing.
 
-> Refactoring is s a disciplined technique for restructuring an existing body of code, altering its internal structure without changing its external behavior.
+> Refactoring is a disciplined technique for restructuring an existing body of code, altering its internal structure without changing its external behavior.
 > --- [Martin Fowler](http://www.refactoring.com/)
 
 It's hard for me to find a balance. But since I [publish the code of this project][bookcode], maybe with the help of other developers all of us can learn something about weighing test coverage. I'd appreciate a good discussion on the topic.
