@@ -1,15 +1,14 @@
 ## Architecting
 
+Out there, you'll find tons of software architecture approaches and dogmas. I already picked one for this book: a layered clean architecture. That's where the hexagon comes into play.
 
-<!--ct: TODO hexagonal diagram-->
-
-<!--ct: TODO layers diagram-->
+![Layered Hexagonal Architecture](images/201507231024_layered-hex.png)
 
 For the sake of this book and the rather simple example application, it suffices to think about the following layers, or nested circles:
 
 * The **Domain** at the core of your application, dealing with business rules and actual algorithms.
 * The so-called **Application** layer, where interaction with the Domain's services take place.
-* **Infrastructure**, hosting persistence mechanisms and tying components together.
+* **Infrastructure**, hosting persistence mechanisms and tying components together. Here, the app exposes so-called adapters to the rest of the world.
 
 ### Domain
 
