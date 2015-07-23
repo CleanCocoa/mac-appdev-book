@@ -1,7 +1,78 @@
 ## Patterns & Principles
 
+Now you know what the architectural perspective looks like.
+
+If the architecture is the high-level view, and the actual code is at the ground-level, there's plenty of room for abstractions and concepts in between. Design patterns and programming principles are the tools you will use to work according to the plan you devised with the help of your app's architecture.
+
+Throughout this book, you will find references to important patterns I have adopted to help me face particular challenges. Here are a few general but important ones.
+
+It makes sense to read these first to tune in to the way of thinking I advocate in this book. You don't have to read this chapter in order to understand the actual story of building the sample application, though.
+
+
+### Thinking in Terms of Ports & Adapters and Protocols
+
+When we talked about architecture earlier, I mentioned that the application as a whole is open for adapters through its ports. The application doesn't incorporate a database management system, but it connects to it, preferably at the outermost layer to keep the rest isolated.
+
+Practicing to thinking in terms of creating ports and being open for external adapters on one hand, and creating adapters to plug into ports on other layers on the other is a worthwhile exercise.
+
+You're probably familiar with [the delegate pattern Apple advocates](https://developer.apple.com/library/mac/documentation/General/Conceptual/DevPedia-CocoaCore/Delegation.html) throughout the Cocoa APIs. This is the same as the general advice to [program to an interface](http://www.artima.com/lejava/articles/designprinciples.html). It also is similar to ports and adapters style.
+
+A delegate's protocol is similar to the definition of a port. The implementation and instantiation of a delegate as an object is similar to the notion of an adapter.
+
+If you know how the delegate pattern works, you know how ports and adapters work, in principle. In practice, adopting a ports and adapters style to design components means you end up with lots of protocols.
+
+![Layered architecture with ports and adapters](images/20150723113926_layers-ports.png)
+
+Take the core of your app, the Domain. It should not access a database or Core Data directly. It should define a port which it queries for information. The concrete adapter will have to be implemented in a layer further outside. The outermost infrastructure layer is a good candidate to wrap database access in objects you own and implement the Domain's protocol. 
+
+In the picture above, `BoxView` is a protocol which defines how to `display(_:)` data. A concrete view controller implements this protocol and will be handed to the use case or a comparable service object. Similarly, `BoxRepository` is a protocol of the Domain implemented by a `CoreDataBoxRepository` in infrastructure.
+
+Decoupling objects in different layers from another through protocols is a great way to separate responsibilities. The user's course of action has to start somewhere, but this point in your app needn't be a view controller.
+
+View controllers have to worry about displaying data and reacting to user interface interaction, most likely through `@IBAction` methods. The response can be delegated to use case objects, for example, which may or may not communicate back to the view controller -- they wouldn't know for sure, since they only know about the protocols.
+
+Protocols help partition Swift code nicely, too. It has become idiomatic to extend a type with protocols instead of adding (most) protocols to the initial inheritance list.
+
+So instead of this:
+
+{linenos=off}
+    class Pizza: Edible, ContainsGluten, ContainsRefinedCarbs {
+        
+        init() { ... }
+        
+        func eatenBy(eater: Eater) { ... }
+        func allergicReaction(eater: Eater) -> AllergicReaction { ... }
+        func makeSleepy(eater: Eater) { ... }
+    }
+
+You'll rather write this:
+
+{linenos=off}
+    class Pizza {
+        init() { ... }
+    }   
+    
+    extension Pizza: Edible { 
+        func eatenBy(eater: Eater) { ... }
+    }
+    
+    extension Pizza: ContainsGluten {
+        func allergicReaction(eater: Eater) -> AllergicReaction { ... }
+    }
+    
+    extension Pizza: ContainsRefinedCarbs {
+        func makeSleepy(eater: Eater) { ... }
+    }
+
+Extensions are great for reasoning about your code.
+
+Each extension contains everything needed (save attributes) to implement a particular protocol. If a type has too many responsibilities through many extensions, I find it's easier to make a new type out of it. Extensions already looks similar to type definitions: replace `extension Foo: Bar` with `class Baz: Bar` and delegate to objects of type `Baz` from `Foo`.
+
+Partitioning your code through extensions makes it easier to refactor one type into multiple types. It also helps to isolate responsibilities. Thus, it's a natural fit for implementing port protocols.
 
 ### Model--View--View Model (MVVM)
+
+While ports and adapters style component design is pretty high level still, MVVM is pretty close to the metal in terms of making view programming manageable.
 
 There's your core _domain model_. Around it, you build an application with its interface. The user interface is called _view_. So far, so similar to MVC.
 
