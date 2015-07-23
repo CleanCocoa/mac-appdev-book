@@ -80,18 +80,26 @@ Now an MVC controller will usually have access to the model data and the view, o
 
 To get any data into the view, MVVM introduces the _view model_ or [_presentation model_][presmodel]. Application of this pattern vary, but they all have in common that the view model is a container for the data of the domain model. The domain model is thus shielded from the user interface. I came to think that the view model is "a model for the view", but people repeatedly say it's a "model of the view" instead. Depending on your interpretation, how you apply the pattern will vary of course.
 
-* Dumb Data-Transfer Objects are "a model for the view". The view takes the data, works with it, and displays it somehow.
-* Presenters, however, model what the view can do. They become "a model of the view." They take care of assembling data suited to the view's needs.
+* Dumb Data-Transfer Objects are "a model for the view". The view takes the data, works with it, and displays it somehow. These objects couple with the presenter or whichever service object puts data into the view.
+* Presenters, however, model what the view can do. They become "a model of the view." They take care of assembling data suited to the view's needs. These objects couple with the view and its demands.
 
 In the Ruby on Rails world, the presenter has become a service object which holds on to the domain model and exposes its data in a way meaningful to the view. Say you've got a `Person` entity with `firstName` and `lastName`. A `PersonPresenter` will take care of assembling a `fullName`, to display a list of `Person`s, for example. You can go all nuts here: create a `PersonListPresenter` for displaying full names in a list, and a `PersonFormPresenter` for exposing both first and last name to edit them in a form, say. This way, the view can be as dumb as possible. That's a case of preparing "a model for the view." After all, you pass the presenter in, so it becomes the view's model.
 
 I learned to think about it from a different perspective.
 
-Adhering to dependency inversion, the concrete presenter is indeed injected into the view. Its interface is specified by means of the view component arrangement, though. If the view displays the full name of a person, the presenter's interface will codify this requirement as `fullName() -> String`. This way, the view is responsible for specifying its data provider's capabilities while it depends on some other service to provide an actual implementation. The concrete presenter is created outside the view layer.
+![MVVM with components taken from VIPER, which we'll get to know in Part 2.](images/201507231210_mvvm.png)
+
+Adhering to dependency inversion, the view model is indeed injected into the view. Its interface is specified by means of the view component arrangement, though -- not through a formal protocol, but through high coupling.
+
+If the view displays the full name of a person, the presenter's interface will codify this requirement as `fullName`, even if the original data did only contain `firstName` and `surname`.
+
+Similarly, if the age of a person in represented through `Int`s but displayed in a label, the view model should expose `age: String` instead, so the view has to do _zero_ formatting at best.
+
+This way, the view is responsible for specifying its data provider's capabilities while it depends on some other service to provide an actual implementation.
 
 Your client code doesn't need to know what the view does or which components it's made of. It only needs to understand the presenter's interface. The presenter in this case is a model _of_ the view: it doesn't care about the Domain Model. It only cares about the view's specification. 
 
-Change the properties on this _model of the view_ to update the UI. A presenter hides away the complexity of the user interface. To the client code, the rest happens magically.
+Change the properties on this _model of the view_ to update the UI. A presenter hides the complexity of the user interface. To the client code, the rest happens magically.
 
 [presmodel]: http://martinfowler.com/eaaDev/PresentationModel.html
 
