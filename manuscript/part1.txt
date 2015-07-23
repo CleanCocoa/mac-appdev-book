@@ -1,10 +1,14 @@
 # Part 1: Bootstrapping -- Setting Up the Project, Core Data, and Unit Tests
 
-After a few experiments and a lot of conceptual drawings, I knew where I wanted to go with the Word Counter. I wouldn't start with a blank slate.
+Swift is still pretty new. Since it's so new, it's likely you haven't had a chance to use it seriously. After all, investing in a hip new language is pretty risky: it takes time and might not lead you anywhere.
 
-Initially, you may not know if errors are due because you can't use Swift properly, or if it's an actual implementation problem. I guess having existing code to port makes it easier to take Swift for a test drive.
+With Swift, it's a safe bet to stay a Cocoa developer in the future. Apple pushes the language forward, so there's a lot of momentum already. Swift is not in the same situation Java was in during the late 1990's.
 
-This part is not about designing and crafting the application in a "clean" manner. This part is about understanding the new ecosystem of Swift and how it integrates with Xcode and existing Cocoa frameworks.
+Initially, you may not know if errors happen because you can't use Swift properly, or if it's an actual implementation problem. I guess having existing code to port makes it easier to take Swift for a test drive. Without that luxury, you'll have to learn faster.
+
+That's why we're going to start with a _natural_ approach to learning Swift and getting an application up and running.
+
+This part of the book is not about designing and crafting the application in a "clean" manner, with lots of design up front. This part is about understanding the new ecosystem of Swift and how it integrates with Xcode and existing Cocoa frameworks.
 
 I dedicate this part to making the switch to Swift and getting everything to run, including:
 
@@ -15,3 +19,5 @@ I dedicate this part to making the switch to Swift and getting everything to run
 In the second part, I'll cover the actual application's functionality. We'll be going to explore a lot of architecutral patterns in-depth there.
 
 This part is mostly made up of longer notes or journal entries. They aren't meant to tell a coherent story. They are meant to provide a view over my shoulder instead. I hope to include enough details so you can follow easily.
+
+Think of this part as a log book to follow the path to adopting Swift.
