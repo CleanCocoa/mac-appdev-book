@@ -9,7 +9,7 @@ Throughout this book, you will find references to important patterns I have adop
 It makes sense to read these first to tune in to the way of thinking I advocate in this book. You don't have to read this chapter in order to understand the actual story of building the sample application, though.
 
 
-### Thinking in Terms of Ports & Adapters and Protocols
+### Thinking in Terms of Ports & Adapters and Protocols {#portsadapters}
 
 When we talked about architecture earlier, I mentioned that the application as a whole is open for adapters through its ports. The application doesn't incorporate a database management system, but it connects to it, preferably at the outermost layer to keep the rest isolated.
 
@@ -108,7 +108,6 @@ Change the properties on this _model of the view_ to update the UI. A presenter 
 <!--ct: 201412250933 east oriented code-->
 
 You may have heard of the ["Tell, Don't Ask" Principle](https://pragprog.com/articles/tell-dont-ask). Rephrased, it means you should focus on _commands_ and get rid of as much information _queries_ as possible. (We will encounter Command--Query Separation in various forms throughout this book.)
-<!--ct: TODO add section about CQRS as a central hub of information-->
 
 James Ladd (@jamesladd) coined the phrase "East-Oriented Code". Where "Tell, Don't Ask" opens up to ambiguity at first, the principle of "East-Oriented Code" doesn't. It says that all your information should travel eastward, to the right, that is, no information should flow to the _left_ as you read your code.[^east]
 

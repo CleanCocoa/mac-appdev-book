@@ -8,15 +8,16 @@ Let's say `nextId()` shall return a unique ID. `integerId()` then is a private m
 
 To test this with a replacement ID generator, you can do the following:
 
-1. Take two pre-defined IDs, then
-2. make the ID generator return the first ID on the first call, the second ID on consecutive calls.
-3. Call `nextId()` only once and assume that the second ID is returned, thus verifying that the Repository does check the ID generator's results and tries again.
+1. Take two pre-defined IDs in your test.
+2. Make the ID generator return the first ID on the first call, the second ID on each consecutive call.
+3. Use the faux ID generator in the Repository. Also make it so that the first ID is known to be existing.
+3. Call `nextId()` on the Repository only once and assume that the second ID is returned, thus verifying that the Repository does check the ID generator's results and tries again.
 
 I would've wanted to override the ID generating method `integerId()` in a test Repository subclass. When I create subclasses of my own classes in tests, though, the subclasses can only override methods which are public, since the tests reside in another module than the application itself. This way, overriding private methods is not an option to change the behavior of a class. Weirdly enough, it worked well in Objective-C.
 
-<!--ct: TODO reference the pattern from "Legacy Code"-->
+Now that I have to think of my code as a module with a public interface, the old testing strategies involving method overrides have to be solved differently.[^extrant]
 
-Now that I have to think of my code as a module with a public interface, common testing strategies involving method overrides have to be solved differently.
+[^extrant]: Michael C. Feathers calls the following dependency breaking technique "Extract Interface" in his book _Working Effectively with Legacy Code_. See the [book list](#booklist) for details.
 
 
 {pagebreak}

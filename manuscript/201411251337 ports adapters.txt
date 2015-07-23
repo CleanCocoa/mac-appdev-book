@@ -32,14 +32,14 @@ Another alternative is to model it as such:
 
 {linenos=off}
     newBoxId() -> BoxId
-    provisionBox(_:BoxId)
+    provisionBox(_: BoxId)
 
 The service will be an adapter to both domain and infrastructure this way. It'd work, but it's not what I aim for.
 
 To model the expectation of "provision first, obtain ID second" more explicitly, one could introduce a callback to write the ID to, like so:
 
 {linenos=off}
-    provisionBox(andReportBoxId: (BoxId) -> ())
+    provisionBox(andReportBoxId: (BoxId) -> Void)
 
 I don't like how that reads, though. And since there's just a single window present, we can formalize this as another protocol from the point of view of `BoxAndItemService`.
 

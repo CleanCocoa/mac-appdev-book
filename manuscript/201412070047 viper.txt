@@ -1,5 +1,7 @@
 ### VIPER & Naming Conventions {#viper}
 
+![VIPER, illustrated. Picture credit: Jeff Gilbert, Conrad Stoll, and Lin Zagorski of Mutual Mobile. Used with permission.](images/201503130948_viper.jpg)
+
 Renaming the **Application Service**s to something more fitting, I end up with:
 
 * `ManageBoxesAndItems` as the use case, 
@@ -8,9 +10,9 @@ Renaming the **Application Service**s to something more fitting, I end up with:
 
 Only `ManageBoxesAndItems` has to be public. The rest is an implementation detail and, in fact, a refactoring. Thanks to the functional tests in place, it's easy to verify the behavior while fleshing out the new parts.
 
-<!--ct: TODO insert Jeff's image once his employer is cool with it-->
-
 I named the collaborating services according to the [VIPER architecture][viper]: a **Presenter** updates the view on changes, while an **Event Handler** is delegate to user interaction. The use case object `ManageBoxesAndItems` replaces VIPER's notion of a **Wireframe** which suits iOS apps and their view transitions better than multi-windowed Mac apps.
+
+![VIPER compontents in practice](images/20150723132836_viper-arch.png)
 
 Quoting [Jeff Gilbert and Conrad Stoll][viper] here, the main parts of VIPER are:
 
@@ -77,7 +79,7 @@ Separating event handling from updating the view can have nice benefits. Imagine
 To test how good it really is, I delay view updates a bit using `dispatch_after` with the following global helper function:
 
 {title="Delay helper in Utilites"}
-    func delay(delay:Double, closure:()->()) {
+    func delay(delay: Double, closure: () -> Void) {
         dispatch_after(
             dispatch_time(
                 DISPATCH_TIME_NOW,
@@ -92,7 +94,9 @@ At the moment, there's no way to rename `Box` or `Item` in the domain and push c
 
 With a delay of about 10 seconds, I can even rename existing nodes before new ones come in without any conflicts. Try that with an omnipotent, tightly coupled, blocking read--write view controller.
 
-Keep in mind, though, that this needn't be a sign of high quality. I think the view should optimistically add view components instantaneously even though the persistence takes some time. Putting a delay in `CoreDataBoxRepository` should not delay user interface reactions. We'll look into this problem soon. <!--ct: TODO link to the corresponding part of "error handling"-->
+Keep in mind, though, that this needn't be a sign of high quality. Maybe for your app, a close dependence on model data is the way to go.
+
+I think the view should at least optimistically add view components instantaneously even though the persistence takes some time. This optimistic approach matters most when there are round-trips to a server. In web applications, this is a must to ensure low perceived latency. Mac applications don't suffer from low responsiveness because of Core Data most of the time. Putting a delay in `CoreDataBoxRepository` should not delay user interface reactions. We'll look into the problem of responding to error event [soon in the upcoming part](#errorevents).
 
 Splitting concerns is good most of the time, but it's not always easily done.
 

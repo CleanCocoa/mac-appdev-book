@@ -160,11 +160,11 @@ For example, the relation from `ManagedItem` to `ManagedBox` is required. When t
 
 A title is required, too. This isn't enforced in the user interface at the moment, so let's deal with that as an example.
 
-### Enforcing valid objects
+### Enforcing Valid Objects
 
 To empty the box title text field should work. An empty string is still a string, and thanks to Swift and non-optional parameters, it's impossible to create a `Box` with a nil title.
 
-Still, an empty title doesn't make sense. (This is a rule I just made up.) The user interface should not allow this.
+Still, an empty title doesn't make sense business-wise. (This is a rule I just made up.) The user interface should not allow this.
 
 When I empty a box title text field, the app crashes. I didn't expect this to happen. Something's wrong with KVO and `didChangeValueForKey`, the debugger tells me. There are a few KVO candidates in the whole stack:
 
@@ -206,7 +206,7 @@ Once discovered, the problem is easily remedied by using an `NSValueTransformer`
 
 <!--ct: #75a75c4a54add4e57849d22e8c8c47d32f074f86 ensure text field values never become nil but empty strings instead-->
 
-There don't seem to be any more runtime errors related to renaming objects. The objects stay valid in a Core Data validation way.
+There don't seem to be any more runtime errors related to renaming objects. The objects stay valid to Core Data's eyes.
 
 #### Enforce Rules in the User Interface
 
@@ -259,16 +259,104 @@ There's one benefit in handling title resets in the view controller to enforcing
 
 That's why we have to dispatch the actual title change in `changeNodeTitleToPlaceholderValue` for execution outside the current context. This way the change will trigger another Key-Value Notification. [Nested notifications don't work](http://stackoverflow.com/a/26565401/1460929) -- probably to prevent infinite loops.
 
-Now empty tree nodes are avoided by virtue of the user interface.
+Now empty tree nodes are avoided all thanks to the user interface.
 
-#### Alternate Paths for Transformations _(Upcoming!)_
+#### Validation Instead of Transformation
 
-<!--ct: TODO write in detail about this-->
+Instead of creating a `NonNilStringValueTransformer` to obtain sensible default values, we could have created a classic validation mechanism: put an object in, get a validation result. If the object is invalid, populate the result accordingly.
 
-* business rule: broadcast reset from domain to view to recover
-* business rule: provide validation mechanism for the view _before_ it commits changes
+I don't think this is necessary in our case. For the sake of the example, a validator could look like this:
 
-### Broadcasting Error Events
+    enum BoxValidationResult {
+        case Valid
+        case Invalid([BoxValidationError])
+    }
+    
+    struct BoxValidationError {
+        
+        enum BoxField {
+            case Title
+        }
+        
+        let field: BoxField
+        let problemDescription: String
+    }
+    
+    class BoxValidator {
+        
+        func validate(box: Box) -> BoxValidationResult {
+            var errors = [BoxValidationError]()
+            
+            if !hasValue(box.title) {
+                let error = BoxValidationError(
+                    field: .Title, 
+                    problemDescription: "Title must not be empty.")
+                errors.append(error)
+            }
+            
+            // Imagine more checks here
+            
+            if errors.isEmpty {
+                return .Valid
+            }
+            
+            return .Invalid(errors)
+        }
+    }
+
+Since `Item` validation will not look much different, you could as well generalize the validator -- not through abstraction, but composition.
+
+Instead of one validator type targeted at each model object type, you could compose a validation mechanism through protocols:[^validat]
+
+    enum ValidationResult {
+        case Valid
+        case Invalid(reason: String)
+    }
+    
+    protocol Validator {
+        func validate() -> ValidationResult
+    }
+    
+    class TitleValidator: Validator {
+        var input: String!
+        
+        func validate() -> ValidationResult {
+            // This is a programmer error, not a validation problem
+            precondition(hasValue(input), "Title must be present"))
+            
+            if input.isEmpty {
+                return .Invalid(reason: "Title must not be empty")
+            }
+            
+            return .Valid
+        }
+    }
+    
+    class BoxValidator: Validator {
+        let titleValidator = TitleValidator()
+        let box: Box
+        
+        init(box: Box) {
+            self.box = box
+        }
+        
+        func validate() -> ValidationResult {
+            titleValidator.input = box.title
+            
+            return titleValidator.validate()
+        }
+    }
+    
+    let validator = BoxValidator(box: box)
+    let isBoxValid = validator.validate()
+
+Each validator will check its respective input. To keep the input flexible, it is not defined by the protocol.
+
+Complex form validation can be composed in this manner: check individual input fields for their value validity, maybe using regular expressions. Then check the overall form by both testing for value presence and value validity.
+
+[^validat]: I took the basic approach from Session 229 of [WWDC 2014](https://developer.apple.com/videos/wwdc/2014/), "Advanced iOS Architecture and Patterns". The PDF slides on that topic start at page 98. Have a look, it's a great keynote.
+
+### Broadcasting Error Events {#errorevents}
 
 Read errors don't (necessarily) imply data loss. I let `CoreDataBoxRepository` broadcast a notification to interested parties:
 
