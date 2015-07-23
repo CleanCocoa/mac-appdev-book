@@ -36,7 +36,20 @@ Unit testing becomes harder for Core Data `NSManagedObject` subclasses this way,
 
 According to some folks, it may help to simply add `@objc(YourManagedObjectSubclass)`. It didn't in my case, though. I also had to make its interface public and remove it from the test target. So I end up with both the Objective-C bridge of `NSManagedObject` subclasses and public interfaces for all the stuff which shall be tested.
 
-From now on, I will resort to making tested code public. It seems reasonable: tests are in a different bundle, and tests should work with the public API only.
+From now on, I will resort to making tested code public. We can rationalize it this way: tests are in a different bundle, and tests should work with the public API only.
+
+{icon=certificate}
+I> ## Update for Swift 2
+I>
+I> Swift 2.0 introduces the `@testable` annotation:
+I>
+I> {linenos=off}
+I>     @testable import YourAppTargetName
+I>
+I> Test targets will have "internal" access to the module under test. So you don't have to make everything you want to test public.
+I>
+I> Instead, make those things public which are potentially interesting to 3rd party client code. For apps, that's probably not much. For frameworks, this is a totally different matter.
+I>
 
 [cdbp]: http://stackoverflow.com/questions/24841856/swift-breakpoint-in-coredata-library
 [objc1]: http://www.objc.io/issue-4/core-data-models-and-model-objects.html
