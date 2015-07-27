@@ -391,7 +391,7 @@ Since this application has no value to the user if reading data isn't possible, 
             alert.addButtonWithTitle(cancelButton)
             
             let answer = alert.runModal()
-            if answer == NSAlertFirstButtonReturn {
+            if answer == NSAlertSecondButtonReturn {
                 //TODO: Add error reporting here
                 return NSApplication.sharedApplication().terminate(self)
             }
