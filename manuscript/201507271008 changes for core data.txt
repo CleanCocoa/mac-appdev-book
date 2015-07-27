@@ -1,4 +1,4 @@
-# How to Change the Project to Put Core Data at It's Center
+## How to Change the Project to Put Core Data at It's Center
 
 Most of the work is _renaming_ existing objects.
 

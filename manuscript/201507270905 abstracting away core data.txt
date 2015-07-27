@@ -1,4 +1,4 @@
-# Abstract from Core Data
+## Abstract from Core Data
 
 Protocols are a great way to hide implementation details. In it's basic form, a protocol is just an interface declaration. Much like the ones Java folks use. 
 
@@ -46,7 +46,7 @@ Without the patterns and principles which guided implementing our architecture, 
 
 The actual transition to protocol-based model objects is trivially simple.
 
-## Implementing the Protocols   
+### Implementing the Protocols   
 
 Since most properties of the managed objects match the protocol requirements already, making `Item` adopt `ItemType` is trivially simple:
 
@@ -93,7 +93,7 @@ Since an array of `ItemType` is available as part of the protocol-defined API, s
 
 The cost of using protocols is next to none, the benefit for clarity of code internally is huge.
 
-## Casting down to the protocol
+### Casting down to the protocol
 
 You'll get runtime errors when you try to cast `[AnyObject]` arrays bridged from Objective-C `NSArray`s into arrays of a concrete type:
 

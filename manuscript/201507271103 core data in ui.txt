@@ -1,4 +1,4 @@
-# Core Data in the UI
+## Core Data in the UI
 
 Since we're coding for Mac, we have the advantage of Cocoa Bindings a lot of developers wish iOS had, too. 
 
@@ -10,19 +10,19 @@ To separate the progress on this front from removing the simple Domain Model in 
 
 In some way, progress will now be synonymous to degradation. We will mix things up a lot.
 
-## Getting Rid of Overhead
+### Getting Rid of Overhead
 
 Since Cocoa Bindings are read--write-bindings, we no longer need to pass Data Transfer Objects (DTO) to the view to display data. `BoxData` and `ItemData` will just be gone.
 
 This alone produces a lot of change and ripples.
 
-### Simplifying `ManageBoxesAndItems`
+#### Simplifying `ManageBoxesAndItems`
 
 `ManageBoxesAndItems` populates the view with data. Since there's no DTO's anymore, most of its behavior is gone. It simply shows the window. The window then takes care of its contents.
 
 To keep the illusion of boundaries present, I want to let `ManageBoxesAndItems` pass its `BoxRepository` to the view. The `ItemViewController` can just as well fetch this from the `ServiceLocator` itself. But that's too far reaching for my taste. I don't want to make the code intentionally muddy.
 
-### Removing `HandleBoxAndItemModifications` 
+#### Removing `HandleBoxAndItemModifications` 
 
 `HandleBoxAndItemModifications` is responsible for creating entities and changing their names.
 
@@ -30,13 +30,13 @@ When Cocoa Bindings are set up properly, all of this is done behind the scenes b
 
 Gone is the notion of an `eventHandler` for the view. Gone is the property of the same name on `ManageBoxesAndItems`. We don't even need event handling protocols.
 
-### Removing `ProvisioningService`
+#### Removing `ProvisioningService`
 
 Since there's no event handler anymore, there's no object left which uses `ProvisioningService`. We can get rid of it, too.
 
 `ProvisioningService` was where actual repository interactions took place. These will now have to move into the view controller directly.
 
-### Removing `BoxNode` and `ItemNode`
+#### Removing `BoxNode` and `ItemNode`
 
 We're going to bind the underlying data via `NSTreeController` directly to a `NSManagedObjectContext`. There's no need to provide custom node objects.
 
@@ -74,11 +74,11 @@ Keeping the `TreeNode` protocol for now, it's trivial to make `Box` and `Item` i
         }
     }
 
-## Super-Charging the View Controller
+### Super-Charging the View Controller
 
 A lot of delegates were just removed from the project. The functionality moves into the view controller.
 
-### Rewiring the Controller
+#### Rewiring the Controller
 
 The `NSTreeController` currently uses custom `TreeNode` objects. But it can be customized to use Core Data entities as well. Expose a `NSManagedObjectContext` from the view controller as the data source, so to speak.
 
@@ -91,7 +91,7 @@ Then change the tree controller's settings in Interface Builder:
 This should make the tree controller fetch all instances at the beginning.
 
 
-### Adding Boxes
+#### Adding Boxes
 
 To add a box was pretty easy in the past: trigger an insertion event and consume the resulting `BoxData`, if any.
 
@@ -113,7 +113,7 @@ Moving the `BoxRepository` into the view controller, `addBox(_:)` now becomes:
 
 In theory, we could bind the "Add Box" button to the tree controller directly; in practice, this doesn't work if there's more than one kind of entity.
 
-### Adding Items
+#### Adding Items
 
 To add an item is quite similar to adding a box. We still have to find out the parent box. It's either the selected node itself, or the parent of the selected node.
 
@@ -150,7 +150,7 @@ Instead of a handful, we end up with two methods:
 
 That's a lot leaner.
 
-### Removing Nodes
+#### Removing Nodes
 
 In a perfect world, we would've achieved Zen using this method:
 
@@ -190,7 +190,7 @@ The view controller instead has to use the `BoxRepository` just like all the oth
 
 The view controller file is at a refreshing 130 lines of code. That's not too much.
 
-### Getting Rid of the Repository
+#### Getting Rid of the Repository
 
 `ItemViewController` will provide the `NSManagedObjectContext` for the tree controller. It has to come somewhere; either through the `BoxRepository` or through the `ServiceLocator` or through injection via property.
 
