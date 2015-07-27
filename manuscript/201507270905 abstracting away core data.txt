@@ -1,0 +1,114 @@
+# Abstract from Core Data
+
+Protocols are a great way to hide implementation details. In it's basic form, a protocol is just an interface declaration. Much like the ones Java folks use. 
+
+In Swift, as opposed to Objective-C, protocols are used in very interesting ways throughout the standard library. One of these interesting ways has to do with generics. Luckily, that's nothing we have to deal with much here, because generics add another layer of complexity to our reasoning. Then Swift 2 brought protocol extensions, which are a bit like abstract classes in Java: you cannot instantiate protocols, but you can provide fallback behavior.[^prot]
+
+ [^prot]: In Swift, it matters which explicit type a variable has to determine if the method from the protocol extension is used or an overriding implementation from a class or struct. If the type of a variable is the protocol itself, the method implementation from the protocol extension will be used no matter what the concrete type does. That can be a cool feature, or outright confusing.
+
+Keeping it simple, we can leverage protocols to define which part of the model types should be public API. 
+
+The functionality we created in the first three parts of the book can be distilled to the following protocols:
+
+{linenos=off}
+    protocol ItemType: class {
+        var title: String { get }
+        var itemId: ItemId { get }
+        var box: BoxType { get }
+        
+        func changeTitle(title: String)
+    }
+
+    protocol BoxType: class {
+        var boxId: BoxId { get }
+        var title: String { get }
+        var items: [ItemType] { get }
+    
+        func addItemWithId(itemId: ItemId, title: String)
+        func item(itemId itemId: ItemId) -> Item?
+        func removeItem(itemId itemId: ItemId)
+    
+        func changeTitle(title: String)
+        func changeItemTitle(itemId itemId: ItemId, title: String)
+    }
+
+That's the public API of what's left of the Domain Model.
+
+I still prefer to avoid mutable properties and stick to `changeTitle(_:)`.
+
+The existing Core Data implementation actually has everything we will need to expose: there's an `NSSet` of associated items on `Box` which can be transformed to an array easily. We can hide all the rest of Core Data functionality, including the fact that both `Box` and `Item` are based on `NSManagedObject` and `NSObject` using these protocols.
+
+The result is a code base which still reads as if you had a real Domain Model without external dependencies.
+
+Clients of the model objects should not care about Core Data specific features. Since we started _without_ putting Core Data at the center of our architecture, the model objects were well isolated. Most of the application was changed quickly in the last step already. Good isolation usually entails easy to change code.
+
+Without the patterns and principles which guided implementing our architecture, the code would have looked a lot worse. Conversely, changes would have taken more time. Repositories are no part of the usual Cocoa programmer's toolbelt. But they helped in production code, and they help us programmers perform changes.
+
+The actual transition to protocol-based model objects is trivially simple.
+
+## Implementing the Protocols   
+
+Since most properties of the managed objects match the protocol requirements already, making `Item` adopt `ItemType` is trivially simple:
+
+{linenos=off}
+    extension Item: ItemType {    
+        public var itemId: ItemId {
+            return ItemId(uniqueId.longLongValue)
+        }
+    
+        public var box: BoxType {
+            return managedBox as BoxType
+        }
+    }
+
+`Box` takes a bit more effort, because it actually exposes behavior. But most of it was introduces during the conversion of the project to use Core Data objects already.
+
+Since an array of `ItemType` is available as part of the protocol-defined API, some methods are now easier to implement and thus easier to read:
+
+    extension Box: BoxType {
+    
+        public var boxId: BoxId {
+            return BoxId(uniqueId.longLongValue)
+        }
+    
+        public var items: [ItemType] {
+            return managedItems.allObjects.map { $0 as! ItemType }
+        }
+    
+        public func item(itemId itemId: ItemId) -> ItemType? {
+            return items.filter { $0.itemId == itemId }.first
+        }
+
+        public func removeItem(itemId itemId: ItemId) {
+            guard let item = self.item(itemId: itemId) else {
+                return
+            }
+    
+            let existingItems = self.mutableSetValueForKey("managedItems")
+            existingItems.removeObject(item)
+        }
+        
+        // ...
+    }
+
+The cost of using protocols is next to none, the benefit for clarity of code internally is huge.
+
+## Casting down to the protocol
+
+You'll get runtime errors when you try to cast `[AnyObject]` arrays bridged from Objective-C `NSArray`s into arrays of a concrete type:
+
+{linenos=off}
+    public var items: [ItemType] {
+        return managedItems.allObjects as! [ItemType]
+        // fatal error: array cannot be bridged from Objective-C
+    }
+
+Instead, you have to map each element:
+
+{linenos=off}
+    public var items: [ItemType] {
+        return managedItems.allObjects.map { $0 as! ItemType }
+    }
+
+The best explanation I found is that an Objective-C bridging seems to result in a real Swift array with `AnyObject` elements, but actually doesn't. We programmers have to keep bridging in mind as an edge case to handle differently.
+

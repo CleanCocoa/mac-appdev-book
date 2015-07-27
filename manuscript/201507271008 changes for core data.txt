@@ -1,0 +1,76 @@
+# How to Change the Project to Put Core Data at It's Center
+
+Most of the work is _renaming_ existing objects.
+
+* `Box` and `Item` from the core model are obsolete; their behavior will move into `ManagedBox` and `ManagedItem` respectively.
+* The "Managed-" prefix becomes obsolete.
+* Tests have to be changed, because there's no way to create `Box` or `Item` objects without an `NSManagedObjectContext` anymore. In essence, every model-centered test now becomes a `CoreDataTestCase`.
+
+Most of the renaming is a pretty safe change. Lean onto the compiler for guidance. I started with `Item`/`ManagedItem` to keep things isolated for a while, but I reached firm ground only after the `Box`/`ManagedBox` conversion was finished.
+
+Since creating objects during tests is now a lot more complex than invoking an object's initializer, I added yet another test class which sports a `CoreDataBoxRepository` instance most of the test suites needed anyhow:
+
+    class BoxCoreDataTestCase: CoreDataTestCase {
+        var repository: CoreDataBoxRepository!
+    
+        override func setUp() {
+            super.setUp()
+            repository = CoreDataBoxRepository(managedObjectContext: context)
+        }
+    
+        func createBoxWithId(boxId: BoxId, title: String) {
+            Box.insertBoxWithId(boxId, title: title, inManagedObjectContext: context)
+        }
+    
+        func createAndFetchBoxWithId(boxId: BoxId, title: String) -> BoxType? {
+            createBoxWithId(boxId, title: title)
+        
+            return repository.boxWithId(boxId)
+        }
+    }
+
+This solves part of the problem. Creating an `Item` is tricky.
+
+In the past, test cases could simply create an `Item` instance and add it to the box:
+
+{linenos=off}
+    let itemId = ItemId(6789)
+    let item = Item(itemId: itemId, title: "the item")
+    box.addItem(item)
+            
+The `ProvisioningService` of the app did the same. 
+
+Behind the scenes, a `ManagedBox` would observe changes to the item collection of the box and persist these. It was a pain to set up initially, but it worked pretty well afterwards. The persistence through Core Data was hidden from the Domain Model objects.
+
+Now that Core Data is on the surface level, a naive take will look like this:
+
+{linenos=off}
+    let itemId = ItemId(6789)
+    let item = Item.insertItemWithId(itemId, title: "the item", 
+        inManagedObjectContext: context)
+    box.addItem(item)
+
+That works well for tests since they have a `context` property. The `ProvisioningService` doesn't, though. Most of the application will not (and should not!) realize that Core Data is at play.
+
+It's pretty easy to get around this limitation: add more behavior to `Box` and make its API more meaningful!
+
+{linenos=off}
+    extension Box {
+        func addItemWithId(itemId: ItemId, title: String) {
+    
+            Item.insertItemWithId(itemId, title: title, intoBox: self, 
+                inManagedObjectContext: managedObjectContext!)
+        }
+    }
+
+Tests and service objects of the app can now both use this simple method to get rid of all the set up work. The code of the example test case from above is now written as:
+
+{linenos=off}
+    let itemId = ItemId(6789)
+    box.addItemWithId(itemId, title: "the item")
+
+Client code knows nothing about Core Data, and since a `Box` instance is a `NSManagedObject`, it has a `managedObjectContext` property anyway. We don't even need to query the persistent stack object in any additional location in production code.
+
+The takeaway at this point is: even when you build your model using Core Data, you can adopt good object-oriented programming practices and create intent-revealing APIs.
+
+But right now, the API of `Box` and `Item` reveals too much; by the way of abstraction, we will be able to improve the situation even more.
