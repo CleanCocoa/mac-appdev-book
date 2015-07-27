@@ -9,3 +9,5 @@ Until now, we've avoided this with utmost caution. Let's see how bad it'll be if
 During the rest of this book, I've tried to build the application as much "bottom up" as possible, given that I knew which persistence mechanism I was going to use. The notion of a Domain Model is, in essence, the abstraction of everything that has to do with the infrastructure and user interface APIs. I like that. Working with code in isolation is very rewarding: everything is under your control.
 
 Now, I'm going to put the Core Data managed objects first and see what I can do to keep the app well managed and the meager business logic isolated.
+
+I keep track of progress in a separate branch called [`core-data-only`](https://github.com/DivineDominion/mac-appdev-code/tree/core-data-only).

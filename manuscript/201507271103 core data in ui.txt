@@ -6,7 +6,7 @@ I have mixed feelings about this. Simple data-centric applications become simple
 
 Here, we'll use Cocoa Bindings for as much work as possible.
 
-To separate the progress on this front from removing the simple Domain Model in the last chapter, I will push changes to another branch of the repository.
+To separate the progress on this front from removing the simple Domain Model in the last chapter, I will push changes to another branch of the repository, called [`core-data-ui`](https://github.com/DivineDominion/mac-appdev-code/tree/core-data-ui).
 
 In some way, progress will now be synonymous to degradation. We will mix things up a lot.
 
