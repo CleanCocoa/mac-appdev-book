@@ -32,6 +32,7 @@ part3.txt
 part4.txt
 201507271008 changes for core data.txt
 201507270905 abstracting away core data.txt
+201507271103 core data in ui.txt
 
 part-epilogue.txt
 201412061727 assessment.txt

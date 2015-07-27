@@ -1,0 +1,201 @@
+# Core Data in the UI
+
+Since we're coding for Mac, we have the advantage of Cocoa Bindings a lot of developers wish iOS had, too. 
+
+I have mixed feelings about this. Simple data-centric applications become simple to wire together with Cocoa Bindings. But it's hard to catch bugs during runtime, and it's not very intuitive to write unit tests for the wiring. Integration tests will do a better job at the UI/Cocoa Bindings seam.
+
+Here, we'll use Cocoa Bindings for as much work as possible.
+
+To separate the progress on this front from removing the simple Domain Model in the last chapter, I will push changes to another branch of the repository.
+
+In some way, progress will now be synonymous to degradation. We will mix things up a lot.
+
+## Getting Rid of Overhead
+
+Since Cocoa Bindings are read--write-bindings, we no longer need to pass Data Transfer Objects (DTO) to the view to display data. `BoxData` and `ItemData` will just be gone.
+
+This alone produces a lot of change and ripples.
+
+### Simplifying `ManageBoxesAndItems`
+
+`ManageBoxesAndItems` populates the view with data. Since there's no DTO's anymore, most of its behavior is gone. It simply shows the window. The window then takes care of its contents.
+
+To keep the illusion of boundaries present, I want to let `ManageBoxesAndItems` pass its `BoxRepository` to the view. The `ItemViewController` can just as well fetch this from the `ServiceLocator` itself. But that's too far reaching for my taste. I don't want to make the code intentionally muddy.
+
+### Removing `HandleBoxAndItemModifications` 
+
+`HandleBoxAndItemModifications` is responsible for creating entities and changing their names.
+
+When Cocoa Bindings are set up properly, all of this is done behind the scenes by the `NSTreeController`. We can safely get rid of this class completely.
+
+Gone is the notion of an `eventHandler` for the view. Gone is the property of the same name on `ManageBoxesAndItems`. We don't even need event handling protocols.
+
+### Removing `ProvisioningService`
+
+Since there's no event handler anymore, there's no object left which uses `ProvisioningService`. We can get rid of it, too.
+
+`ProvisioningService` was where actual repository interactions took place. These will now have to move into the view controller directly.
+
+### Removing `BoxNode` and `ItemNode`
+
+We're going to bind the underlying data via `NSTreeController` directly to a `NSManagedObjectContext`. There's no need to provide custom node objects.
+
+The node objects were an abstraction of the data as a _view model_. Since the true entities are used with Cocoa Bindings, a _view model_ serves no purpose anymore.
+
+View models are often great for simplifying view controllers. Cocoa Bindings was designed to be a simplification itself. There's no use trying to combine both.
+
+Keeping the `TreeNode` protocol for now, it's trivial to make `Box` and `Item` implement its contract:
+
+    extension Box: TreeNode {
+    
+        public dynamic var count: UInt { return 0 }
+    
+        public dynamic var children: [TreeNode] {
+            return self.managedItems.map { $0 as! TreeNode }
+        }
+    
+        public dynamic var isLeaf: Bool { return false }
+    
+        public func resetTitleToDefaultTitle() {
+            title = "Box"
+        }
+    }
+
+    extension Item: TreeNode {
+    
+        public dynamic var count: UInt { return 0 }
+    
+        public dynamic var children: [TreeNode] { return [] }
+    
+        public dynamic var isLeaf: Bool { return true }
+    
+        public func resetTitleToDefaultTitle() {
+            title = "Item"
+        }
+    }
+
+## Super-Charging the View Controller
+
+A lot of delegates were just removed from the project. The functionality moves into the view controller.
+
+### Rewiring the Controller
+
+The `NSTreeController` currently uses custom `TreeNode` objects. But it can be customized to use Core Data entities as well. Expose a `NSManagedObjectContext` from the view controller as the data source, so to speak.
+
+Then change the tree controller's settings in Interface Builder:
+
+* Under its Bindings settings, in the "Parameters" group at the bottom, set the Managed Object Context to point to the view controller. The model key path should read `self.managedObjectContext`.
+* Under its Attribute settings pane, change the "Mode" to "Entity Name" and set it to "ManagedBox" (which is the name of the entity in Core Data, not the name of the class we use).
+* Still looking at the Attribute pane, check "Prepares Content".
+
+This should make the tree controller fetch all instances at the beginning.
+
+
+### Adding Boxes
+
+To add a box was pretty easy in the past: trigger an insertion event and consume the resulting `BoxData`, if any.
+
+Without this round-trip, we have to trigger a change of the tree controller's underlying data.
+
+Moving the `BoxRepository` into the view controller, `addBox(_:)` now becomes:
+
+{linenos=off}
+    @IBAction func addBox(sender: AnyObject) {
+        guard hasValue(repository) else {
+            return
+        }
+        
+        let boxId = repository.nextId()
+        repository.addBoxWithId(boxId, title: "NEW BOX!!")
+        
+        refreshTree()
+    }
+
+In theory, we could bind the "Add Box" button to the tree controller directly; in practice, this doesn't work if there's more than one kind of entity.
+
+### Adding Items
+
+To add an item is quite similar to adding a box. We still have to find out the parent box. It's either the selected node itself, or the parent of the selected node.
+
+Since our nodes are not just dumb nodes anymore, each `Item` actually knows its parent `Box`. That's pretty convenient, and we can get rid of a lot of methods which helped discover the correct parent object.
+
+Instead of a handful, we end up with two methods:
+
+{linenos=off}
+    @IBAction func addItem(sender: AnyObject) {
+        guard hasValue(repository) else {
+            return
+        }
+        
+        guard hasSelection() else {
+            return
+        }
+        
+        addItemToSelectedBox()
+        
+        refreshTree()
+    }
+    
+    func addItemToSelectedBox() {
+        let selectedNode = itemsController.selectedNodes.first!
+        let itemId = repository.nextItemId()
+        
+        if let box = selectedNode.representedObject as? Box {
+            box.addItemWithId(itemId, title: "New Item")
+        } else if let item = selectedNode.representedObject as? Item {
+            let box = item.box
+            box.addItemWithId(itemId, title: "New Item")
+        }
+    }
+
+That's a lot leaner.
+
+### Removing Nodes
+
+In a perfect world, we would've achieved Zen using this method:
+
+{linenos=off}
+    @IBAction func removeSelectedObject(sender: AnyObject) {
+        guard hasSelection() else {
+            return
+        }
+
+        itemsController.remove(sender)
+    }
+
+Since `Box` is not KVC compliant for the `children` array, which is nothing more but a wrapper around its `managedItems: NSSet`, `remove(_:)` will raise a runtime error.
+
+This might be solved using not a computed `children` property but a real writeable collection. Either I add a KVC compliant wrapper around its `managedItems`, or I rename the Core Data property just for the sake of saving a few lines during removal. Both do not appeal to me.
+
+The view controller instead has to use the `BoxRepository` just like all the other mutating button callbacks to change the Core Data store contents.
+
+{linenos=off}
+    @IBAction func removeSelectedObject(sender: AnyObject) {
+        guard hasSelection() else {
+            return
+        }
+
+        let selectedNode = itemsController.selectedNodes.first!
+        
+        if let box = selectedNode.representedObject as? Box {
+            repository.removeBox(boxId: box.boxId)
+        } else if let item = selectedNode.representedObject as? Item {
+            let itemId = item.itemId
+            let box = item.box
+            box.removeItem(itemId: itemId)
+        }
+        
+        refreshTree()
+    }
+
+The view controller file is at a refreshing 130 lines of code. That's not too much.
+
+### Getting Rid of the Repository
+
+`ItemViewController` will provide the `NSManagedObjectContext` for the tree controller. It has to come somewhere; either through the `BoxRepository` or through the `ServiceLocator` or through injection via property.
+
+Since the `NSManagedObjectContext` is known, couldn't we use `Box.insertBoxWithId(_:, title:, intoManagedObjectContext:)` directly and get rid of the repository?
+
+Yup, that would work. In the end, there's be just the use case type `ManageBoxesAndItems` to show the window, the `PersistentStack` to set up Core Data once and have a global object context, the entities themselves, and the view components.
+
+In fact, that'd be your usual starting point if you move most of the work out of the `AppDelegate` early.
