@@ -139,7 +139,7 @@ In broad sketches, this is what's left to do to connect the dots:
 * I have to make a repository available to the view. I'll do this via **Application Service**s.
 * I have to add an actual Application Service layer. Remember, this is the client of the domain.
 * The Application Service will issue saving `Box`es and `Item`s without knowing about Core Data.
-* I need a service provider of sorts. Something somewhere has to tell the rest of the application that `CoreDataBoxRepository` is the default `BoxRepository` protocol implementation. The process of setting this up takes place in the application delegate, but there's a global `ServiceLocator` singleton missing to do the actual look-up.
+* I need a service provider of sorts. Something somewhere has to tell the rest of the application that `CoreDataBoxRepository` (from Infrastructure) is the default implementation of the `BoxRepository` protocol (from the Domain). The process of setting this up takes place in the application delegate, but there's a global `ServiceLocator` singleton missing to do the actual look-up.
 * I may need to replace the `ServiceLocator`'s objects with test doubles.
 
 The `ServiceLocator` can look like this:

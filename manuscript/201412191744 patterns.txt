@@ -23,7 +23,11 @@ If you know how the delegate pattern works, you know how ports and adapters work
 
 ![Layered architecture with ports and adapters](images/20150723113926_layers-ports.png)
 
-Take the core of your app, the Domain. It should not access a database or Core Data directly. It should define a port which it queries for information. The concrete adapter will have to be implemented in a layer further outside. The outermost infrastructure layer is a good candidate to wrap database access in objects you own and implement the Domain's protocol. 
+Take the core of your app, the Domain.
+
+The Domain should not access a database or Core Data directly to keep it isolated. It should define a port which it queries for information through a protocol. 
+
+The concrete adapter will have to be implemented in a layer further outside. The outermost infrastructure layer is a good candidate to wrap database access in objects you own and implement the Domain's protocol. 
 
 In the picture above, `BoxView` is a protocol which defines how to `display(_:)` data. A concrete view controller implements this protocol and will be handed to the use case or a comparable service object. Similarly, `BoxRepository` is a protocol of the Domain implemented by a `CoreDataBoxRepository` in infrastructure.
 
