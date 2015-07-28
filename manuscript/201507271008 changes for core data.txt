@@ -54,7 +54,6 @@ That works well for tests since they have a `context` property. The `Provisionin
 
 It's pretty easy to get around this limitation: add more behavior to `Box` and make its API more meaningful!
 
-{linenos=off}
     extension Box {
         func addItemWithId(itemId: ItemId, title: String) {
     

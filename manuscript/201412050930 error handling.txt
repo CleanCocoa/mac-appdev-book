@@ -46,7 +46,6 @@ Since there's no client but the tests using `count()` at the moment, there's no 
 
 Not being able to create new objects is worse:
 
-{linenos=off}
     class ProvisioningService {
         func provisionBox() {
             let boxId = repository.nextId()

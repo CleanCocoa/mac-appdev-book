@@ -77,7 +77,8 @@ An event should be a value type, and thus a struct. It assembles a `userInfo` di
     
         init(userInfo: UserInfo) {
             let boxIdData = userInfo["id"] as! NSNumber
-            self.init(boxId: BoxId(boxIdData), title: userInfo["title"] as! String)
+            self.init(boxId: BoxId(boxIdData), 
+                title: userInfo["title"] as! String)
         }
     
         func userInfo() -> UserInfo {
@@ -92,12 +93,12 @@ When publishing an event, these properties are used in a free `notification(_:)`
 
 {linenos=off}
     func notification<T: DomainEvent>(event: T) -> NSNotification {
-        return NSNotification(name: T.eventName, object: nil, userInfo: event.userInfo())
+        return NSNotification(name: T.eventName, object: nil, 
+            userInfo: event.userInfo())
     }
 
 The underlying protocol is really simple:
 
-{linenos=off}
     protocol DomainEvent {
         /// The `DomainEventType` to identify this kind of DomainEvent
         static var eventName: String { get }

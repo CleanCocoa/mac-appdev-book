@@ -163,6 +163,8 @@ To leverage Key-Value Observing in Swift, I have to change `Box` to this:
         }
     }
 
+{pagebreak}
+
 This works pretty well for fetched boxes:
 
 {linenos=off}
@@ -256,6 +258,8 @@ That's all there is to it to create, save, and show items with their default val
 
 
 [^d8b64eabee134cd516b382956e2aa58c194d5886]: See [commits d8b64ea](https://github.com/DivineDominion/mac-appdev-code/commit/d8b64eabee134cd516b382956e2aa58c194d5886),  [b4c63ff](https://github.com/DivineDominion/mac-appdev-code/commit/b4c63ff803672889f7683aae72554d9538c7f335), [6cfabcf](https://github.com/DivineDominion/mac-appdev-code/commit/6cfabcf026b516b69a30873aa30ea68de79a6aa9), and [f9d96aa](https://github.com/DivineDominion/mac-appdev-code/commit/f9d96aa1f19db681ba654f2bdf067bd8a7edf08f)
+
+{pagebreak}
 
 ### Renaming Boxes and Items
 

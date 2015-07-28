@@ -27,4 +27,8 @@ Avdi Grimm: Objects on Rails
 
 Other links of interest on the topic of software architecture:
 
-* [What service objects are not](https://medium.com/@KamilLelonek/what-service-objects-are-not-7abef8aa2f99) (Ruby)
+* ["250 Days Shipping With Swift and VIPER"](https://realm.io/news/altconf-brice-pollock-250-days-shipping-with-swift-and-viper/) (Video)
+* ["Integrated Tests are a Scam"](https://vimeo.com/80533536) (Video)
+* "Advanced iOS Application Architecture and Patterns", Session 229 at [WWDC 2014](https://developer.apple.com/videos/wwdc/2014/) (Video)
+* ["Building Better Apps with Value Types in Swift"](https://developer.apple.com/videos/wwdc/2015/?id=414) (Video) at WWDC 2015
+* [What service objects are not](https://medium.com/@KamilLelonek/what-service-objects-are-not-7abef8aa2f99), with Ruby examples

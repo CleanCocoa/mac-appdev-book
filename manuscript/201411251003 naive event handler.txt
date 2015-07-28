@@ -71,7 +71,6 @@ The functional test still fails because the `BoxAndItemService` is never actuall
 
 `AppDelegate` sets up the view controller like this:
 
-{linenos=off}
     lazy var windowController = ItemManagementWindowController()
     lazy var boxAndItemService = BoxAndItemService()
     

@@ -1,4 +1,4 @@
-### VIPER & Naming Conventions {#viper}
+### VIPER & Naming conventions {#viper}
 
 ![VIPER, illustrated. Picture credit: Jeff Gilbert, Conrad Stoll, and Lin Zagorski of Mutual Mobile. Used with permission.](images/201503130948_viper.jpg)
 
@@ -45,6 +45,8 @@ Consuming data for a `BoxNode` is pretty easy because the nodes are just appende
         orderTree()
     }
     
+{pagebreak}
+    
 Consuming data for `ItemNodes` is a bit more intricate, but still not too complicated:
 
     public func consume(itemData: ItemData) {
@@ -72,7 +74,7 @@ Walking the first level of `NSTreeNodes` to find the `BoxNode` with a specific I
 
 [^8abe3c0a0eee951e70a0375e96d2775cc26a3597]: See [commits 8abe3c0](https://github.com/DivineDominion/mac-appdev-code/commit/8abe3c0a0eee951e70a0375e96d2775cc26a3597) and [ba050fb](https://github.com/DivineDominion/mac-appdev-code/commit/ba050fbfeb2adbb6656c0b0477b62e2e5705f5b8)
 
-### What's all this good for?
+### Separation aids with concurrency
 
 Separating event handling from updating the view can have nice benefits. Imagine there's a background thread syncing the database to a server: you can display changes with the existing setup just like that.
 

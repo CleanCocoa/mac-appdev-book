@@ -11,6 +11,8 @@ For the sake of this book and the rather simple example application, it suffices
 * The so-called **Application** layer, where interaction with the Domain's services take place.
 * **Infrastructure**, hosting persistence mechanisms and tying components together. Here, the app exposes so-called adapters to the rest of the world.
 
+{pagebreak}
+
 ### Domain
 
 What's at the core?
@@ -29,6 +31,8 @@ In our example application, on the other hand, there won't be much going on at t
 
 I> Although I will use the Repository to generate object identifiers through `nextId()`, there is room for improvement. Acting as a storage and vending identifiers are two concerns, we can argue. You could add an `IdentityService` type which only vends new identifiers. This way, the Repository will only deal with object storage.
 
+{pagebreak}
+
 ### Infrastructure
 
 Then there's the interface for other layers. There's concrete Repository implementations in the **Infrastructure** layer. When the Domain Service reaches "outward" through the Repository interface, it sends data through the Domain's "ports". The concrete Core Data Repository implementation is an "adapter" to one of these ports.
@@ -44,6 +48,8 @@ You can chose a Dependency Injection library instead if you like, but I always f
 Thus, Infrastructure deals with providing persistence mechanisms to plug them into the Domain. But which object is actually calling the methods to set up Domain Services? That's a matter of the use case objects which I put into the Application layer.
 
 [depinj]: http://en.wikipedia.org/wiki/Dependency_injection
+
+{pagebreak}
 
 ### Application
 

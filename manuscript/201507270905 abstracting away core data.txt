@@ -10,7 +10,6 @@ Keeping it simple, we can leverage protocols to define which part of the model t
 
 The functionality we created in the first three parts of the book can be distilled to the following protocols:
 
-{linenos=off}
     protocol ItemType: class {
         var title: String { get }
         var itemId: ItemId { get }
@@ -50,7 +49,6 @@ The actual transition to protocol-based model objects is trivially simple.
 
 Since most properties of the managed objects match the protocol requirements already, making `Item` adopt `ItemType` is trivially simple:
 
-{linenos=off}
     extension Item: ItemType {    
         public var itemId: ItemId {
             return ItemId(uniqueId.longLongValue)
@@ -66,10 +64,7 @@ Since most properties of the managed objects match the protocol requirements alr
 Since an array of `ItemType` is available as part of the protocol-defined API, some methods are now easier to implement and thus easier to read:
 
     extension Box: BoxType {
-    
-        public var boxId: BoxId {
-            return BoxId(uniqueId.longLongValue)
-        }
+        public var boxId: BoxId { return BoxId(uniqueId.longLongValue) }
     
         public var items: [ItemType] {
             return managedItems.allObjects.map { $0 as! ItemType }
@@ -82,12 +77,10 @@ Since an array of `ItemType` is available as part of the protocol-defined API, s
         public func removeItem(itemId itemId: ItemId) {
             guard let item = self.item(itemId: itemId) else {
                 return
-            }
-    
+            }    
             let existingItems = self.mutableSetValueForKey("managedItems")
             existingItems.removeObject(item)
         }
-        
         // ...
     }
 

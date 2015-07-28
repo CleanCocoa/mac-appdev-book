@@ -38,8 +38,7 @@ According to some folks, it may help to simply add `@objc(YourManagedObjectSubcl
 
 From now on, I will resort to making tested code public. We can rationalize it this way: tests are in a different bundle, and tests should work with the public API only.
 
-{icon=certificate}
-I> ## Update for Swift 2
+I> **Update for Swift 2**
 I>
 I> Swift 2.0 introduces the `@testable` annotation:
 I>

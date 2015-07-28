@@ -22,8 +22,6 @@ Now that I have to think of my code as a module with a public interface, the old
 [^extrant]: Michael C. Feathers calls the following dependency breaking technique "Extract Interface" in his book _Working Effectively with Legacy Code_. See the [book list](#booklist) for details.
 
 
-{pagebreak}
-
 I want to ensure the repository generates IDs until an ID is free. Duplicates are not allowed. I could still override the `integerId()` method and make it public:
 
     // Source module

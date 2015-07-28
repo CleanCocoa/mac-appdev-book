@@ -81,7 +81,6 @@ Instead of _querying_ `BoxAndItemService` for an ID, the view controller can now
 
 What `reportBoxToConsumer(_:Box)` does is equal to the intent of the observer pattern. In Cocoa, we usually send notifications. This is more like calling a delegate because it's a 1:1 relationship instead of the many-to-one observer pattern relationship:
 
-{linenos=off}
     func reportBoxToConsumer(box: Box) {
         guard let port = boxConsumer else {
             return

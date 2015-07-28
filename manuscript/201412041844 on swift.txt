@@ -1,4 +1,4 @@
-# On Swift
+## On Swift
 
 I think Swift is Apple's move towards more advanced app architecture patterns. Consider the wonders generics do to [handling domain events](#domainevents), for example. Compared to dealing with the `NSDictionary` `userInfo` directly, domain event objects are a very convenient way to access event-specific information in a failure-proof manner.
 

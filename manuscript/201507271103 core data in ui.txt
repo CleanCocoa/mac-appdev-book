@@ -16,13 +16,13 @@ Since Cocoa Bindings are read--write-bindings, we no longer need to pass Data Tr
 
 This alone produces a lot of change and ripples.
 
-#### Simplifying `ManageBoxesAndItems`
+#### Simplifying ManageBoxesAndItems
 
 `ManageBoxesAndItems` populates the view with data. Since there's no DTO's anymore, most of its behavior is gone. It simply shows the window. The window then takes care of its contents.
 
 To keep the illusion of boundaries present, I want to let `ManageBoxesAndItems` pass its `BoxRepository` to the view. The `ItemViewController` can just as well fetch this from the `ServiceLocator` itself. But that's too far reaching for my taste. I don't want to make the code intentionally muddy.
 
-#### Removing `HandleBoxAndItemModifications` 
+#### Removing HandleBoxAndItemModifications
 
 `HandleBoxAndItemModifications` is responsible for creating entities and changing their names.
 
@@ -30,13 +30,13 @@ When Cocoa Bindings are set up properly, all of this is done behind the scenes b
 
 Gone is the notion of an `eventHandler` for the view. Gone is the property of the same name on `ManageBoxesAndItems`. We don't even need event handling protocols.
 
-#### Removing `ProvisioningService`
+#### Removing ProvisioningService
 
 Since there's no event handler anymore, there's no object left which uses `ProvisioningService`. We can get rid of it, too.
 
 `ProvisioningService` was where actual repository interactions took place. These will now have to move into the view controller directly.
 
-#### Removing `BoxNode` and `ItemNode`
+#### Removing BoxNode and ItemNode
 
 We're going to bind the underlying data via `NSTreeController` directly to a `NSManagedObjectContext`. There's no need to provide custom node objects.
 
@@ -99,7 +99,6 @@ Without this round-trip, we have to trigger a change of the tree controller's un
 
 Moving the `BoxRepository` into the view controller, `addBox(_:)` now becomes:
 
-{linenos=off}
     @IBAction func addBox(sender: AnyObject) {
         guard hasValue(repository) else {
             return
@@ -121,7 +120,6 @@ Since our nodes are not just dumb nodes anymore, each `Item` actually knows its 
 
 Instead of a handful, we end up with two methods:
 
-{linenos=off}
     @IBAction func addItem(sender: AnyObject) {
         guard hasValue(repository) else {
             return
@@ -154,7 +152,6 @@ That's a lot leaner.
 
 In a perfect world, we would've achieved Zen using this method:
 
-{linenos=off}
     @IBAction func removeSelectedObject(sender: AnyObject) {
         guard hasSelection() else {
             return
@@ -169,7 +166,6 @@ This might be solved using not a computed `children` property but a real writeab
 
 The view controller instead has to use the `BoxRepository` just like all the other mutating button callbacks to change the Core Data store contents.
 
-{linenos=off}
     @IBAction func removeSelectedObject(sender: AnyObject) {
         guard hasSelection() else {
             return

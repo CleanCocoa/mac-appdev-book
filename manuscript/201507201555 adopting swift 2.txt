@@ -1,4 +1,4 @@
-# Adopting Swift 2.0 Errors
+## Adopting Swift 2.0 Errors
 
 The Swift application template for a Core Data application looked awful at first. The language was new, so it was hard to read. Also, Swift 1.0 was way more clunky than Swift 2.0 is now. 
 
