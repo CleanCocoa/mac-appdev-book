@@ -83,6 +83,8 @@ The method `hasBinding(_,binding:,to:,throughKeyPath:)` is a little helper to in
 
 Now I know that the basic setup is working.
 
+{pagebreak}
+
 ### A Note on Splitting Concerns Into Objects and Creating so Many Files
 
 Was the sudden explosion of files worth it? Couldn't we've kept the AppDelegate to manage the window?

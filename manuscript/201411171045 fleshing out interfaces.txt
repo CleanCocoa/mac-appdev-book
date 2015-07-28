@@ -48,9 +48,6 @@ With this `TestRepository` in hand, I can reserve `ID1` and test that the rest o
 
 Making ID-generation public is a bad idea, though. It's an implementation detail of the Repository I don't want to expose. When dealing with legacy code, sometimes you have no choice but alter the public interface of a class and promise to yourself to not violate certain rules. We're not dealing with legacy code, though. Let's aim for a clean API.
 
-
-{pagebreak}
-
 First, recognize ID generation as a distinct responsibility and extract it into its own interface:
 
 {linenos=off}

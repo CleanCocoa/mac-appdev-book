@@ -1,6 +1,8 @@
+{pagebreak}
+
 ## Motivation to Write This Book
 
-Hi, I'm Christian and I develop [the Word Counter for Mac][wcapp]. It's my first big Mac application, and I charge money for a license, which makes me nervous. 
+I develop [the Word Counter for Mac][wcapp]. It's my first big Mac application, and I charge money for a license, which makes me nervous. 
 
 Recently, I wanted to use Core Data to store a new kind of data. That poses some challenges for those of us who keep an eye or two on their architecture. This little book and the accompanying project document my explorations and a possible solution.
 

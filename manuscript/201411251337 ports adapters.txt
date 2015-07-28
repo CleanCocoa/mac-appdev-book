@@ -1,3 +1,5 @@
+{pagebreak}
+
 ## Ports and Adapters
 
 The basic idea of this architectural style is this: separate queries from commands and isolate layers through ports and adapters. _Ports_ are interfaces (protocols) declared in one layer, while _Adapters_ are classes from other layers which satisfy a Port's specification:

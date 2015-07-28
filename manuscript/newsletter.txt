@@ -1,5 +1,3 @@
-{pagebreak}
-
 <!--ct:
 Icon alternatives:
 envelope-o 
@@ -17,5 +15,3 @@ G>
 G> <http://christiantietze.de/newsletter>
 G> 
 G> I'm working on other projects, too, and will keep you in the loop.
-
-{pagebreak}

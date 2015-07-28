@@ -45,15 +45,20 @@ For example:
         let fileManager = NSFileManager.defaultManager()
         
         do {
-            try fileManager.createDirectoryAtPath(directory.path!, withIntermediateDirectories: true, attributes: nil)
+            try fileManager.createDirectoryAtPath(directory.path!, 
+                withIntermediateDirectories: true, attributes: nil)
         } catch let fileError as NSError {
             
             var userInfo = [NSObject : AnyObject]()
-            userInfo[NSLocalizedDescriptionKey] = "Failed to create the application documents directory"
-            userInfo[NSLocalizedFailureReasonErrorKey] = "Creation of \(directory.path) failed."
+            userInfo[NSLocalizedDescriptionKey] = 
+                "Failed to create the application documents directory"
+            userInfo[NSLocalizedFailureReasonErrorKey] = 
+                "Creation of \(directory.path) failed."
             userInfo[NSUnderlyingErrorKey] = fileError
             
-            throw NSError(domain: kErrorDomain, code: 1, userInfo: userInfo)
+            throw NSError(domain: kErrorDomain, 
+                code: 1, 
+                userInfo: userInfo)
         }
     }
 
@@ -62,7 +67,8 @@ Without wrapping the error, a simple method suffices:
     private func createDirectory(directory: NSURL) throws {
         
         let fileManager = NSFileManager.defaultManager()
-        try fileManager.createDirectoryAtPath(directory.path!, withIntermediateDirectories: true, attributes: nil)
+        try fileManager.createDirectoryAtPath(directory.path!, 
+            withIntermediateDirectories: true, attributes: nil)
     }
 
 Since Swift requires us to add the `try` keyword in front of every call to a throwing function, there's no way to overlook points of potential failure.

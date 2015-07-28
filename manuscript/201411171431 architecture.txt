@@ -11,8 +11,6 @@ For the sake of this book and the rather simple example application, it suffices
 * The so-called **Application** layer, where interaction with the Domain's services take place.
 * **Infrastructure**, hosting persistence mechanisms and tying components together. Here, the app exposes so-called adapters to the rest of the world.
 
-{pagebreak}
-
 ### Domain
 
 What's at the core?
