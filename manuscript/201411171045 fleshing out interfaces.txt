@@ -4,6 +4,8 @@
 
 To test that the Repository does return unique IDs, we have to test that it first checks a random ID against the pool of existing ones, and then generates new ones until the generated ID is free.
 
+I> As I said earlier, all of this ID generation could fit nicely into an `IdentityService` instead. That will make the Repository do one thing less, so the code will adhere more to the _Single Responsibility Principle_. That's not an end in itself, though: splitting the concerns may introduce further problems. Leaving it in the Repository makes things easier, since the concrete Repository knows how to find out if an ID is used already anyhow.
+
 Let's say `nextId()` shall return a unique ID. `integerId()` then is a private method to generate an ID which `nextId()` has to check for uniqueness.
 
 To test this with a replacement ID generator, you can do the following:
