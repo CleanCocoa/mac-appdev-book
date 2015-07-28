@@ -303,6 +303,8 @@ I don't think this is necessary in our case. For the sake of the example, a vali
         }
     }
 
+{pagebreak}
+
 Since `Item` validation will not look much different, you could as well generalize the validator -- not through abstraction, but composition.
 
 Instead of one validator type targeted at each model object type, you could compose a validation mechanism through protocols:[^validat]
