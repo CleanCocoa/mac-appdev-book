@@ -2,6 +2,7 @@
 
 Out there, you'll find tons of software architecture approaches and dogmas. I already picked one for this book: a layered clean architecture. That's where the hexagon comes into play.
 
+{width=50%}
 ![Layered Hexagonal Architecture](images/201507231024_layered-hex.png)
 
 For the sake of this book and the rather simple example application, it suffices to think about the following layers, or nested circles:

@@ -4,7 +4,7 @@ This book is driven by example. Every pattern used will be put to practice in co
 
 The example project and this very book you read are the result of me trying to solve a problem in the domain of the Word Counter for Mac. This project is a model, so to speak, to explore solutions. 
 
-![The tree of entities](images/201507230959_tree.png) ![](images/201507231001_window-strip.png)
+![The tree of entities and a window screenshot](images/201507281218_trees.png)
 
 Let's pretend we want to create an application to sort stuff. It manages items. Items reside inside boxes. Users may create boxes and put items inside them. Boxes may only contain items but no other boxes. Items may contain nothing else. It's up to the user to decide what an item is, and she may label each box individually, too.
 
