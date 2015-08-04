@@ -16,7 +16,7 @@ I dedicate this part to making the switch to Swift and getting everything to run
 2. Prepare the user interface in its own layer
 3. Have tests in place for the app's domain
 
-In the second part, I'll cover the actual application's functionality. We'll be going to explore a lot of architecutral patterns in-depth there.
+In the second part, I'll cover the actual application's functionality. We'll be going to explore a lot of architectural patterns in-depth there.
 
 This part is mostly made up of longer notes or journal entries. They aren't meant to tell a coherent story. They are meant to provide a view over my shoulder instead. I hope to include enough details so you can follow easily.
 

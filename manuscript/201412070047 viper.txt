@@ -12,7 +12,7 @@ Only `ManageBoxesAndItems` has to be public. The rest is an implementation detai
 
 I named the collaborating services according to the [VIPER architecture][viper]: a **Presenter** updates the view on changes, while an **Event Handler** is delegate to user interaction. The use case object `ManageBoxesAndItems` replaces VIPER's notion of a **Wireframe** which suits iOS apps and their view transitions better than multi-windowed Mac apps.
 
-![VIPER compontents in practice](images/20150723132836_viper-arch.png)
+![VIPER components in practice](images/20150723132836_viper-arch.png)
 
 Quoting [Jeff Gilbert and Conrad Stoll][viper] here, the main parts of VIPER are:
 

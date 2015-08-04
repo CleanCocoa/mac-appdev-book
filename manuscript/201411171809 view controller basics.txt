@@ -55,7 +55,7 @@ I don't trust my ability to use Interface Builder a lot, and I assume I will get
 <!--ct: 20141124163838 explicit bindings make things worse-->
 
 {#x20141124163838}
-I hunted for a bug for a while only to find the Cocoa Binding from `NSOutlineView` to `NSTreeController` is in place _although I don't set it explicitely_. If I _do_, the behavior goes all nuts. It seems that the column bindings make up for the rest. I have no clue how to verify this kind of automatted set-up in the Nib without explicit bindings slipping by. Parsing the Nib XML is out of question.[^dc824da1016025abd8be61fafb560995527dccfb]
+I hunted for a bug for a while only to find the Cocoa Binding from `NSOutlineView` to `NSTreeController` is in place _although I don't set it explicitly_. If I _do_, the behavior goes all nuts. It seems that the column bindings make up for the rest. I have no clue how to verify this kind of automated set-up in the Nib without explicit bindings slipping by. Parsing the Nib XML is out of question.[^dc824da1016025abd8be61fafb560995527dccfb]
 <!--ct: commit #dc824da1016025abd8be61fafb560995527dccfb-->
 
 [^dc824da1016025abd8be61fafb560995527dccfb]: See [commit dc824da](https://github.com/DivineDominion/mac-appdev-code/commit/dc824da1016025abd8be61fafb560995527dccfb)
@@ -83,15 +83,13 @@ The method `hasBinding(_,binding:,to:,throughKeyPath:)` is a little helper to in
 
 Now I know that the basic setup is working.
 
-{pagebreak}
-
 ### A Note on Splitting Concerns Into Objects and Creating so Many Files
 
 Was the sudden explosion of files worth it? Couldn't we've kept the AppDelegate to manage the window?
 
 I decided to to this move not because it's necessary to keep the code clean right now. It was a premature optimization, you could say, because the app still doesn't do a thing. You'd be right, but the additions are still trivial, so I move a bit faster than strictly necessary.
 
-I did this move because I know where I'll be heading. I'm still trying to replicate the basic setup of the Word Counter project but stumble upon Swift's pecularities from time to time.
+I did this move because I know where I'll be heading. I'm still trying to replicate the basic setup of the Word Counter project but stumble upon Swift's peculiarities from time to time.
 
 Once we begin to send messages here and there, the split between objects will make a lot more sense. We're getting there.
 

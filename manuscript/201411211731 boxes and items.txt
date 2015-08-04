@@ -36,6 +36,6 @@ Why do I keep multiple classes nevertheless?
 
 I think the mental mapping of classes to things in the model is pretty straightforward. You don't need to decode a lot to understand the difference. Remembering to look at a property's value to find out what kind of node it is is harder than reading the object type. You'll benefit from this in the long run. Clean code equals code reading like prose. (Kind of.)
 
-The distinction between a box and item node is modelled explicitely as different types and thus is easy to understand. The alternate approach will only make you slower. Maybe not a lot slower for the time you remember what you've done, but in the long run. Your future self is just another reader of a foreigner's code.
+The distinction between a box and item node is modelled explicitly as different types and thus is easy to understand. The alternate approach will only make you slower. Maybe not a lot slower for the time you remember what you've done, but in the long run. Your future self is just another reader of a foreigner's code.
 
 Optimization can wait until later. I don't think I introduced unnecessary design complexity here either. You could say it's premature to model the distinction when no code relies on it. Fair enough. But it will in just a matter of commits.
