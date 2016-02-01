@@ -136,7 +136,7 @@ Reporting a problem upon `save()` can be pretty straightforward:
 
 Apart from showing a modal dialog, this doesn't help much. If you keep a log file using CocoaLumberjack, for example, you should replace this with a decent interface to help mail the error log to the developer.
 
-In this situation, it's a fatal error and the user faces data loss. Keep the objects in memory for as long as you can. No need to crash the app here. If the disk is full (which is unlikely nowadays, but still), give the user a change to free space and try again. If `PersistentStack` saves because the user quits the app, abort termination of the application unless the user forces the app to close.
+In this situation, it's a fatal error and the user faces data loss. Keep the objects in memory for as long as you can. No need to crash the app here. If the disk is full (which is unlikely nowadays, but still), give the user a chance to free space and try again. If `PersistentStack` saves because the user quits the app, abort termination of the application unless the user forces the app to close.
 
 
 #### Recover from the Problem

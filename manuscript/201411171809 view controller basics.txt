@@ -87,7 +87,7 @@ Now I know that the basic setup is working.
 
 Was the sudden explosion of files worth it? Couldn't we've kept the AppDelegate to manage the window?
 
-I decided to to this move not because it's necessary to keep the code clean right now. It was a premature optimization, you could say, because the app still doesn't do a thing. You'd be right, but the additions are still trivial, so I move a bit faster than strictly necessary.
+I decided to do this move not because it's necessary to keep the code clean right now. It was a premature optimization, you could say, because the app still doesn't do a thing. You'd be right, but the additions are still trivial, so I move a bit faster than strictly necessary.
 
 I did this move because I know where I'll be heading. I'm still trying to replicate the basic setup of the Word Counter project but stumble upon Swift's peculiarities from time to time.
 
