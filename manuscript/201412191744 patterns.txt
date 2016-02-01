@@ -82,7 +82,7 @@ There's your core _domain model_. Around it, you build an application with its i
 
 Now an MVC controller will usually have access to the model data and the view, or the view will be bound to the model and update itself automatically on model changes. The latter is sometimes called _smart view pattern_. As we'll see, I don't like either of that. A basic Domain-Driven Design principle I adhere to is this: domain objects should not bleed into other layers of the application. At least not if they're mutable, that is, if they're Aggregates. You can argue that read-only entities would do no harm, but I yet have to come across something like this.
 
-To get any data into the view, MVVM introduces the _view model_ or [_presentation model_][presmodel]. Application of this pattern vary, but they all have in common that the view model is a container for the data of the domain model. The domain model is thus shielded from the user interface. I came to think that the view model is "a model for the view", but people repeatedly say it's a "model of the view" instead. Depending on your interpretation, how you apply the pattern will vary of course.
+To get any data into the view, MVVM introduces the _view model_ or [_presentation model_][presmodel]. Applications of this pattern vary, but they all have in common that the view model is a container for the data of the domain model. The domain model is thus shielded from the user interface. I came to think that the view model is "a model for the view", but people repeatedly say it's a "model of the view" instead. Depending on your interpretation, how you apply the pattern will vary of course.
 
 * Dumb Data-Transfer Objects are "a model for the view". The view takes the data, works with it, and displays it somehow. These objects couple with the presenter or whichever service object puts data into the view.
 * Presenters, however, model what the view can do. They become "a model of the view." They take care of assembling data suited to the view's needs. These objects couple with the view and its demands.
@@ -95,7 +95,7 @@ I learned to think about it from a different perspective.
 
 Adhering to dependency inversion, the view model is indeed injected into the view. Its interface is specified by means of the view component arrangement, though -- not through a formal protocol, but through high coupling.
 
-If the view displays the full name of a person, the presenter's interface will codify this requirement as `fullName`, even if the original data did only contain `firstName` and `surname`.
+If the view displays the full name of a person, the presenter's interface will codify this requirement as `fullName`, even if the original data did only contain `firstName` and `lastName`.
 
 Similarly, if the age of a person in represented through `Int`s but displayed in a label, the view model should expose `age: String` instead, so the view has to do _zero_ formatting at best.
 
