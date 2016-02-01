@@ -12,3 +12,8 @@ Feel free to contribute to this book and the overall project via GitHub:
 - [Project Code on GitHub](https://github.com/DivineDominion/mac-appdev-code)
 
 You can read more about the book project on its [dedicated website](http://divinedominion.github.io/mac-appdev-book/).
+
+A huge thanks for providing feedback and fixing bugs goes to:
+
+- Jorge D Ortiz Fuentes
+- [Stanislaw Pankevich](https://github.com/stanislaw)
