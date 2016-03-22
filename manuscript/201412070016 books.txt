@@ -5,8 +5,6 @@
 
 I recommend reading the following books, ordered by subjective significance to the topic. 
 
-The top four are really worth your money, so I added amazon affiliate links to them [on the book website](http://divinedominion.github.io/mac-appdev-book/#interesting-books). If you buy from these links, I get a small kick-back from amazon. It won't cost you anything, though. Adding these links to the e-books is forbidden, so please consider heading to the project website instead to support my writing. Thank you!
-
 {begin-hanging-paragraphs}
 
 
