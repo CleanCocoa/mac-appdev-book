@@ -103,7 +103,7 @@ To test controls such as buttons, there's no need to simulate clicks in the test
     // Test that it is connected to an action method
     func testAddItemButton_IsWiredToAction() {
         XCTAssertEqual(viewController.addItemButton.action, 
-            Selector("addItem:"));
+            #selector(NSMenu.addItem(_:)))
     }
     
     // Specify preconditions in "Initially" context
