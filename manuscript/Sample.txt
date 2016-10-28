@@ -1,26 +1,27 @@
-part-intro.txt
+part0-intro.txt
 newsletter.txt
 sample-stripped.txt
-201412061628 who.txt
-201412070201 contribute.txt
-201412061816 the example.txt
-201411171431 architecture.txt
+part0-intro/100-who.txt
+part0-intro/200-contribute.txt
+part0-intro/300-motivation.txt
+part0-intro/400-the example.txt
+part0-intro/500-architecture.txt
 
 part-content.txt
 
-part1.txt
+part1-bootstrapping.txt
 sample-stripped.txt
-201411241637 functional tests.txt
+part1-bootstrapping/600-functional tests.txt
 
-part2.txt
+part2-process.txt
 sample-stripped.txt
-201411251337 ports adapters.txt
+part2-process/300-ports adapters.txt
 
-part3.txt
+part3-domain.txt
 sample-stripped.txt
-201412041035 events.txt
+part3-domain/100-events.txt
 
 part-appendix.txt
 sample-stripped.txt
-201412051148 links.txt
-201412070016 books.txt
+part-appendix/100-links.txt
+part-appendix/200-books.txt

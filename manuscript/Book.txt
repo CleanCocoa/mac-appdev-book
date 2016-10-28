@@ -1,47 +1,47 @@
 
-part-intro.txt
+part0-intro.txt
 newsletter.txt
-201412061628 who.txt
-201412070201 contribute.txt
-201411171435 motivation.txt
-201412061816 the example.txt
-201411171431 architecture.txt
-201412191744 patterns.txt
+part0-intro/100-who.txt
+part0-intro/200-contribute.txt
+part0-intro/300-motivation.txt
+part0-intro/400-the example.txt
+part0-intro/500-architecture.txt
+part0-intro/600-patterns.txt
 
 part-content.txt
 
-part1.txt
-201411170954 swift core data tests.txt
-201411171045 fleshing out interfaces.txt
-201411171809 view controller basics.txt
-201411190902 use of tests.txt
-201411211731 boxes and items.txt
-201411241637 functional tests.txt
+part1-bootstrapping.txt
+part1-bootstrapping/100-swift core data tests.txt
+part1-bootstrapping/200-fleshing out interfaces.txt
+part1-bootstrapping/300-view controller basics.txt
+part1-bootstrapping/400-use of tests.txt
+part1-bootstrapping/500-boxes and items.txt
+part1-bootstrapping/600-functional tests.txt
 
-part2.txt
-201411251003 naive event handler.txt
-201412070045 naive add remove.txt
-201411251337 ports adapters.txt
-201412070047 viper.txt
+part2-process.txt
+part2-process/100-naive event handler.txt
+part2-process/200-naive add remove.txt
+part2-process/300-ports adapters.txt
+part2-process/400-viper.txt
 
-part3.txt
-201412041035 events.txt
-201412050930 error handling.txt
+part3-domain.txt
+part3-domain/100-events.txt
+part3-domain/200-error handling.txt
 
-part4.txt
-201507271008 changes for core data.txt
-201507270905 abstracting away core data.txt
-201507271103 core data in ui.txt
+part4-coredata.txt
+part4-coredata/100-changes for core data.txt
+part4-coredata/200-abstracting away core data.txt
+part4-coredata/300-core data in ui.txt
 
-part-epilogue.txt
-201412061727 assessment.txt
+part9-epilogue.txt
+part9-epilogue/100-assessment.txt
 
 part-appendix.txt
-201412051148 links.txt
-201412070016 books.txt
-201507281400 bonus.txt
+part-appendix/100-links.txt
+part-appendix/200-books.txt
+part-appendix/300-bonus.txt
 newsletter.txt
-201411171450 unowned self in closures.txt
-201411271706 objc api.txt
-201412041844 on swift.txt
-201507201555 adopting swift 2.txt
+part-appendix/400-unowned self in closures.txt
+part-appendix/500-objc api.txt
+part-appendix/600-on swift.txt
+part-appendix/700-adopting swift 2.txt
