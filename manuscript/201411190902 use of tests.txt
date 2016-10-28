@@ -10,7 +10,7 @@ Discovery Tests are tests which aren't necessarily meant to stay. They take the 
 
 For example, in this project I try not to unit test every little detail. I want to add more functional tests which involve a whole graph of actual objects interacting with each other. So I'll have to consider removing tests which don't add a lot of benefit for the overhead of keeping them in sync with production code.
 
-### Test-driven Development on the Unit Level VS Functional Tests
+### Test-Driven Development on the Unit Level VS Functional Tests
 
 In the past I would've tried hard to develop my code driven by tests _on the unit level_.
 

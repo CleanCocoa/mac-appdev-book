@@ -130,7 +130,7 @@ I end up having to use a very explicit version:
 
 This pattern felt more clunky, but once you get used to it, it's okay (and the best alternative there is). You obtain an optional, assert that it contains a value, and then shadow-unwrap the optional inside the scope of the `if` statement's block where you can create assertions about its contents. 
 
-### Wire-framing the Path to "Green"
+### Wire-Framing the Path to "Green"
 
 Now the test fails, of course.
 

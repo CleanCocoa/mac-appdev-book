@@ -2,7 +2,7 @@
 
 Using `NSNotificationCenter` is easy and a well-known practice. I don't like how working with a notifications `userInfo` dictionary changed with Swift and its enforcement of strong typing.
 
-### Swift is sticking your head right at the problems
+### Swift Is Sticking Your Head Right at the Problem
 
 In Objective-C, I'd send and access the "Box was created" event info like this:
 

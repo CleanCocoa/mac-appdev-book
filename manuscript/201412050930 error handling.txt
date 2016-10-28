@@ -8,7 +8,7 @@ The best I came up with is sharing a unique identifier between the various layer
 [^201412051135]: This section is the least satisfying in this book. At least to me. We'll explore a few ideas on error handling, but there's not much general advice to share. Just too much depends on the actual project. If you come up with something good yourself, don't hesitate to [share and contribute!][hp-contribute]
 
 
-### Handle components with individual controllers
+### Handle Components with Individual Controllers
 
 I had another option in mind, but didn't explore it myself, yet. Basically, it realizes what the original Model--View--Controller design proposed: each view component gets its own controller. Each `BoxNode` would be assigned to its own lightweight `NodeObserver` upon initialization. The observer issues persisting associated data in the database. If it fails, it deletes its own `BoxNode` again. The observer would also react to changes in the view and push them to the data store.
 

@@ -1,4 +1,4 @@
-## Who is this book for?
+## Who Is This Book For?
 
 You want to write clean code for Mac. You want to create your own app and not be forced to follow common (anti-)patterns of application design.
 

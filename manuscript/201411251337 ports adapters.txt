@@ -13,7 +13,7 @@ I want to refactor `HandlesItemListEvents` to pay more attention to command--que
 {pagebreak}
 
 
-### Concerns with the naive approach {#refactoring-to-commands}
+### Concerns With the Naive Approach {#refactoring-to-commands}
 
 Have a look at the event handling protocol again:
 
