@@ -1,20 +1,26 @@
 ## Who Is This Book For?
 
-You want to write clean code for Mac. You want to create your own app and not be forced to follow common (anti-)patterns of application design.
+You have all the best intentions but no clue how to make them a reality: You want to write clean code and you don't want to end up with ugly and unmaintainable applications. 
 
-I assume you are a bit like me: you enjoy coding and you want to create applications for Mac or iOS. I also assume you're stuck just like I was: there's no guidance from Apple's side on how to architect a complex application.
+I was stuck in that same situation. I wanted to write my own apps and found my needs quickly surpassed the guidance of Apple's documentation and sample codes. Both are a useful resource, but you won't learn how to scale and create a complex application. 
 
-The documentation and example code is good and useful, but it doesn't show us what to do when the app grows. How do you deal with large databases? How should you implement background services? -- I don't answer these particular questions in this book. But I try to make my code ready to scale.
+Typical questions include:
 
-For example, through experience I know that I want to do the least possible heavy lifting in a view controller, be it an `NSViewController` or `UIViewController`. No one tells us what to do instead.
+* How do you architect a complex application?
+* How do you deal with large databases? 
+* How should you implement background services?
 
-To read this book, you don't need to be a Cocoa wiz. You don't even need to be proficient with either Swift or Objective-C: I don't use crazy stuff like method swizzling or operator overloading or anything that's hard to grasp, really. In the course of this book I learned the Swift programming language myself, and I try to explain what I found out so you may follow along. Chances are you already know Swift better than I. That's cool with me.
+It's a popular advice that you should not stuff everything into your view controllers to avoid suffering from _massive view controller_ syndrome. But nobody show how that works in apps. Maintainable code is important for an app that grows, so how do you get there?
+
+I focus on laying the foundation for an answer to the first question, how to architect Mac apps. I won't tell you how to scale your database and how to split your app into multiple services in this book. (But check the website from time to time, because I've got something in the making!) <!--ct: TODO add multiproc book reference--> 
+
+To read this book, you don't need to be a Cocoa wiz. You don't even need to be proficient with either Swift or Objective-C: I don't use crazy stuff like method swizzling or operator overloading or anything that's hard to grasp, really. When I wrote the first edition of this book in 2014, I just learned Swift myself. So there's lots of explanation and sense-making along the way. Chances are you already know Swift better required to understand the book.
 
 Here's what I hope you will learn from this book:
 
-* Your will learn to recognize the core of your application, the Domain, where the business rules belong.
-* Consequently, you will learn how to put your view controllers on a diet and to mentally think of them as a user interface detail.
-* In the end, you'll be comfortable with using your own "POSO"s (Plain Old Swift Objects) instead of looking for a solution in the Cocoa framework.
+* Your will learn to recognize the core of your application, the Domain, where the business rules belong. This is the very core of your application and it has no knowledge of UIKit, AppKit, whatever-kit -- it's all yours, custom made.
+* Consequently, you will learn how to put your view controllers on a diet. We will consider them a mere user interface detail.
+* Along the way, you'll get comfortable with creating your own "POSO"s (Plain Old Swift Objects) that convey information and encapsulate behavior instead of desperately looking for canned solutions.
 
-In short, the message is this: don't look for help from Apple's side, but create a solid software architecture _you_ are comfortable with, and plug in the components from external sources where necessary.
+In short, the message of the book is: don't look for help writing your app. Learn how to create a solid software architecture _you_ are comfortable with instead, and plug in components from third parties where necessary.
 

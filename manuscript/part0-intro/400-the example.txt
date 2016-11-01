@@ -6,8 +6,10 @@ The example project and this very book you read are the result of me trying to s
 
 ![The tree of entities and a window screenshot](images/201507281218_trees.png)
 
-Let's pretend we want to create an application to sort stuff. It manages items. Items reside inside boxes. Users may create boxes and put items inside them. Boxes may only contain items but no other boxes. Items may contain nothing else. It's up to the user to decide what an item is, and she may label each box individually, too.
+Let's pretend we want to create an application to organize stuff. It manages items. Items reside inside boxes. Users may create boxes and put items inside them. Boxes may only contain items but no other boxes. Items may contain nothing else. It's up to the user to decide what an item is, and she may label each box individually, too.
 
-The resulting data will look like a very shallow tree. That's why we want to display it as a tree, using an `NSOutlineView`.
+The resulting data can be represented as a very shallow tree structure. That's why we want to display it as a tree view component, using an `NSOutlineView`. 
 
-This is the high-level view of the setting.
+Additionally, we decide to use Core Data for persistence.
+
+The corner stones of the application are set. This is a stage of a lot of app visions when they are about to become a reality: not 100% concrete, not thoroughly designed, but you know the basic course of action. Then you get your hands dirty, explore, and learn. I don't want to advocate a head-over-heels approach here. There's a lot of useful planning you can do in advance that won't prevent innovation later. But this book is not the book to teach you that; this book is aimed to take people from a vision and semi-concrete implementation plan to the next level.

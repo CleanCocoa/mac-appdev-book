@@ -2,61 +2,50 @@
 
 ## Motivation to Write This Book
 
-I develop [the Word Counter for Mac][wcapp]. It's my first big Mac application, and I charge money for a license, which makes me nervous. 
+[I develop apps](http://christiantietze.de). My first big Mac application was the Word Counter. Back in 2014, I began to sell it. To actually make money from my own Mac software. And that made me nervous -- because what if I introduce tons of bugs and can't fix them? How do I write high-quality code so I can maintain the app for the next years? These questions drove my initial research that led to the field of software architecture.
 
-Recently, I wanted to use Core Data to store a new kind of data. That poses some challenges for those of us who keep an eye or two on their architecture. This little book and the accompanying project document my explorations and a possible solution.
+For an update in late 2014, I experimented with Core Data to store a new kind of data. That became quite a challenge: using Core Data the way of the documentation and sample codes results in a mess. Core Data gets intermingled everywhere. This little book and the accompanying project document my explorations and a possible solution to decouple Core Data from the rest of the app.
 
-Selling my app makes me nervous because I suddenly feel obliged to deliver the best software possible. It should be stable. But it should also grow: I want to deliver updates, and thus I need to change the code. Changes shouldn't break existing code -- at least not without me noticing. Therefore I want to write the best code I can in order to make changes easy and to deliver the best working software I'm able to produce.
+### Adding a New Feature to the Word Counter
 
-That's a lot of pressure. I grew more comfortable with it when my confidence in the code grew.
+Rewind to fall 2014: I want to add a new feature to the Word Counter.
 
-### Untangling Cocoa from the App
+Until now, the Word Counter observed key presses and counted words written per app. This is indented to show your overall _productivity_. But it can't show _progress_, another essential metric. The ability to monitor files to track project progress was next on the roadmap.
 
-So now it's fall 2014. I want to add a new feature to the Word Counter.
-
-Until now, the Word Counter observed key presses and increased interal counters to track words written per app. This is indented to show your overall _productivity_. But it can't show _progress_, another essential metric. So up next was the ability to monitor files to track project progress.
-
-This innocent feature includes a lot of design changes:
+That feature brings a lot of design changes along:
 
 * Introduce `Project`s and associate `Path`s with them. The domain has to know how to track progress for this new kind of data.
-* Add background-queue file monitoring capabilities. Thanks to _Grand Central Dispatch_, this is supposed to be quite easy. I have to create wrappers nevertheless to provide an API for clean code, though.
-* Design new user interface components to manage projects and their paths.
+* Add background-queue file monitoring capabilities.
+* Design new user interface components so the user can manage projects and tracked files' paths.
 * Store daily `PathRecord`s to keep track of file changes over a long period of time. Without records, no history. Without history, no analysis.
 * Make the existing productivity history view aware of `Project` progress.
 
-In the past, I stored the application-specific daily records in `.plist` files. They were easy to set up and get started. But they don't scale very well. After some time, parsing the file will become increasingly slow.
+For the simple productivity metrics, I store application-specific daily records in `.plist` files. They are easy to set up and get started. But they don't scale very well. Each save results in a full replacement of the file. After 2 years of usages, for example, my record file clocks in at 3&nbsp;MB. Someone who tracks even more apps and thus increases record history boilerplate will probably have a much bigger file. The hardware will suffer.
 
-That's when I decided to use either a SQLite library or opt-in to Core Data to represent `Project` data. I decided to use Core Data because it's so convenient to use.
+In the long run, I'd transition to SQLite or Core Data. The file monitoring module I am about to develop back in 2014 can use its own isolated persistence mechanism. I decide to use Core Data because it's so convenient to use.
 
-[wcapp]: http://wordcounterapp.com
+Isolating the file monitoring module is one thing. To develop the module with proper internal separation of concerns and to design objects is another. Core Data easily entangles your whole application if you pick the path of convenience. That's usually not a path that scales well once you diverge from the standard way once. In this book, I write about my experience with another path, the path of pushing Core Data to the module or app boundaries and keep the innermost core clean and under control.
 
-### Challenges
 
-I didn't have any experience displaying data using `NSOutlineView`s. I didn't have a lot of experience with Core Data. I couldn't copy too much of existing code to glue the user interface to existing data because the user wasn't able to set up a lot in the app until then.
+### Challenges Untangling the Convenient Mess
 
-All in all, most of the design decisions and their requirements were news to me.
+Back in 2014, I didn't have any experience displaying nested data using `NSOutlineView`s. I didn't have a lot of experience with Core Data. All in all, most of the design decisions and their requirements were new to me.
 
-I fiddled around with providing data to `NSOutlineView` via `NSTreeController` until appending projects to the list and adding paths to them would work as soon as the actual infrastructure were put in place.
+Teaching myself some AppKit, I fiddled around with providing data to `NSOutlineView` via `NSTreeController`. Cocoa Bindings are super useful, but they're not transparent. When it works, it works; but when it doesn't, it's hard to know why. Getting your hands dirty and acquiring hands-on knowledge is important, though, to get a feeling for the framework. Declarative or book knowledge will only get you so far. I managed to get a few use cases and basic interactions right, like appending projects to the list and adding paths to the projects. So an interface prototype without actual function wasn't too hard to figure out.
 
 Now add Core Data to the equation.
 
-What a mess!
+It's super convenient to use Core Data because the framework takes care of _a lot_. If you want to manipulate persistent objects directly from your interface, you can ever wire `NSObjectController` subclasses like the above-mentioned `NSTreeController` to Core Data entities and skip _all of the object creation boilerplate code._  An `NSTreeController` can take care of displaying nested data in an `NSOutlineView`, adding items relative to the user's current selection for example.
 
-It's super convenient to use Core Data because the framework takes care of a lot. If you want to manipulate persistent objects easily, you can ever wire `NSObjectController` objects to Core Data entities and skip _all of the object creation boilerplate code._  For example, an `NSTreeController` can take care of displaying nested data in an `NSOutlineView`, adding items relative to the user's current selection for example.
+If you adhere to the limitations of an `NSTreeController`, that is. It is designed to operate on one type of (Core Data) entity. Unfortunately, users of the Word Counter will edit two kinds of objects, not one: `Path`s may only be nested below `Project`s, which in turn are strict root level objects. I have to enforce these rules myself, and I have to add objects to the tree from code on my own.
 
-If you adhere to the limitations of an `NSTreeController`, that is.
+To tie Core Data entities (or `NSManagedObject` subclasses) to the user interface is so convenient because it skips all of the layers in between. No view controller, no custom domain objects. **This means, in turn, to couple the user interface to the data representation.** In other words, the user-facing windows are directly dependent on the database. This may be a clever short cut, but this might also be the reason why your app is getting hard to change and hard to test.
 
-Unfortunately, users of the Word Counter will edit two kinds of objects, not one: `Path`s may only be nested below `Project`s, which in turn are strict root level objects. I have to enforce these rules myself, and I have to add objects to the tree from my own code. I don't know about a lot of use cases where boilerplate code won't be necessary at all.
+The data representation should stay an implementation detail. I may want to switch from Core Data to a SQLite library later on, just like I'm going to migrate my `.plist` files to something else in the future. The app has to be partitioned _at least_ into "storing data" and "all the rest" to switch the "storing data" part. To blur all the boundaries is commonly referred to as _Big Ball of Mud_ architecture (or rather "non-architecture"). Partitioning of the app into sub-modules improves clarity. And the convenient use of Core Data interferes with this objective.
 
-To tie Core Data entities (or `NSManagedObject` subclasses for that matter) to the user interface is so convenient because it skips all of the layers in between. No view controller, no custom domain objects. This means, in turn, to couple the user interface to the data representation. In other words, the user-facing windows are directly dependent on the database. This may be a clever short cut, but this might also be the reason why your app is getting hard to change and hard to test.
+In short, using Core Data in the most convenient way violates a lot of the principles I learned and loved to adhere to. Principles that helped me keep the Word Counter code base clean and maintainable. Principles I'm going to show you through the course of this book.
 
-The data representation should stay an implementation detail. I may want to switch from Core Data to a SQLite library later on. There have to be intermediary layers to achieve this.
-
-In short, using Core Data in the most convenient way violates a lot of the principles I learned to adhere to. These principles help me keep the Word Counter code base clean and maintainable.
-
-The basic architecture I want to advocate is sometimes called "[Clean Architecture][cleanar]", sometimes "[Hexagonal][hexagonal]". There a differences between these two, but I won't be academic about this. This little book will present you my interpretation on these things first and point you into the right direction to find out more afterwards.
-
-Keep in mind I am still making sense of this myself. I bet I get a concept or two wrong.
+The basic architecture I want to advocate is sometimes called "[Clean Architecture][cleanar]", sometimes "[Hexagonal][hexagonal]". There are differences between these two, but I won't be academic about this. This little book will present you my interpretation on these things first and point you into the right direction to find out more afterwards.
 
 [cleanar]: http://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html
 [hexagonal]: http://alistair.cockburn.us/Hexagonal+architecture

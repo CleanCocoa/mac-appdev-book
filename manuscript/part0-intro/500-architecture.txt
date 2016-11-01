@@ -1,6 +1,6 @@
-## Architecting
+## Architecture Overview
 
-Out there, you'll find tons of software architecture approaches and dogmas. I already picked one for this book: a layered clean architecture. That's where the hexagon comes into play.
+Out there, you'll find tons of software architecture approaches and dogmas. I already picked one for this book: a layered clean architecture. It enforces design decisions I found to be very healthy in the long run. With practice, you know where the solution to a problem should be located. And from this context you can derive how to implement something that works. I'll show you how that works throughout the book. For now, I want to introduce the basic framework so we can think in the same terms.
 
 {width=50%}
 ![Layered Hexagonal Architecture](images/201507231024_layered-hex.png)
@@ -9,54 +9,73 @@ For the sake of this book and the rather simple example application, it suffices
 
 * The **Domain** at the core of your application, dealing with business rules and actual algorithms.
 * The so-called **Application** layer, where interaction with the Domain's services take place.
-* **Infrastructure**, hosting persistence mechanisms and tying components together. Here, the app exposes so-called adapters to the rest of the world.
+* **Infrastructure**, hosting persistence mechanisms, and **User Interface**, living in the outermost layer where the app exposes so-called adapters to the rest of the world.
 
 ### Domain
 
-What's at the core?
+What's the core of an app?
 
-I buy into _Domain Driven Design_ principles and say: the domain is at the core. That's where `Box` and `Item` exist. These domain objects don't know a thing about Core Data.
+Is it the user-facing presentational elements? Is it server communication logic? Or is it your money-maker, maybe a unique feature or data crunching algorithm?
 
-`Box` is an **Aggregate** with a title property and a collection of `Item`s. It's an **Entity** inasmuch as it has identity over time. The user should be able to change the title of existing `Box`es later on. That's sufficient to make it an **Entity**.
+I buy into _Domain Driven Design_ principles and say: the domain is at the core. It's an abstract thing, really. It's the realm of language; that's where we can talk about "items" that are "organized into boxes." Through setting the stage for the example of this book in the last section, I already created a rough sketch of the domain. This is the _problem space._ A model of the domain of boxes and items in code is part of the _solution space._ These are called "domain objects", and they don't know a thing about the Cocoa framework or Core Data.
 
-`Box`es shall be accessed via a collection-like **Repository**. The `BoxRepository` specifies the interface to get all boxes, remove existing ones, or add new ones.
+#### Entities in the Domain
 
-In the **Domain** of the Word Counter, for example, there reside a lot of other objects. Some deal with incoming **Domain Events** like "a word was typed". There are `Recorder`s which increase the counter for the current hour when such an event comes in. `Bookkeeper`s hold on to a day's active Entities. There's a lot of other stuff revolving around counting words.
+`Box` and `Item` are the core parts of this domain. They are **Entities**: objects that have identity over time. Entities are for example opposed to value objects, which are discardable representations. The integer `42` or the string "living-room" are value objects; their equality depends on their value alone. Two Entities with similar values should nevertheless be unequal. If your dog and my dog are both called "Fido", they are still different dogs. Similarly, a user of this app should be able to change the title of two or more existing `Box`es to "living-room" without changing their identity.
 
-In our example application, on the other hand, there won't be much going on at the beginning. We will focus on storing data. There'll be a **Domain Service** to provision new `Box`es and `Item`s, that is, creating new Entities. This Domain Service adds the Entities to the Repository so other objects can obtain them later on.
+A `Box` is a specific kind of Entity. It's an **Aggregate** of entities (including itself): it has label for its own and takes care of a collection of `Item`s. An `Item` will only exist inside a `Box`, so access to it is depending on knowing its `Box`, first. Being an Aggregate is a strong claim about object dependencies and object access. In a naive approach, you'd query the database for boxes and items independently, combine them for display, and that's it. The notion of Aggregates changes your job: you only request boxes and the items are included automatically.
 
-**Services**, by the way, are objects which encapsulate behavior but don't have identity. You may argue they shouldn't even have _state_. They execute commands, but they shouldn't answer queries. The Service Locator in Infrastructure is as much a Service Object as the object representing a use case or user story-driven action. That's as general a definition I can give without limiting its application too much.
+To get `Box` Aggregates, a **Repository** with a collection-like interface is used. The `BoxRepository` specifies the interface to get all boxes, remove existing ones, or add new ones. And when it hydrates a `Box` object from the database, it hydrates the corresponding `Item`s, too. Without a Repository, assembling an Aggregate would be very cumbersome. If you know the classic Gang of Four _Design Patterns_, you can think of a Repository in terms of a Factory which takes care of complex object creation.
 
-I> Although I will use the Repository to generate object identifiers through `nextId()`, there is room for improvement. Acting as a storage and vending identifiers are two concerns, we can argue. You could add an `IdentityService` type which only vends new identifiers. This way, the Repository will only deal with object storage.
+#### Services of the Domain
+
+In the domain of the Word Counter, for example, there reside a lot of other objects. Some deal with incoming **Domain Events** like "a word was typed". There are `Recorder`s which save these events. `Bookkeeper`s hold on to a day's active records. There's a lot of other stuff revolving around the process of counting words.
+
+In this example application, there won't be much going on at the beginning. We will focus on storing and displaying data. That'll be an example for application wire-framing. There'll be one particular **Domain Service** that encapsulates a user intent: to provision new `Box`es and `Item`s. This equals creating new Entities. This Domain Service adds the Entities to the Repository so other objects can obtain them later on.
+
+**Services** in general are objects without identity that encapsulate behavior. You may argue they shouldn't even have _state_. They execute commands, but they shouldn't answer queries. That's as general a definition I can give without limiting its application too much.
+
+I> Although I will use the Repository to generate object identifiers through `nextId()`, there is room for improvement. Acting as a storage and vending identifiers are two concerns, we can argue. You could add an `IdentityService` type which only vends new identifiers. This way, the `BoxRepository` will only deal with object retrieval and storage while another service vends identifiers.
 
 {pagebreak}
 
 ### Infrastructure
 
-Then there's the interface for other layers. There's concrete Repository implementations in the **Infrastructure** layer. When the Domain Service reaches "outward" through the Repository interface, it sends data through the Domain's "ports". The concrete Core Data Repository implementation is an "adapter" to one of these ports.
+The domain itself doesn't implement database access through repositories. It defines the interfaces or protocols, though. The concrete implementation resides elsewhere: in the **Infrastructure** layer. When the Domain Service reaches "outward" through the Repository interface, it sends data through the Domain's "ports". The concrete Core Data Repository implementation is an "adapter" to one of these ports.
 
-A concrete Repository can be a wrapper around an array. It can be a wrapper around a `.plist` file writer, or any other data store mechanism, including Core Data. The Domain doesn't care about the concrete implementation -- _it's a detail._
+A concrete Repository implementation can be a wrapper for an array, becoming an in-memory storage. It can be a wrapper around a `.plist` file writer, or any other data store mechanism, including Core Data. The Domain doesn't care about the concrete implementation -- _that is a mere detail._ The Domain only cares about the fulfillment of the contract; that's why it has 100% control over the protocol definition.
 
-But how does the Domain know which Repository to use when all it does care about is the interface, not the implementation?
-
-"[Dependency Injection][depinj]" is the fancy term for passing the concrete Repository implementation into the domain. The implementations are picked by a **Service Locator**, for example. Traditionally, that's a global singleton.
-
-You can chose a Dependency Injection library instead if you like, but I always found them too cumbersome. Service Locator objects can be modified by tests to return test _Repositories_ easily. The example app isn't complex enough to warrant more than a globally accessible singleton.
-
-Thus, Infrastructure deals with providing persistence mechanisms to plug them into the Domain. But which object is actually calling the methods to set up Domain Services? That's a matter of the use case objects which I put into the Application layer.
-
-[depinj]: http://en.wikipedia.org/wiki/Dependency_injection
-
-{pagebreak}
+All the Core Data code should be limited to this layer. Exposing the dependency on Core Data elsewhere makes the distinction between Domain and Infrastructure useless. To make the persistence mechanism an implementation detail gives you a lot of flexibility and keeps the rest of the app cleaned from knowledge of this detail. But all the planning and architecture won't help if you blur the boundaries again and sprinkle Core Data here and there because it'd be more convenient.
 
 ### Application
 
-In layered architecture-speech, the **Application layer** is the client of your Domain. Your Domain is host to all the real business logic. It provides interfaces to clients which result in Entities being added, for example. 
+Your Domain contains all the business logic. It provides interfaces to clients through Aggregates and Services. A layer around this core functionality is called the **Application layer**, because it executes functionality of the Domain.
 
-Someone has to call the Domain Service to provision new `Box` objects. The user is pressing a button, but how does the button-press translate to a call to the Domain's interface? And where is the necessary view controller initialized and kept via strong reference?
+#### The Client of the Domain
 
-This is where the Application layer comes into play. It contains **Application Service** objects which hold on to view controllers and Domain Services.
+The Domain contains a Service object to provision new Entities. But someone has to call the Domain Service. The application's user is pressing a button, but how does the button-press translate to using the Domain Services? While we're at it: where does the view controller come from, where is it created and which objects holds a strong reference to it?
 
-When the "Add Box" button is pressed, the view controller translates this interaction into a command for the Application layer, which in turn prepares everything to make the Domain provision a new `Box` instance. `Box`es have to be reported to the user interface for display, too. That's what the Application layer will deal with. 
+This is where the Application layer comes into play. It contains **Application Service** objects which hold on to view controllers and Domain Services, for example. The Application layer is the client of the Domain's functionality.
 
-When Infrastructure is the glue for the structure of your app, Application is the glue for processes. It contains objects to represent use cases.
+When the "Add Box" button is pressed, the view controller translates this interaction into a command for the Application layer, which in turn prepares everything to make the Domain provision a new `Box` instance. `Box`es have to be reported to the user interface for display, too. That's what the Application layer will deal with in use case-centered Service objects.
+
+#### Glue-Code
+
+You may have asked yourself how the Domain will know which Repository implementation to use in the actual program. The Application layer can take care of this when it initializes and uses the Domain's services.
+
+"[Dependency Injection][depinj]" is the fancy term for passing a concrete Repository implementation to an object that requires a certain protocol. It's a trivial concept when you see it in action:
+
+{linenos=off}
+    func jsonify(serializer: JSONSerializer) -> JSON {
+        serializer.add(self.title)
+        serializer.add(self.items.map { $0.title })
+        return serializer.json()
+    }
+
+Instead of creating the `JSONSerializer` inside the method, the serializer is _injected_. Whenever the function that uses an objects also creates it, you'll have a hard time testing its behavior -- and that results in a harder time switching collaborating objects later, too.
+
+Apart from this simple application of passing a collaborator around, Dependency Injection as a paradigm can be used to create object clusters, too. Instead of passing in the dependency with a method call, you pass it as a parameter of the initializer. You probably do things like that in your `AppDelegete` already to wire multiple objects together and pass them to view controllers or navigation controllers. You can use a Dependency Injection library to automate this setup task and configure the dependency network outside your code, but I always found these things to be way too cumbersome. (Then again, I never built huge enterprise software which may benefit from this kind of flexibility.) This book's example app isn't complex enough to warrant more than a global storage object for the main dependencies that are going to be used in the Application Services. The Repository implementations are set up on a **Service Locator** which is usually is a global singleton. I put the Service Locator inside the Infrastructure layer because it mostly consists of Infrastructure parts anyway.
+
+Thus, Infrastructure deals with providing persistence mechanisms to be plugged them into the Domain. Actually calling the methods to set up Domain Services is a matter of the use case objects which I put into the Application layer.
+
+[depinj]: http://en.wikipedia.org/wiki/Dependency_injection

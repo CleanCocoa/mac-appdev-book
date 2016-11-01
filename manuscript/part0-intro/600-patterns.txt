@@ -1,6 +1,6 @@
 ## Patterns & Principles
 
-Now you know what the architectural perspective looks like.
+Now you know the architectural perspective and a lot of _Domain-Driven Design_ modelling vocabulary.
 
 If the architecture is the high-level view, and the actual code is at the ground-level, there's plenty of room for abstractions and concepts in between. Design patterns and programming principles are the tools you will use to work according to the plan you devised with the help of your app's architecture.
 
@@ -13,29 +13,27 @@ It makes sense to read these first to tune in to the way of thinking I advocate 
 
 When we talked about architecture earlier, I mentioned that the application as a whole is open for adapters through its ports. The application doesn't incorporate a database management system, but it connects to it, preferably at the outermost layer to keep the rest isolated.
 
-Practicing to thinking in terms of creating ports and being open for external adapters on one hand, and creating adapters to plug into ports on other layers on the other is a worthwhile exercise.
+Practicing to think in terms of ports and adapters can be weird at first, but it can pay off during object design. You design ports to be open for external adapters; and you create adapters according to port protocols that can be plugged into these ports.
 
-You're probably familiar with [the delegate pattern Apple advocates](https://developer.apple.com/library/mac/documentation/General/Conceptual/DevPedia-CocoaCore/Delegation.html) throughout the Cocoa APIs. This is the same as the general advice to [program to an interface](http://www.artima.com/lejava/articles/designprinciples.html). It also is similar to ports and adapters style.
+You're probably familiar with [the delegate pattern Apple advocates](https://developer.apple.com/library/mac/documentation/General/Conceptual/DevPedia-CocoaCore/Delegation.html) throughout the Cocoa APIs. In effect, this is the same as the general advice to [program to an interface](http://www.artima.com/lejava/articles/designprinciples.html). It also is similar to the overall approach of ports and adapters. A delegate's protocol is similar to the definition of a port. The implementation and instantiation of a delegate as an object is similar to the notion of an adapter.
 
-A delegate's protocol is similar to the definition of a port. The implementation and instantiation of a delegate as an object is similar to the notion of an adapter.
-
-If you know how the delegate pattern works, you know how ports and adapters work, in principle. In practice, adopting a ports and adapters style to design components means you end up with lots of protocols.
+If you know how the delegate pattern works, you know how ports and adapters work. In practice, adopting a ports and adapters style to design components means you end up with lots of protocol definitions. Swift encourages heavy use of protocols, so this change is very easy to implement nowadays. Objective-C can power a similar approach, but defining and using protocols is more cumbersome.
 
 ![Layered architecture with ports and adapters](images/20150723113926_layers-ports.png)
 
-Take the core of your app, the Domain.
+Let's exercise the ports/adapters style a bit more. 
 
-The Domain should not access a database or Core Data directly to keep it isolated. It should define a port which it queries for information through a protocol. 
+Take the core of your app, the Domain. The Domain should not access a database or Core Data directly so both Domain and database access are isolated from one another. The Domain should define a port which it queries for information accordings to its own internal terms; a database component adapter can be plugged in and satisfy this protocol.
 
-The concrete adapter will have to be implemented in a layer further outside. The outermost infrastructure layer is a good candidate to wrap database access in objects you own and implement the Domain's protocol. 
+I hinted at this in the last section already: The concrete database adapter will be implemented in a layer farthest away from the core Domain. The outermost Infrastructure layer is the best candidate we know to wrap database access in objects you own and implement the Domain's protocol. 
 
 In the picture above, `BoxView` is a protocol which defines how to `display(_:)` data. A concrete view controller implements this protocol and will be handed to the use case or a comparable service object. Similarly, `BoxRepository` is a protocol of the Domain implemented by a `CoreDataBoxRepository` in infrastructure.
 
-Decoupling objects in different layers from another through protocols is a great way to separate responsibilities. The user's course of action has to start somewhere, but this point in your app needn't be a view controller.
+Decoupling objects in different layers from another through protocols is a great way to separate responsibilities. The user's course of action has to start somewhere, but this point in your app needn't be a view controller at all. The user interface is just another implementation detail.
 
 View controllers have to worry about displaying data and reacting to user interface interaction, most likely through `@IBAction` methods. The response can be delegated to use case objects, for example, which may or may not communicate back to the view controller -- they wouldn't know for sure, since they only know about the protocols.
 
-Protocols help partition Swift code nicely, too. It has become idiomatic to extend a type with protocols instead of adding (most) protocols to the initial inheritance list.
+Protocols help partition Swift code nicely, too. It has become idiomatic to extend a type with protocols instead of adding (most) protocols to the initial inheritance list. In the end, it is a matter of taste, though. 
 
 So instead of this:
 
@@ -70,9 +68,9 @@ You'll rather write this:
 
 Extensions are great for reasoning about your code.
 
-Each extension contains everything needed (save attributes) to implement a particular protocol. If a type has too many responsibilities through many extensions, I find it's easier to make a new type out of it. Extensions already looks similar to type definitions: replace `extension Foo: Bar` with `class Baz: Bar` and delegate to objects of type `Baz` from `Foo`.
+Each extension contains everything needed to implement a particular protocol (except stored properties, which have to be declared in the root type definition). If you consider these extensions to be mixins of new behavior, the resulting type may not have a single purpose anymore. It has many responsibilities instead. If a type has too many responsibilities through many extensions, it may be better to make a new type out of it. This is an "Extract Class" refactoring: instead of `extension Foo: Bar` you create a new type through `class Baz: Bar` and delegate a `Baz` instance from a `Foo` instance. 
 
-Partitioning your code through extensions makes it easier to refactor one type into multiple types. It also helps to isolate responsibilities. Thus, it's a natural fit for implementing port protocols.
+Partitioning your code through extensions makes it easier to refactor one type into multiple types. Each extension block shows which methods belongs to what protocol. Through showing the responsibilities, extension blocks can help to refactor existing types into multiple sub-types. 
 
 ### Model--View--View Model (MVVM)
 
@@ -104,6 +102,8 @@ This way, the view is responsible for specifying its data provider's capabilitie
 Your client code doesn't need to know what the view does or which components it's made of. It only needs to understand the presenter's interface. The presenter in this case is a model _of_ the view: it doesn't care about the Domain Model. It only cares about the view's specification. 
 
 Change the properties on this _model of the view_ to update the UI. A presenter hides the complexity of the user interface. To the client code, the rest happens magically.
+
+MVVM is a good fit to model user interface changes and pass data around the different layers in an application. Opposed to the layered architecture we employ here, MVVM is not a software architecture; it's a design pattern, just like MVC, or the concepts of singletons, factories, builders, observers, or all the others from the Gang of Four book "Design Patterns". [Read more](http://cleancocoa.com/posts/2016/10/mvvms-place/) about my analysis of MVVM on my Clean Cocoa blog.
 
 [presmodel]: http://martinfowler.com/eaaDev/PresentationModel.html
 
@@ -163,4 +163,4 @@ According to one accompanying convention of the "East-Oriented Code" principle, 
 
 You don't have to make your code chainable, of course. If returning `self` causes problems or breaks your tests, though, your code isn't ready for focussing on a command-centric approach. This should become a driver of change towards useful refactorings.
 
-I will apply a lot of this later in the book, when it comes to [using commands instead of queries](#refactoring-to-commands) to provision new `Box` objects in the Domain.
+Although "Tell, Don't Ask" can be superseded by functional programming paradigms, we will stick to these more traditional object-oriented design approaches throughout the book. I will apply a lot of this later, for example when it comes to [using commands instead of queries](#refactoring-to-commands) to provision new `Box` objects in the Domain.

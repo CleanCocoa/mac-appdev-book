@@ -37,6 +37,9 @@ Scott Millett (2014):  _Practicing Domain-Driven Design. Practical advice for te
 Robert C. Martin (2009):  _Clean Code. A Handbook of Agile Software Craftsmanship_, Upper Saddle River: Prentice Hall.
 
 
+David West (2004):  _Object thinking_, Redmond, Wash.: Microsoft Press.
+
+
 Andy Oram and Greg Wilson (Eds.) (2007):  _Beautiful Code_, Beijing: O'Reilly.
 
 
