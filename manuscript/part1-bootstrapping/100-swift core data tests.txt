@@ -16,26 +16,44 @@ I add class-level helper methods to these to make [creating new Core Data entiti
 
 Now I want to add tests to verify this helper method actually adds an entity to the context. Since the method is trivially simple, the tests will also show that Core Data-specific tests work, with their own in-memory scratchpad `NSManagedContext`.
 
-Turns out this is enough of a challenge for me with Swift.
+Turns out this was enough of a challenge for me as a beginner with Swift.
 
-Swift introduced access right management. The test target wouldn't know about the program's source files unless you do one of two things:
+Swift introduced access right management. We didn't have that with Objective-C. A test target for Swift source code wouldn't know about the program's source files unless you did one of two things up to Swift 2:
 
 1. Declare classes and methods to test `public`, so they are visible outside the app source module. This may become somewhat tedious.
 2. Add source files to the test target. This equals checking the "Tests" target in the Utilities browser's (Cmd+Alt+1) "Target Membership" list.
 
+Swift 2 introduces `@testable import` which enables the test target to have internal access to the host target. That's the way to go nowadays.
+
+### Why Test Target Membership is a Bad Idea
+
 ![Managing source file target memberships](images/20141117095632_target-membership.png)
 
-Although it's easier to add sources to the test target, this may not be what you want to do. It is beneficial to think about what should be visible to the outside world and what is an internal detail only.[^2f0f329e3cbec9f624cc575b717291989c960595]
+Although it's easier to add sources to the test target at first, this may not be what you want to do. It is beneficial to think about what should be visible to the outside world and what is an internal detail only.[^2f0f329e3cbec9f624cc575b717291989c960595] The basic public/internal/private distinction (in Swift 3, it's actually: open, public, internal, fileprivate, or private) enforces object boundaries. A private method _cannot_ be called by another object; thus you _will not_ call it, ever. If it's accessible from the outside, you may be tempted to use it some day. Or your co-workers and team mates do. Because they don't know that they're not supposed to -- or they know but don't care. Enforcing sensible access rules helps to prevent misuse.
 <!--ct: commit #2f0f329e3cbec9f624cc575b717291989c960595 "get CoreDataItemRepo tests to pass"-->
-
 
 Unit testing becomes harder for Core Data `NSManagedObject` subclasses this way, though. Adding these to the test target will make the tests compile. Upon test execution, though, you will trigger an [invisible breakpoint in bytecode][cdbp].
 
 According to some folks, it may help to simply add `@objc(YourManagedObjectSubclass)`. It didn't in my case, though. I also had to make its interface public and remove it from the test target. So I end up with both the Objective-C bridge of `NSManagedObject` subclasses and public interfaces for all the stuff which shall be tested.
 
-From now on, I will resort to making tested code public. We can rationalize it this way: tests are in a different bundle, and tests should work with the public API only.
+### Public Access
 
-I> **Update for Swift 2**
+Instead of `@testable import`, you could just import the app target like you'd import a library and resort to testing modules with public access. For the initial Swift 1.2 version and the Swift 2 update, I resorted to making code under test public. Because it _should_ not be a problem. If it was, that'd be an indicator of testing the wrong things.  We can rationalize it this way: tests are in a different bundle, and tests should work with the public API only.
+
+As soon as you crave for testing private methods without making them public, you're having a dependency waiting to be extracted. Can you make a new type of this and have the current object under test delegate control and information to that new type instead? 
+
+Recall the dependency injection example from above where I passed a `JSONSerializer` to the `jsonify` method: 
+
+{linenos=off}
+    func jsonify(serializer: JSONSerializer) -> JSON {
+        serializer.add(self.title)
+        serializer.add(self.items.map { $0.title })
+        return serializer.json()
+    }
+    
+I could probably create a valid JSON string on the fly in that method, but testing it would be harder for different cases. Also, I'd end up duplicating tests for different objects that can be "jsonified". With the `JSONSerializer` object in place, I can verify the serializer is set up properly and that the `add` method is called with the right parameters. The actual transformation into JSON is tested elsewhere; `JSONSerializer` clients can rely on it to work as advertised.
+
+I> **Rationale for Swift 2 and 3**
 I>
 I> Swift 2.0 introduces the `@testable` annotation:
 I>
@@ -44,7 +62,7 @@ I>     @testable import YourAppTargetName
 I>
 I> Test targets will have "internal" access to the module under test. So you don't have to make everything you want to test public.
 I>
-I> Instead, make those things public which are potentially interesting to 3rd party client code. For apps, that's probably not much. For frameworks, this is a totally different matter.
+I> Instead, make those things public which are potentially interesting to 3rd party client code. For apps, that's probably not much. For frameworks, this is a totally different matter. In the course of this book, we'll mark stuff private (or fileprivate) when appropriate, but won't worry much about what is public and what isn't, because we're not writing a library.
 I>
 
 [cdbp]: http://stackoverflow.com/questions/24841856/swift-breakpoint-in-coredata-library

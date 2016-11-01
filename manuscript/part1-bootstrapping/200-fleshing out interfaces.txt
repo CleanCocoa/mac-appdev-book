@@ -4,7 +4,7 @@
 
 To test that the Repository does return unique IDs, we have to test that it first checks a random ID against the pool of existing ones, and then generates new ones until the generated ID is free.
 
-I> As I said earlier, all of this ID generation could fit nicely into an `IdentityService` instead. That will make the Repository do one thing less, so the code will adhere more to the _Single Responsibility Principle_. That's not an end in itself, though: splitting the concerns may introduce further problems. Leaving it in the Repository makes things easier, since the concrete Repository knows how to find out if an ID is used already anyhow.
+I> As I said earlier, in the section about _Domain-Driven Design_ vocabulary, the ID generation could fit nicely into an `IdentityService`. That will make the Repository do one thing less, so the code will adhere more to the _Single Responsibility Principle_. That's not an end in itself, though: splitting the concerns may introduce further problems, like dealing with 2 instead of 1 type. Leaving it in the Repository makes things easier until the application grows more complex. The concrete Repository knows which field and which table of the database to use for an ID already. It can just as well care for generating a new ID, which is mostly about discarding IDs that are in use until a free ID turns up.
 
 Let's say `nextId()` shall return a unique ID. `integerId()` then is a private method to generate an ID which `nextId()` has to check for uniqueness.
 
@@ -21,32 +21,51 @@ Now that I have to think of my code as a module with a public interface, the old
 
 [^extrant]: Michael C. Feathers calls the following dependency breaking technique "Extract Interface" in his book _Working Effectively with Legacy Code_. See the [book list](#booklist) for details.
 
-
-I want to ensure the repository generates IDs until an ID is free. Duplicates are not allowed. I could still override the `integerId()` method and make it public:
+I want to ensure the repository generates IDs until an ID is free. Duplicates are not allowed. With a randomized ID generator, this is very hard to test. I could still override the `integerId()` method when I make it public, or leave it with internal access level to override it when I import the source as `@testable`:
 
     // Source module
-    public class CoreDataItemRepository: NSObject, ItemRepository {
+    public protocol BoxRepository {
+        func nextId() -> BoxId
+        // ... non-id related functions here ...
+    }
+    
+    open class CoreDataBoxRepository: BoxRepository {
         // ...
         
-        public func nextId() -> ItemId {
-            return ItemId(integerId())
+        public func nextId() -> BoxId {
+            return BoxId(integerId())
         }
-
-        public func integerId() -> IntegerId {
+        
+        // Override during tests to add testable replacement algorithm
+        func integerId() -> IntegerId {
             // return random 64-bit integer
         }
     }
 
     // Test module
-    class TestRepository : CoreDataItemRepository {
+    @testable import TheApp
+    
+    class TestRepository : CoreDataBoxRepository {
+        var firstId: IntegerId!
+        var secondId: IntegerId!
+        
+        private var integerIdCalls = 0
         override func integerId() -> IntegerId {
-            // Return ID1 on first call, ID2 on consecutive calls
+            defer { integerIdCalls += 1 }
+            
+            if integerIdCalls == 0 {
+                return firstId
+            }
+            
+            return secondId
         }
     }
 
-With this `TestRepository` in hand, I can reserve `ID1` and test that the rest of the default repository implementation ensures another attempt is made at finding a free ID.
+With this `TestRepository`, I _know_ the value of `firstId`. I can reserve it and test that the repository ensures another attempt is made at finding a free ID, resulting in `secondId` being returned by a sole call of `nextId()`.
 
-Making ID-generation public is a bad idea, though. It's an implementation detail of the Repository I don't want to expose. When dealing with legacy code, sometimes you have no choice but alter the public interface of a class and promise to yourself to not violate certain rules. We're not dealing with legacy code, though. Let's aim for a clean API.
+Making ID-generation public is a bad idea. It was the only way before Swift 2, though. It's an implementation detail of the Repository I don't want to expose. When dealing with legacy code, sometimes you have no choice but alter the public interface of a class and promise to yourself to not violate certain rules. We're not dealing with legacy code, though. We aim for a clean API. So what else can we do to make the ID generation algorithm exchangeable?
+
+### Extract ID Generation
 
 First, recognize ID generation as a distinct responsibility and extract it into its own interface:
 
@@ -55,7 +74,7 @@ First, recognize ID generation as a distinct responsibility and extract it into 
         func integerId() -> IntegerId
     }
 
-Provide a default but private implementation. I used `struct` instead of `class` because there's no _state_ associated with this object. It's simply an object with a single method, no state, no past, and no dependencies:
+Provide a default but private implementation. I used `struct` instead of `class` because there's no _state_ associated with this object. It's simply an object with a single method, no state, no sense of past and future, and no dependencies:
 
 {linenos=off}
     struct DefaultIntegerIdGenerator: GeneratesIntegerId {
@@ -64,10 +83,10 @@ Provide a default but private implementation. I used `struct` instead of `class`
         }
     }
 
-The `CoreDataItemRepository`'s interface doesn't have to change unless needed. Simply create another designated initializer and mark the old one as a "convenience" initializer:
+The `CoreDataBoxRepository`'s interface doesn't have to change unless needed. Simply create another designated initializer and mark the old one as a "convenience" initializer:
 
-{title="Repository using ID generator object which can be stubbed in tests"}
-    public class CoreDataItemRepository: NSObject, ItemRepository {
+{title="Repository with ID generator that can be replaced with a double in tests"}
+    public class CoreDataBoxRepository: BoxRepository {
         let managedObjectContext: NSManagedObjectContext
         let integerIdGenerator: GeneratesIntegerId
     
@@ -80,8 +99,6 @@ The `CoreDataItemRepository`'s interface doesn't have to change unless needed. S
                 integerIdGenerator: GeneratesIntegerId) {
             self.managedObjectContext = managedObjectContext
             self.integerIdGenerator = integerIdGenerator
-        
-            super.init()
         }
     
         // ...
@@ -90,7 +107,7 @@ The `CoreDataItemRepository`'s interface doesn't have to change unless needed. S
             return ItemId(unusedIntegerId())
         }
     
-        func unusedIntegerId() -> IntegerId {
+        fileprivate func unusedIntegerId() -> IntegerId {
             var identifier: IntegerId
         
             do {
@@ -100,11 +117,11 @@ The `CoreDataItemRepository`'s interface doesn't have to change unless needed. S
             return identifier
         }
     
-        func integerId() -> IntegerId {
+        fileprivate func integerId() -> IntegerId {
             return integerIdGenerator.integerId()
         }
     
-        func integerIdIsTaken(identifier: IntegerId) -> Bool {
+        fileprivate func integerIdIsTaken(identifier: IntegerId) -> Bool {
             // check if an entity with the identifier is already present
         }
     }
@@ -114,7 +131,7 @@ The `CoreDataItemRepository`'s interface doesn't have to change unless needed. S
 
 Now I can provide a test generator which helps to verify the Repository's behavior:
 
-    class TestIntegerIdGenerator : NSObject, GeneratesIntegerId {
+    class TestIntegerIdGenerator: GeneratesIntegerId {
         let firstAttempt: IntegerId = 1234
         let secondAttempt: IntegerId = 5678
         var callCount = 0
@@ -122,23 +139,29 @@ Now I can provide a test generator which helps to verify the Repository's behavi
         func integerId() -> IntegerId {
             let identifier = (callCount == 0 ? firstAttempt : secondAttempt)
         
-            callCount++
+            callCount += 1
         
             return identifier
         }
     }
 
-And here's the test which puts the test generator into place via Dependency Injection (which, in this case, means we pass the generator to the Repository initializer):
+And here's the test which puts the test generator into place via Dependency Injection (which means we pass the generator to the Repository initializer):
 
     func testNextId_WhenGeneratedIdIsTaken_ReturnsAnotherId() {
-        let testGenerator = TestIntegerIdGenerator()
-        repository = CoreDataItemRepository(managedObjectContext: self.context, 
-            integerIdGenerator: testGenerator)
+        // The test suite has a discardable `context` property to
+        // verify the Core Data queries work properly:
         let existingId = ItemId(testGenerator.firstAttempt)
-        ManagedItem.insertManagedItem(existingId, title: "irrelevant", 
+        ManagedItem.insertManagedItem(existingId, 
+            title: "irrelevant", 
             inManagedObjectContext: self.context)
         
-        let itemId = repository!.nextId()
+        // Dependency setup
+        let testGenerator = TestIntegerIdGenerator()
+        let repository = CoreDataBoxRepository(
+            managedObjectContext: self.context, 
+            integerIdGenerator: testGenerator)
+        
+        let itemId = repository.nextId()
         
         let expectedNextId = ItemId(testGenerator.secondAttempt)
         XCTAssertEqual(itemId, expectedNextId, 
@@ -148,3 +171,57 @@ And here's the test which puts the test generator into place via Dependency Inje
 Strangely enough, I have the impression that Swift forces me to make good decisions design-wise, while I expect more experienced Cocoa developers to consider all of this backward, or ugly. I expect them to think this is all too much like Java: create a lot of interfaces (format protocols) and service objects and stuff like that.
 
 The code benefits from small, stateless objects like these. They make the model richer and keep the interface lean.
+
+### Extract the ID Generation Retry Sequence
+
+The `CoreDataBoxRepository` has to check its `NSManagedObjectContext` for an existing ID. There's no way around that. But it doesn't have to implement the retry loop itself. We can extract this into a helper object. All that `CoreDataBoxRepository` will provide is:
+
+1. knowledge about how to generate an ID (which may or may not be takes), and 
+2. knowledge about how to check if an ID is taken.
+
+If we abstract these two things away, we end up with the `GeneratesIntegerId` protocol again, plus a new kind of "ID is taken"-checker. Instead of making an object or protocol of this, we can model this as a closure of type `(IntegerId) -> Bool`. This type makes more sense when viewed as a container property with a name, like `let integerIdIsTaken: (IntegerId) -> Bool`, or as a function that fits the requirement, like `func hasManagedBox(withIdentifier identifier: IntegerId) -> Bool`.
+
+The extracted type is a mere refactoring of the algorithm we had above. It's generic over `Identifiable`, the base protocol of an actual `BoxId` or `ItemId`, to make the algorithm truly reusable in different contexts:
+
+    struct IdGenerator<Id: Identifiable> {
+        let integerIdGenerator: GeneratesIntegerId
+        let integerIdIsTaken: (IntegerId) -> Bool
+
+        func nextId() -> Id {
+            return Id(unusedIntegerId())
+        }
+
+        func unusedIntegerId() -> IntegerId {
+            var identifier: IntegerId
+
+            repeat {
+                identifier = integerId()
+            } while integerIdIsTaken(identifier)
+
+            return identifier
+        }
+
+        func integerId() -> IntegerId {
+            return integerIdGenerator.integerId()
+        }
+    }
+
+The `CoreDataBoxRepository` provides the actual dependencies: 
+
+{linenos=off}
+    open func nextId() -> BoxId {
+        /// Helper function to determines if the ID is taken
+        func hasManagedBoxWithUniqueId(identifier: IntegerId) -> Bool {
+            return self.managedBoxWithUniqueId(identifier) != nil
+        }
+
+        let generator = IdGenerator<BoxId>(
+            // This is the generator we passed into `CoreDataBoxRepository`:
+            integerIdGenerator: integerIdGenerator, 
+            
+            // This is the helper from above:
+            integerIdIsTaken: hasManagedBoxWithUniqueId)
+        return generator.nextId()
+    }
+
+And thus we have extracted dependencies that accumulated in private methods into new types: the generator became the `GeneratesIntegerId` protocol with the `DefaultIntegerIdGenerator` implementation, and guaranteeing uniqueness moved into `IdGenerator<Identifiable>`.

@@ -4,38 +4,41 @@ A lot of stuff seems to work quite right now. To make it more interesting, I fin
 
 From now on I find how nice Swift is for modeling data containers. Creating an explicit view model requires far less boilerplate code.
 
-With Objective-C, I had to provide custom initializers for a general `TreeNode` or `BaseNode` to distinguish box from item representations, perhaps by setting properties like `isLeaf` in `init` appropriately. Using Swift, I can take the naive approach of modelling classes and still spend less time dealing with it thanks to initial property values:
+With Objective-C, I had to provide custom initializers for a general `TreeNode` or `BaseNode` to distinguish "box" from "item" type representations, perhaps by setting properties like `isLeaf` in `init` appropriately. Using Swift, I tend to model types for this that encapsulate the correct behavior. Instead of 1 type with various usage scenarios that require informal knowledge about the type, make constraints explicit with type specifications. Even though I end up with 3 types instead of 1, I still spend less time dealing with edge cases and inconsistencies because each class enforces its own consistency itself:
 
-    @objc(TreeNode)
-    public protocol TreeNode {
+    @objc public protocol TreeNode {
         var title: String { get set }
         var count: UInt { get set }
         var children: [TreeNode] { get }
         var isLeaf: Bool { get }
     }
 
-    class BoxNode: NSObject, TreeNode {
-        dynamic var title: String = "New Box"
-        dynamic var count: UInt = 0
-        dynamic var children: [TreeNode] = []
-        dynamic var isLeaf: Bool = false     // Denotes it's a Box
+    open class BoxNode: NSObject, TreeNode {
+        open dynamic var title: String = "New Box"
+        open dynamic var count: UInt = 0
+        open dynamic var children: [TreeNode] = []
+
+        // Denotes it's a Box to the NSTreeController
+        public dynamic var isLeaf: Bool = false
     }
 
-    class ItemNode: NSObject, TreeNode {
-        dynamic var title: String = "New Item"
-        dynamic var count: UInt = 0
-        dynamic var children: [TreeNode] = []
-        dynamic var isLeaf = true           // Denotes it's an Item
+    open class ItemNode: NSObject, TreeNode {
+        open dynamic var title: String = "New Item"
+        open dynamic var count: UInt = 0
+        open dynamic var children: [TreeNode] = []
+
+        // Denotes it's an Item to the NSTreeController
+        public dynamic var isLeaf = true
     }
 
-Using `dynamic` here enables KVO, which is a must for `NSObjectController` and Cocoa Bindings. Apart from that annotation, these class definitions provide necessary default values without any `init()` boilerplate necessary.
+Using `dynamic` here enables KVO but requires `@objc` annotation and inheriting from `NSObject`. This is a must for `NSObjectController` and Cocoa Bindings to work. Apart from that annotation, these class definitions provide necessary default values without any `init()` boilerplate necessary.
 
-Maybe I won't need to address different classes in the end. Maybe it'd suffice to properly set up a `BaseNode` in order to distinguish `Box`es from `Item`s in the view model.
+Maybe I won't need to address different classes in the end. Maybe it'd suffice to properly set up a `BaseNode` in order to distinguish `Box`es from `Item`s in the view model. After all, it's a very trivial distinction, isn't it?
 
-Why do I keep multiple classes nevertheless?
+The mental model of me, the programmer, is important, too. I have to read and understand what's going on. And you, dear reader, need to be able to understand this stuff, too. A 1:1 mapping of classes to your mental model is pretty simple. You don't need to keep edge cases or internal switches in mind to know which object does what. A `BoxNode` cannot denote an item if the code really does what it says. On the other hand, a generic `BaseNode` with a `isItem` switch would imply you know about this switch and keep its setting in mind when you read code. You need to decode a lot more and you need to acquire more implicit knowledge about the app to understand what's going on difference. (Same for me in 6 months!) It's easier if the object type says what you're dealing with. You'll benefit from this in the long run. Clean code often equals code reading like prose: it's transparent what's going on.
 
-I think the mental mapping of classes to things in the model is pretty straightforward. You don't need to decode a lot to understand the difference. Remembering to look at a property's value to find out what kind of node it is is harder than reading the object type. You'll benefit from this in the long run. Clean code equals code reading like prose. (Kind of.)
+The distinction between a box and item node is modelled explicitly as different types and thus is easy to understand. The alternate approach will only make you slower. Maybe not a lot slower for the time you remember what you've done, but in the long run. Your future self is just another reader of a foreigner's code. You don't save anything if you roll with 1 general type instead of the 3 types I used above. This is new to folks moving from Objective-C to Swift. Swift favors explicit declarations and distinguishing things at compile time over configuring objects to act as different things at runtime.
 
-The distinction between a box and item node is modelled explicitly as different types and thus is easy to understand. The alternate approach will only make you slower. Maybe not a lot slower for the time you remember what you've done, but in the long run. Your future self is just another reader of a foreigner's code.
+Remember that optimization and refactoring can wait until later. I don't think I introduced unnecessary design complexity here but improved readability instead. It also won't make the code run slower. Even if your arcane Swift runtime knowledge indicates that I'm wrong about the performance implication in principle, you still have to prove that this is an actual performance bottleneck. Worry about saving CPU cycles when your performance tests indicate you have a problem.
 
-Optimization can wait until later. I don't think I introduced unnecessary design complexity here either. You could say it's premature to model the distinction when no code relies on it. Fair enough. But it will in just a matter of commits.
+Okay, you could still say it's premature to model the distinction when no code relies on it. Fair enough. But it will in just a matter of commits.

@@ -2,11 +2,11 @@
 
 I'm pretty confident the view does what it should do. It's all just basic stuff, although it took enough trial & error to reach this point. (I am talking about you, [explicit Cocoa Bindings](#x20141124163838) which break the view's behavior!)
 
-There are two steps I could take now to quench my curiosity.
+I am curious if the app will work, though. This is only natural. Developers want to have a running prototype as early as possible. I'm no exception. Unit tests can help to get feedback that algorithms work. But you won't know if the app executes and performs anything at all until you run it. There are two steps I could take at this point to quench my curiosity.
 
-First, verify that view model updates result in visible `NSOutlineView` updates. Since the data doesn't change behind the scenes, I'm eager to see Cocoa Bindings in action. Then again, I already tested such a thing in another app: I changed the title behind with a timer after a couple of seconds. It felt like magic. Key-Value Observing is doing a lot of the hard work here. I can assure you that the Cocoa Bindings are set up correctly. There's no gain in testing Apple's internal frameworks, so I don't do anything in this direction.
+First, I could use more unit tests to verify that view model updates result in `NSOutlineView` updates. These updates should also be visible when I run the app, but the unit tests won't give visual feedback. Still, I would verify that the controller logic works. Since the data doesn't change in the background but depend on me clicking on widgets, I'm eager to see Cocoa Bindings in action. Then again, I've already witnessed Cocoa Bindings in another project. It felt like magic when the label updated to a new value that the component received after a couple of idle time automatically. Key-Value Observing is doing a lot of the hard work here. I can assure you that the Cocoa Bindings are set up correctly; in fact, the binding tests verify that the setup is working. Seeing the changes in the running app equals a manual integration test -- that is testing Apple's internal frameworks to do their job properly. That doesn't make any sense. I would like to see it in action, but it won't provide any useful information.
 
-Second, I could add functional tests to the test harness. And this is what I'll do: in a fashion you usually find with Behavior-Driven Development (as opposed to Test-Driven Development, where you start at the innermost unit level), I'll add a failing test which will need the whole app to work together in order to pass. It's a test which is going to be failing for quite a while.
+Second, I could add functional tests to the test harness. And this is what I'll do: in a fashion you usually find with Behavior-Driven Development (as opposed to Test-Driven Development, where you start at the innermost unit level), I'll add a failing test which will need the whole app to work together in order to pass. It's a test which is going to be failing for quite a while. It's an automated integration test that exercises various layers of the app at once.
 
 In the past I wrote failing functional tests for web applications only because they would drive out the REST API or user interaction pretty well. I haven't tried this for iOS or Mac applications, yet. So let's do this.
 
@@ -24,68 +24,44 @@ That being said, let's create a functional test to learn how things work togethe
 
 ### First Attempt at Capturing the Expected Outcome
 
-I want to go from user interface down to Core Data. That's a first step. This is the test I came up with:
+I want to go from user interface actions all down to Core Data. That's a first step. This is the test I came up with:
 
     func testAddFirstBox_CreatesBoxRecord() {
         // Precondition
-        XCTAssertEqual(repository!.count(), 0, "repo starts empty")
+        XCTAssertEqual(repository.count(), 0, "repo starts empty")
         
         // When
         viewController.addBox(self)
     
         // Then
-        XCTAssertEqual(repository!.count(), 1, "stores box record")
-        XCTAssertEqual(allBoxes()!.first!.title, "New Box")
+        XCTAssertEqual(repository.count(), 1, "stores box record")
+        XCTAssertEqual(allBoxes().first?.title, "New Box")
     }
 
-There's room for improvement: I expect that there's a record with a given `BoxId` afterwards, and that the view model contains a `BoxNode` with the same identifier. This is how the view, domain, and Core Data stay in sync. But the naive attempt is hideous:
+There's room for improvement: I expect that there's a record with a given `BoxId` afterwards, and that the view model contains a `BoxNode` with the same identifier. This is how the view, domain, and Core Data stay in sync. But the naive attempt at querying the `NSTreeController` is hideous:
 
 {linenos=off}
     viewController.itemsController.arrangedObjects.childNodes!!.first.boxId
 
-I rather defer such tests until later to avoid these train wreck-calls.
+I rather defer such tests until later to avoid these train wreck-calls and stick with the basic test from above that at least indicates the `count()` did change, even though I don't know if the correct entity was inserted at this point.
 
 ### Making Optionals-based Tests Useful
 
-On a side note, I think Swift's optionals are making tests weird. Consider this line:
+On a side note, I think Swift's optionals are making some tests weird. With modern Swift, optional chaining and `XCTAssertEqual` play together nicely:
 
 {linenos=off}
-    XCTAssertEqual(allBoxes()!.first!.title, "New Box")
+    XCTAssertEqual(allBoxes().first?.title, "New Box")
 
-`allBoxes()` is of kind `() -> [ManagedBox]?`, that is, it returns an array or nil. To use it this way was pretty straightforward in Objective-C:
+Sometimes, you need to unwrap an optional, though. Force-unwrapping `nil` results in a runtime error which we want to avoid during tests because it interrupts execution of the whole test suite. A failure is preferable.
 
 {linenos=off}
-    func allBoxes() -> [ManagedBox]? {
-        let request = NSFetchRequest(entityName: ManagedBox.entityName())
-        return context.executeFetchRequest(request, error: nil) as? [ManagedBox]
+    if let box = allBoxes().first {
+        XCTAssertEqual(box.title, "New Box")
+    } else {
+        XTCFail("expected 1 or more boxes")
     }
 
-The thing is, force-unwrapping a `nil` optional results in a runtime error. Objective-C would've told us that "nil doesn't equal whatever". Swift won't. 
-
-With Swift 1.2, you have to decide how to cast the result of the fetch request:
-
-- `as! [ManagedBox]?`, indicating you expect (!) an optional array, or
-- `as? [ManagedBox]`, indicating it may be a ManagedBox array or something else entirely, but if it isn't, return nil.
-
-I think the second version fits the purpose better, although the first one expresses the intent clearly, too. I read `as?` as "maybe", so it becomes "maybe return an array of `ManagedBox` objects", which is good.
-
-Now take care of the optional array return value in the test case:
-
-{linenos=off}
-    if let boxes = allBoxes() {
-        XCTAssertEqual(boxes.first!.title, "New Box")
-    }
-
-What if the fetch request was valid, but the result set empty?
-
-{linenos=off}
-    if let boxes = allBoxes() {
-        if let box = boxes.first as? ManagedBox {
-            XCTAssertEqual(box.title, "New Box")
-        }
-    }
-
-We've surpassed runtime errors but end up not testing the `else` case anymore.
+Imagine `allBoxes()` returned an optional; then the complexity of the test would increase a lot:
 
 {linenos=off}
     if let boxes = allBoxes() {
@@ -98,43 +74,41 @@ We've surpassed runtime errors but end up not testing the `else` case anymore.
         XCTFail("boxes request invalid")
     }
 
-Now that's become quite a monster.
-
-An alternate approach is to change `allBoxes()` to `() -> [ManagedBox]!` to get rid of at least the first clause. Swift teaches us to stop using optionals when we're positive we don't need them. Instead of `nil`, return an empty array. This makes the result much more predictable for the client. Here's the updated version:
+When you work with collections, instead of `nil`, return an empty array. This makes the result much more predictable for the client. Here's the updated version:
 
 {title="Don't allow optionals if there's no need to"}
     func allBoxes() -> [ManagedBox] {
         let request = NSFetchRequest(entityName: ManagedBox.entityName())
-        let results: [AnyObject]? = \
-            context.executeFetchRequest(request, error: nil)
+        let results: [AnyObject]
         
-        if let boxes = results as? [ManagedBox] {
-            return boxes
+        do {
+            try results = context.fetch(request)
+        } catch {
+            XCTFail("fetching all boxes failed")
+            return []
         }
-        
-        return []
+
+        guard let boxes = results as? [ManagedBox] else {
+            return []
+        }
+
+        return boxes
     }
 
-It's still unsafe to force-unwrap `first!` when the array is empty.
-
-I'd love to create my own assertion shorthand for this and call `XCTFail` in the case of runtime errors -- but I can't actually catch runtime errors in Swift. Very unfortunate. I wonder how Apple herself writes tests under such limitations.
-
-I end up having to use a very explicit version:
+If optional chaining doesn't work for you for some reason, make it a two-step assertion instead:
 
 {linenos=off}
     let box: ManagedBox = allBoxes().first
-    XCTAssert(box != nil)
+    XCTAssertNotNil(box)
     if let box = box {
         XCTAssertEqual(box.title, "New Box")
     }
 
-This pattern felt more clunky, but once you get used to it, it's okay (and the best alternative there is). You obtain an optional, assert that it contains a value, and then shadow-unwrap the optional inside the scope of the `if` statement's block where you can create assertions about its contents. 
+If the value is `nil`, the first assertion will fail and the test case will be marked as a failing test. You can come back to it and fix it. No breaking runtime errors required!
 
 ### Wire-Framing the Path to "Green"
 
-Now the test fails, of course.
-
-In broad sketches, this is what's left to do to connect the dots:
+Now this integration test fails, of course. In broad strokes, this is what's left to do to connect the dots and make it pass:
 
 * I have to make a repository available to the view. I'll do this via **Application Service**s.
 * I have to add an actual Application Service layer. Remember, this is the client of the domain.
@@ -145,27 +119,33 @@ In broad sketches, this is what's left to do to connect the dots:
 The `ServiceLocator` can look like this:
 
 {title="ServiceLocator singleton to select default implementations"}
-    class ServiceLocator {
-        // Use thread-safe Struct-based singleton until 
-        // static class constants are possible
-        class var sharedInstance: ServiceLocator {
-            struct Static {
-                static let instance: ServiceLocator = ServiceLocator()
-            }
-            return Static.instance
+    open class ServiceLocator {
+        open static let sharedInstance = ServiceLocator()
+        
+        // MARK: Configuration
+        
+        fileprivate var managedObjectContext: NSManagedObjectContext?
+
+        public func setManagedObjectContext(_ managedObjectContext: NSManagedObjectContext) {
+            precondition(self.managedObjectContext == nil, 
+                "managedObjectContext can be set up only once")
+                
+            self.managedObjectContext = managedObjectContext
         }
         
-        var managedObjectContext: NSManagedObjectContext?
+        // MARK: Dependencies
         
-        class func boxRepository() -> BoxRepository {
+        public class func boxRepository() -> BoxRepository {
             return sharedInstance.boxRepository()
         }
         
-        func boxRepository() -> BoxRepository {
-            let moc = managedObjectContext
-            precondition(moc != nil, "managedObjectContext must be set up")
-            return CoreDataBoxRepository(managedObjectContext: moc!)
-        }
+        // Override this during tests:
+        open func boxRepository() -> BoxRepository {
+            guard let managedObjectContext = self.managedObjectContext
+                else { preconditionFailure("managedObjectContext must be set up") }
+            
+            return CoreDataBoxRepository(managedObjectContext: managedObjectContext)
+        }    
     }
 
 It's not very sophisticated, but it is enough to decouple the layers. An Application Service could now perform insertions like this:
@@ -183,6 +163,6 @@ It's not very sophisticated, but it is enough to decouple the layers. An Applica
 This is not a command-only method because it returns a value. Instead of returning the new ID so the view can add it to the node, the service will be responsible for actually adding the node to the view. That'd be the first major refactoring.[^cf861676e8ce37ec13bce12999f7e778f2ce081d]
 <!--ct: commit #cf861676e8ce37ec13bce12999f7e778f2ce081d-->
 
-It's about time to leave the early set-up phase and enter Part II, where I'm going to deal with all these details.
+It's about time to leave the early set-up phase and enter Part II, where I'm going to deal with all these details and add the missing functionality.
 
 [^cf861676e8ce37ec13bce12999f7e778f2ce081d]: See [commit cf86167](https://github.com/DivineDominion/mac-appdev-code/commit/cf861676e8ce37ec13bce12999f7e778f2ce081d)

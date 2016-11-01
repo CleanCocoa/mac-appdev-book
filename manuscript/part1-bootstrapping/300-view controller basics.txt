@@ -1,6 +1,6 @@
 ## Preparing the UI: Create View Controllers and Test Their Setup
 
-We'll ignore Storyboards for the Mac SDK for now when creating the view. This example project will have just one window and no transitions, so there's no benefit in using Storyboards.
+We'll ignore Storyboards for the Mac SDK for now when creating the view. This example project will have just one window and no transitions, so there's no benefit in using Storyboards. Storyboards suggest different kinds of view transitions and event handling, which would only distract from what we're really up to.
 
 I adopted the following practice for creating views:
 
@@ -64,37 +64,44 @@ I hunted for a bug for a while only to find the Cocoa Binding from `NSOutlineVie
 
 ### Create `XCTestCase` Extensions with Test Helpers
 
-The method `hasBinding(_,binding:,to:,throughKeyPath:)` is a little helper to inspect the underlying bindings dictionary in a readable fashion:
+The function `hasBinding(_,binding:,to:,throughKeyPath:)` I used in the test case above is a little helper to inspect the underlying bindings dictionary from tests in a readable fashion:
 
     extension XCTestCase {
-        func hasBinding(object: NSObject, 
-                binding:String, 
-                to boundObject: NSObject, 
-                throughKeyPath keyPath:String) -> Bool {
+        func hasBinding(
+            _ object: NSObject, 
+            binding: String, 
+            to boundObject: NSObject, 
+            throughKeyPath keyPath: String) -> Bool {
             
-            guard let info = object.infoForBinding(binding) else {
-                return false
-            }
-
-            return (info[NSObservedObjectKey] as! NSObject == boundObject) &&
-                (info[NSObservedKeyPathKey] as! String == keyPath)
-        }
+        guard let info = object.infoForBinding(binding) 
+            else { return false }
+        
+        let observedObject = info[NSObservedObjectKey] as! NSObject
+        let observedKeyPath = info[NSObservedKeyPathKey] as! String
+        
+        return observedObject.isEqual(boundObject)
+            && observedKeyPath == keyPath
     }
 
-Now I know that the basic setup is working.
+With the test in place, I can know that the basic setup is working.
 
 ### A Note on Splitting Concerns Into Objects and Creating so Many Files
 
 Was the sudden explosion of files worth it? Couldn't we've kept the AppDelegate to manage the window?
 
-I decided to do this move not because it's necessary to keep the code clean right now. It was a premature optimization, you could say, because the app still doesn't do a thing. You'd be right, but the additions are still trivial, so I move a bit faster than strictly necessary.
+I tend to react to questions like this with skepticism. Why worry about the amount of files? What's the underlying motive for such a question? Most of the time, it's a feeling of discomfort. It's usually folks who learned to cram everything into the `AppDelegate` or into view controllers who bring this up. It's a defense mechanism. 
 
-I did this move because I know where I'll be heading. I'm still trying to replicate the basic setup of the Word Counter project but stumble upon Swift's peculiarities from time to time.
+To extract these things into different types and files may be a new approach for you, too. I have to ask you to follow me along this path for now and judge the end result for yourself. "Too many files" is a vanity metric. The file count will neither prove your app is well-factored and clean, nor that it's the opposite. It's meaningless. So don't get hung up on superficial stuff like this and focus on the real work: designing focused and maintainable objects.
 
-Once we begin to send messages here and there, the split between objects will make a lot more sense. We're getting there.
+So why now? The app doesn't do a thing, yet, which means I only introduced overhead. That's right, but I know that I don't want to cram stuff into my `AppDelegate` later. At the moment, the  additions are simple and cheaply made. There's no point in saving a couple of calories now only to spend more energy tearing out code later. Since leaving window management and view handlnig in the `AppDelegate` is out of question, this is a first move to adjust the overall design and architecture to my needs.
 
-To test controls such as buttons, there's no need to simulate clicks in the tests. Instead, it suffices to verify it is wired to an action method and that invoking the method does what it's expected to do.[^c5c351b54e53a5d22b44c20e376bca521f451e54]
+Once we begin to send messages here and there, the split between objects will make a lot more sense. We're getting there and you'll see how I prove my point.
 
+### Understanding View Controller Tests
+
+To test controls such as buttons, there's no need to simulate clicks in the tests, although that's probably the first thing you want to do. After you analyze the process of button click handling, you can see what should be tested instead. Action handling involves proper setup in the Nib from outlet to action method first. We can test that, but we don't need to verify what "wiring outlet to action" means; we should trust the AppKit framework to do its job. Testing that Nib wiring does what it advertises will not give us more confidence because we cannot control AppKit's internals. Verifying a button click thus turns into a two-step process: verify the button is wired to an action method, then verify that invoking this method does what you expect. The actual click is not our concern.[^c5c351b54e53a5d22b44c20e376bca521f451e54]
+
+{linenos=off}
     // Test that there's a button outlet
     func testAddItemButton_IsConnected() {
         XCTAssertNotNil(viewController.addItemButton)
@@ -103,7 +110,7 @@ To test controls such as buttons, there's no need to simulate clicks in the test
     // Test that it is connected to an action method
     func testAddItemButton_IsWiredToAction() {
         XCTAssertEqual(viewController.addItemButton.action, 
-            #selector(NSMenu.addItem(_:)))
+            #selector(ItemViewController.addItem(_:)))
     }
     
     // Specify preconditions in "Initially" context
