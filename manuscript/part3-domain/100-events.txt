@@ -1,6 +1,6 @@
 ## Introducing Events in Place of Notifications {#domainevents}
 
-Using `NSNotificationCenter` is easy and a well-known practice. I don't like how working with a notifications `userInfo` dictionary changed with Swift and its enforcement of strong typing.
+In the last part, I ended up using `NSNotificationCenter` to send events. Notifications are easy to use and Foundation provides objects that are well-known. I don't like how working with a notification's `userInfo` dictionary gets in the way in Swift, though. Objective-C was very lenient when you used dictionaries. That introduced a new source of bugs, but if you enjoy dynamic typing, it worked very well. Swift seems to favor new paradigms that enforce strong typing.
 
 ### Swift Is Sticking Your Head Right at the Problem
 

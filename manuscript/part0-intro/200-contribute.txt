@@ -6,8 +6,8 @@ Your feedback is very welcome, and I appreciate pull requests on GitHub for both
 
 So feel free to contribute to this book and the overall project via GitHub:
 
-- [Book Manuscript on GitHub](https://github.com/DivineDominion/mac-appdev-book)
-- [Project Code on GitHub](https://github.com/DivineDominion/mac-appdev-code)
+- [Book Manuscript on GitHub](https://github.com/CleanCocoa/mac-appdev-book)
+- [Project Code on GitHub](https://github.com/CleanCocoa/mac-appdev-code)
 
 You can read more about the book project on its [dedicated website](http://cleancocoa.com/books/exploring-mac-app-dev/).
 
@@ -15,3 +15,14 @@ A huge thanks for providing feedback and fixing bugs goes to:
 
 - Jorge D Ortiz Fuentes
 - [Stanislaw Pankevich](https://github.com/stanislaw)
+
+### A Note on Reading the Example App Code
+
+Developing an app is an iterative process. Looking at the code of a finished app often leaves you wondering: how did he get to this point?
+
+Experimental code from the first commits won't be available in the final version, of course, because I've surpassed the problems along the way. I leverage the version history of the example app to show the app at every stage of development so you can follow along. The git history becomes a tool to understand the development. Throughout the book, I include links to commits on GitHub so you can checkout the code at a particular stage in the narrative.
+
+When you visit GitHub and download the code as a Zip file, though, you will see the final version. This final version will not reflect intermediate steps of the development process. Refer to the footnotes and the links to git commits if you find you need more context. I explain a lot of the refactorings and discuss most code changes in the book itself so you can follow along easily.
+
+If you cannot understand what a section is about because there's not enough code to illustrate what's going on, simply open an issue on GitHub in the book manuscript repository and I'll revise this in a future edition!
+

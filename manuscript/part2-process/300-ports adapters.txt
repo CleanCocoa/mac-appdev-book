@@ -2,9 +2,11 @@
 
 ## Ports and Adapters
 
-The basic idea of this architectural style is this: separate queries from commands and isolate layers through ports and adapters. _Ports_ are interfaces (protocols) declared in one layer, while _Adapters_ are classes from other layers which satisfy a Port's specification:
+Recall that the basic idea of this architectural style is this: separate queries from commands and isolate layers through ports and adapters. _Ports_ are interfaces (protocols) declared in one layer, while _Adapters_ are classes from other layers which satisfy a Port's specification:
 
 ![Ports and Adapters](images/20141204100034_ports-adapters.png)
+
+Instead of one adapter knowing about its collaborator on the other side of the boundary, each adapter only knows a protocol from its module. That marks a dependency. The actual implementation of that protocol is _injected._ This move is sometimes called "Dependency Inversion," because you don't go the naive route and depend on a component from another module but instead depend on a protocol from your own module that others satisfy. The "inversion," then, is the inversion of arrow directions.
 
 This is nothing new to the code, actually. For example, `BoxRepository` is a port of the domain to which `CoreDataBoxRepository` from infrastructure is an adapter. Similarly, the `HandlesItemListEvents` protocol from the user interface layer is implemented by an application service.
 
@@ -53,45 +55,43 @@ My very first take:
     }
     
     class BoxAndItemService: HandlesItemListEvents {
+        // Output port:
         var boxIdConsumer: ConsumesBoxId?
 
         func provisionBox() {
             let repository = ServiceLocator.boxRepository()
             let boxId = repository.nextId()
-            storeNewBoxWithId(boxId, into: repository)
-            reportBoxIdToConsumer(boxId)
+            storeNewBox(withId: boxId, into: repository)
+            reportToConsumer(boxId: boxId)
         }
         
-        func storeNewBoxWithId(boxId: BoxId, into repository: BoxRepository) {
+        fileprivate func storeNewBox(withId boxId: BoxId, 
+            into repository: BoxRepository) {
+            
             let box = Box(boxId: boxId, title: "New Box")
             repository.addBox(box)
         }
         
-        func reportBoxIdToConsumer(boxId: BoxId) {
-            guard let port = boxIdConsumer else {
-                return
-            }
-            
-            port.consume(boxId)
+        fileprivate func reportToConsumer(boxId: BoxId) {
+            // Thanks to optional chaining, a non-existing boxIdConsumer
+            // will simply do nothing here.
+            boxIdConsumer?.consume(boxId: boxId)
         }
     }
 
-Instead of _querying_ `BoxAndItemService` for an ID, the view controller can now _command_ it to provision a new `Box`. It won't do anything else. Clicking the button will add a `Box` as it says on the label, but it won't change the view. Just by "accident" will the application be set-up in such a way that `ItemViewController` immediately receives the _command_ to `consume()` a `BoxId`, which will trigger adding a new node with the appropriate `BoxId` to the outline view.
+Instead of _querying_ `BoxAndItemService` for an ID, the view controller can now _command_ it to provision a new `Box`. The service won't do anything else. Clicking the button will add a `Box` as it says on the label, but it won't change the view. The design of these components is flexible and the service doesn't know the consumer. It is not tied to a view component. You could say that it's just a coincidence the `ItemViewController` in return receives the _command_ to `consume()` a `BoxId`. This, in turn, will trigger adding a new node with the appropriate `BoxId` to the outline view.
 
 
 ### Using Domain Services and Domain Events
 
-What `reportBoxToConsumer(_:Box)` does is equal to the intent of the observer pattern. In Cocoa, we usually send notifications. This is more like calling a delegate because it's a 1:1 relationship instead of the many-to-one observer pattern relationship:
+What `reportToConsumer(boxId:)` does equals the intent of the well-known _observer pattern_. In Cocoa, we usually send notifications. This is more like calling a delegate because it's a 1:1 relationship instead of the many-to-one observer pattern relationship:
 
-    func reportBoxToConsumer(box: Box) {
-        guard let port = boxConsumer else {
-            return
-        }
-        
-        port.consume(box)
+{linenos=off}
+    func reportToConsumer(box: Box) {
+        boxConsumer?.consume(box)
     }
 
-Now that's a first step into the right direction. But I notice the **Application Service** `BoxAndItemService` is now doing these things:
+But I notice the **Application Service** `BoxAndItemService` is now doing these things:
 
 * it sets up the aggregate `Box`
 * it adds the aggregate instance to its repository
@@ -104,55 +104,69 @@ The domain has a few data containers, but no means to create **Aggregate**s or m
 Using `NSNotificationCenter` as a domain event publisher, `BoxAndItemService` loses part of its concerns in favor of a Domain Service, `ProvisioningService`:
 
 {title="Refactoring business logic into a dedicated Domain Service"}
-    class ProvisioningService {
+    open class ProvisioningService {
         let repository: BoxRepository
     
         var eventPublisher: NSNotificationCenter {
             return DomainEventPublisher.defaultCenter()
         }
     
-        init(repository: BoxRepository) {
+        public init(repository: BoxRepository) {
             self.repository = repository
         }
     
-        func provisionBox() {
+        open func provisionBox() {
             let boxId = repository.nextId()
             let box = Box(boxId: boxId, title: "New Box")
         
             repository.addBox(box)
         
-            eventPublisher.postNotificationName(kBoxProvisioned,
+            eventPublisher.post(
+                name: Events.boxProvisioned,
                 object: self,
-                userInfo: ["boxId" : NSNumber(longLong: boxId.identifier)])
+                userInfo: ["boxId" : boxId.identifier])
         }
         
-        func provisionItem(inBox box: Box) {
+        open func provisionItem(inBox box: Box) {
             let itemId = repository.nextItemId()
             let item = Item(itemId: itemId, title: "New Item")
 
             box.addItem(item)
     
-            let userInfo = ["boxId" : NSNumber(longLong: box.boxId.identifier),
-                            "itemId" : NSNumber(longLong: itemId.identifier)]
-            eventPublisher.postNotificationName(kBoxItemProvisioned,
+            let userInfo = [
+                "boxId" : box.boxId,
+                "itemId" : itemId
+            ]
+            eventPublisher.post(
+                name: Events.boxItemProvisioned,
                 object: self,
                 userInfo: userInfo)
         }
+        
+        // (Mis)using enum as a namespace for notifications:
+        enum Events {
+            static let boxProvisioned = 
+                Notification.Name(rawValue: "Box Provisioned")
+            static let boxItemProvisioned = 
+                Notification.Name(rawValue: "Box Item Provisioned")
+        }
     }
 
-I'm not all that keen about the way `NSNotificationCenter`s work. Dealing with the `userInfo` parameter is a pain: wrapping `Int64` identifiers into `NSNumber` just for the sake of adhering to the protocol sounds nuts to me.
+I'm not all that keen about the way `NSNotificationCenter`s work. Dealing with the `userInfo` parameter is error-prone; both during consumption and creation you can have a typo in a key and end up with a runtime error or unexpected behavior.
 
-I think `provisionItem` doesn't read too well, but it's not the worst method in human history either. Getting the data out is really bad, though:
+I think `provisionItem` doesn't read too well, but it's not the worst method in human history, either. But getting the data out is getting bad:
 
 {linenos=off}
-    let boxInfo = notification.userInfo!["boxId"] as! NSNumber
-    let boxId = BoxId(boxInfo.longLongValue)
+    let boxInfo = notification.userInfo?["boxId"] as! NSNumber
+    let boxId = BoxId(fromNumber: boxInfo)
 
-It's very hard to read, compared to:
+It's hard to read and complicated when compared to, say:
 
 {linenos=off}
     let boxId = boxCreatedEvent.boxId
 
-Getting another layer of abstraction in there is a good idea, especially since Swift's structs make it really easy to create **Domain Event**s. It will improve the code, although you'll have to weigh the additional cost of developing and testing this very layer of abstraction. For the sake of this sample application, I prefer not to over-complicate things even more and stick to plain old notifications for now.
+To introduce another layer of abstraction is a good idea, especially since Swift's structs make it really easy to create **Domain Event**s. It will improve the code, although you'll have to weigh the additional cost of developing and testing this very layer of abstraction. For the sake of this sample application, I prefer not to over-complicate things even more and stick to plain old notifications for now.
 
 To replace the command--query-mixing methods from before, there needs to be an event handler which subscribes to Domain Events in the application layer and displays the additions in the view.
+
+Before I expand the Domain with these event types, though, we'll have a look at another refactoring in the Application layer.
