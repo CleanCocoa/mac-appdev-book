@@ -33,7 +33,7 @@ Adding items takes a bit more lines to test, but it's nothing special:
 Appending `ItemNode` to the current selection (or its parent) `BoxNode` works by finding the `BoxNode`'s index path. The associated `NSTreeNode` provides all details to obtain the `BoxId`.
 
 {title="Appending item nodes"}
-    func appendItemNodeToBoxIndexPath(parentIndexPath: NSIndexPath) {
+    func appendItemNodeToBoxIndexPath(parentIndexPath: IndexPath) {
         let parentTreeNode = boxTreeNodeAtIndexPath(parentIndexPath)
         let itemIndexPath = indexPath(appendedToTreeNode: parentTreeNode)
         let item = itemNode(belowBoxTreeNode: parentTreeNode)
@@ -229,7 +229,7 @@ This simple use case-oriented **Application Service** object relieves the `AppDe
         // ...
         lazy var manageBoxesAndItems = ManageBoxesAndItems()
     
-        func applicationDidFinishLaunching(aNotification: NSNotification) {
+        func applicationDidFinishLaunching(_ aNotification: Notification) {
             let moc = persistentStack.managedObjectContext!
             ServiceLocator.sharedInstance.setManagedObjectContext(moc)
             manageBoxesAndItems.showBoxManagementWindow()

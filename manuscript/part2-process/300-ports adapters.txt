@@ -101,13 +101,13 @@ Essentially, that's the job of a **Domain Service**.
 
 The domain has a few data containers, but no means to create **Aggregate**s or manipulate data. The application layer, being client to the domain, shouldn't replace domain logic. Posting "Box was created" events is the domain's responsibility.
 
-Using `NSNotificationCenter` as a domain event publisher, `BoxAndItemService` loses part of its concerns in favor of a Domain Service, `ProvisioningService`:
+Using `NotificationCenter` as a domain event publisher, `BoxAndItemService` loses part of its concerns in favor of a Domain Service, `ProvisioningService`:
 
 {title="Refactoring business logic into a dedicated Domain Service"}
     open class ProvisioningService {
         let repository: BoxRepository
     
-        var eventPublisher: NSNotificationCenter {
+        var eventPublisher: NotificationCenter {
             return DomainEventPublisher.defaultCenter()
         }
     
@@ -152,7 +152,7 @@ Using `NSNotificationCenter` as a domain event publisher, `BoxAndItemService` lo
         }
     }
 
-I'm not all that keen about the way `NSNotificationCenter`s work. Dealing with the `userInfo` parameter is error-prone; both during consumption and creation you can have a typo in a key and end up with a runtime error or unexpected behavior.
+I'm not all that keen about the way `NotificationCenter`s work. Dealing with the `userInfo` parameter is error-prone; both during consumption and creation you can have a typo in a key and end up with a runtime error or unexpected behavior.
 
 I think `provisionItem` doesn't read too well, but it's not the worst method in human history, either. But getting the data out is getting bad:
 

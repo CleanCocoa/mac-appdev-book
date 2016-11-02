@@ -39,7 +39,7 @@ Consuming data for a `BoxNode` is pretty easy because the nodes are just appende
 
     public func consume(boxData: BoxData) {
         let boxNode = self.boxNode(boxData)
-        let indexPath = NSIndexPath(index: nodeCount())
+        let indexPath = IndexPath(index: nodeCount())
         itemsController.insertObject(boxNode, 
             atArrangedObjectIndexPath: indexPath)
         orderTree()

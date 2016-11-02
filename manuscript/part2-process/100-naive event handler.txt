@@ -69,7 +69,7 @@ The functional test still fails because the `BoxAndItemService` is never actuall
     lazy var windowController = ItemManagementWindowController()
     lazy var boxAndItemService = BoxAndItemService()
     
-    func applicationDidFinishLaunching(aNotification: NSNotification) {
+    func applicationDidFinishLaunching(_ aNotification: Notification) {
         windowController.eventHandler = boxAndItemService
         
         windowController.showWindow(self)
@@ -85,7 +85,7 @@ The functional test still fails because the `BoxAndItemService` is never actuall
             
         let boxId = eventHandler.provisionNewBoxId()
         let box = BoxNode(boxId: boxId)
-        let indexPath = NSIndexPath(index: nodeCount())
+        let indexPath = IndexPath(index: nodeCount())
         itemsController.insertObject(box, 
             atArrangedObjectIndexPath: indexPath)
         orderTree()
