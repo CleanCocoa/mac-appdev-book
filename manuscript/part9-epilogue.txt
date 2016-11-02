@@ -1,20 +1,16 @@
 # Epilogue
 
-That's it.
+Writing this book changed how I approached coding this example application. I know writing makes you think clearly; but I found it improved my code, too. 
 
-Writing this book changed how I approached coding the example application. It helped to aim for telling a coherent story, and it helped being able to look at notes from the day before. 
-
-Usually, I have a Day One reminder set to remind me of journalling once per hour. When I'm coding, I use these reminders to reflect on a current trail of thought, or a problem I try to solve. Writing makes you think clearly.
-
-Maybe this is a tool you could make use of, too: write about your programming projects regularly.
-
-Reflect upon decisions and write down alternate paths. By pointing at alternatives throughout this book, I have discovered how hard it has been to stick to a plan without knowing the options. Writing about the options relieved me from the stress of not knowing what might happen if I do something else instead because now I knew without having to do any coding.
+Maybe writing is a tool you could make use of. There's not much going on in the Cocoa app developer community regarding field reports. How do you develop applications? What challenges did you face today? These are useful questions for you to answer and provide insight for your readers. It also helps to think about decisions and write down alternate paths. By pointing at alternatives throughout this book, I have discovered how hard it has been to stick to a plan without knowing the options. Writing about the options relieved me from the stress of not knowing what might happen if I do something else instead because now I knew without having to do any coding.
 
 Me, I have found out that I want to try to implement the `ManagedBox`/`Box` distinction in the Word Counter to put Core Data in the outermost layer because it works really well once set up.
 
 But before I spend lots of hours getting that to work, it's okay to start small. I can use Core Data and Cocoa Bindings to my advantage to get up to speed initially. Since the model of the Word Counter is not so simple, I will not use Cocoa Bindings from the view controller to Core Data, but keep a view model layer in tact.
 
 The view model will help me prepare values for the different columns of the view without cluttering the real model. And should I switch from Core Data to Realm or SQLite or anything else, Core Data wouldn't be too entangled into everything. I think that's the sweet spot to aim for initially and then move forward once the feature is ready.
+
+Separating the functionality into cleanly divided layers proves to be a huge win. When components are separated and well-factored, adding or changing functionality becomes a lot easier. Still, sometimes it may be better to stick to the Cocoa features for a while until you find the app grows in complexity. Not every tool needs to be well-architected. Small apps that won't change a lot over the years can benefit from a shorter "time to market," that is less development time. In the end, you have to weigh the pros and cons. To do so, you have to _know_ them first, though.
 
 
 ## The Use of Cocoa Bindings
@@ -37,6 +33,8 @@ The majority of this book is dedicated to helping you develop strategies to get 
 
 You've seen that over-architecting leads to code no-one needs. If you want to display a list of items, and that's it, just don't try to force a Domain Model into the app.
 
-Similarly, the conventional pasting together of code snippets from StackOverflow will not help keep the code readable or clean.
+Similarly, the conventional pasting together of code snippets from StackOverflow will not help keep the code readable or clean. MVVM is trendy, but it's probably not the cure to your problem.
 
 I hope to have provided evidence so you can pick wisely which path your next app or your next big refactoring will take.
+
+If in doubt, shoot me an e-mail and ask!
