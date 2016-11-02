@@ -5,7 +5,7 @@ Maybe you know this situation, too: you want your user interface to be super-res
 The best I came up with is sharing a unique identifier between the various layers. `BoxNode`s in the view have a `BoxId`, so does the domain's `Box`, and so does infrastructure's Core Data `ManagedBox`.
 
 
-[^201412051135]: This section is the least satisfying in this book. At least to me. We'll explore a few ideas on error handling, but there's not much general advice to share. Just too much depends on the actual project. If you come up with something good yourself, don't hesitate to [share and contribute!][hp-contribute]
+[^201412051135]: This section satisfies me the least because error handling depends on the context a lot. We'll explore a few ideas on error handling, but there's not much general advice to share. If you come up with something good that you want to share, don't hesitate to [contribute the code!][hp-contribute]
 
 
 ### Handle Components with Individual Controllers
@@ -18,10 +18,10 @@ The gain from this huge object overhead is this: each delegate will know which v
 
 There could be a central dispatcher of sorts in the application layer to receive domain changes. The dispatcher would hold a dictionary of `BoxId`--to--`NodeObserver` mappings. When the entities change, the dispatcher will inform the appropriate `NodeObserver`.
 
-Then again, `NodeObserver`s could listen to domain events themselves and incorporate changes for related entities. This is a highly decentralized architecture. It has a strong appeal, and I'd love to redesign the layer integration in a future edition of this book accordingly to see how well it works.[^fut] I think this will allow for a responsive user interface and thus greatly enhance the overall user experience.
+Then again, `NodeObserver`s could listen to domain events themselves and incorporate changes for related entities. This is a highly decentralized architecture. It has a strong appeal, and I'd love to redesign the layer integration to see how well it works. I think this will allow for a responsive user interface and thus greatly enhance the overall user experience.
 
-  [^fut]: Let me know if you'd like to see this, too. [Get in touch.][hp-contact]
- 
+<!--ct: TODO consider adding this approach as an alternate view module--> 
+
 [hp-contact]: http://divinedominion.github.io/mac-appdev-book/#contact
 
 ### Dealing with Core Data Errors
@@ -42,9 +42,9 @@ Currently, the `CoreDataBoxRepository` implementation can fail at the following 
 
 Additionally, `PersistentStack` can fail at saving the context.
 
-Since there's no client but the tests using `count()` at the moment, there's no need to worry about recovering from problems there. We can leave that one out.
+Since there's no client but the tests using `count()` at the moment, there's no need to worry about recovering from problems there. We can ignore that for now.
 
-Not being able to create new objects is worse:
+Not being able to create new objects would be far worse, so let's start there:
 
     class ProvisioningService {
         func provisionBox() {
@@ -78,7 +78,7 @@ This leaves the unlikely but problematic case of write-failures (disk full or st
 2. Recover from the problem.
 3. Maybe report the problem.
 
-Let's go through these steps one by one, although in a different order.
+Let's go through these steps one by one, although in a slightly different order.
 
 #### Log the Problem
 
@@ -87,14 +87,13 @@ Core Data errors can be [manifold][cderr] and they usually come in batches. To l
 The `save()` method of `PersistentStack` will in part look like this after adding basic logging facilities:
 
 {linenos=off}
-    guard managedObjectContext.hasChanges else {
-        return
-    }
+    guard managedObjectContext.hasChanges 
+        else { return }
         
     do {
         try managedObjectContext.save()
     } catch let error as NSError {
-        NSApplication.sharedApplication().presentError(error)
+        NSApplication.shared().presentError(error)
 
         NSLog("Failed to save to data store: \(error.localizedDescription)")
         logDetailledErrors(error)
@@ -102,9 +101,9 @@ The `save()` method of `PersistentStack` will in part look like this after addin
 
 With `logDetailledErrors()`[^201412051124] defined in "Utilities.swift" for global access as:
 
-    func logDetailledErrors(error: NSError) {
-        let key = NSDetailedErrorsKey
-        if let detailedErrors: [NSError] = error.userInfo?[key]? as? [NSError] {
+    func logDetailledErrors(_ error: Error) {
+        let error = error as NSError
+        if let detailedErrors = error.userInfo[NSDetailedErrorsKey] as? [NSError] {
             for detailedError in detailedErrors {
                 NSLog("  DetailedError: \(detailedError.userInfo)")
             }
@@ -117,12 +116,13 @@ I opt in to using this method in `CoreDataBoxRepository`, too, in order to gener
 
 Using a real logger object would be nice, though. It'd be trivial to swap out the logging mechanisms and logging templates. I don't think it's worth the effort for this project, though.
 
-Using [CocoaLumberjack][] to create log files on disk and print to the console simultaneously is a nice option, too. In fact, I use CocoaLumberjack in the Word Counter to generate ongoing reports during beta tests. If something goes wrong, people can simply e-mail the reports to me. CocoaLumberjack is dead-simple to use, so I won't explain it in the scope of this book, nor will I use it in the code to keep it free from external dependencies.
+Using [CocoaLumberjack][] to create log files on disk and print to the console simultaneously is a nice option, too. In fact, I use CocoaLumberjack in the Word Counter to generate ongoing reports during beta tests. If something goes wrong, people can simply e-mail the reports to me. CocoaLumberjack is dead-simple to use, so I won't explain it in the scope of this book, nor will I use it in the code to keep it free from external dependencies. [SwiftyBeaver][] gained a lot of traction in recent 2016, so have a look at that library, too.
 
 With logging in place, it'll be easier to find and fix fatal problems in the code.
 
 [cderr]: https://developer.apple.com/library/mac/documentation/Cocoa/Reference/CoreDataFramework/Miscellaneous/CoreData_Constants/index.html
 [cocoalumberjack]: https://github.com/CocoaLumberjack/CocoaLumberjack
+[swiftybeaver]: https://github.com/SwiftyBeaver/SwiftyBeaver
 
 [^201412051124]: Credits go to [Charles on StackOverflow](http://stackoverflow.com/a/1297157/1460929). There you'll find even more elaborate solutions which make for a nice logger template.
 
@@ -132,7 +132,7 @@ With logging in place, it'll be easier to find and fix fatal problems in the cod
 Reporting a problem upon `save()` can be pretty straightforward:
 
 {linenos=off}
-    NSApplication.sharedApplication().presentError(error!)
+    NSApplication.shared().presentError(error!)
 
 Apart from showing a modal dialog, this doesn't help much. If you keep a log file using CocoaLumberjack, for example, you should replace this with a decent interface to help mail the error log to the developer.
 
@@ -163,7 +163,7 @@ A title is required, too. This isn't enforced in the user interface at the momen
 
 To empty the box title text field should work. An empty string is still a string, and thanks to Swift and non-optional parameters, it's impossible to create a `Box` with a nil title.
 
-Still, an empty title doesn't make sense business-wise. (This is a rule I just made up.) The user interface should not allow this.
+Still, an empty title doesn't make sense business-wise. (This is a rule I just made up but which does work well.) The user interface should not allow this.
 
 When I empty a box title text field, the app crashes. I didn't expect this to happen. Something's wrong with KVO and `didChangeValueForKey`, the debugger tells me. There are a few KVO candidates in the whole stack:
 
@@ -192,16 +192,12 @@ Now what's with the text field? Does it try to set the title to nil instead of a
 
 Once discovered, the problem is easily remedied by using an `NSValueTransformer` to ensure the value is never nil:
 
-    @objc(NonNilStringValueTransformer)
-    public class NonNilStringValueTransformer: NSValueTransformer {
-        override public func transformedValue(value: AnyObject?) -> AnyObject? {
-            if !hasValue(value) {
-                return ""
-            }
-        
-            return value
+    @objc public class NonNilStringValueTransformer: ValueTransformer {
+        override open func transformedValue(_ value: Any?) -> Any? {
+            return value ?? ""
         }
     }
+
 
 <!--ct: #75a75c4a54add4e57849d22e8c8c47d32f074f86 ensure text field values never become nil but empty strings instead-->
 
@@ -217,7 +213,8 @@ If we had just one kind of tree node, the `NonNilStringValueTransformer` could d
 
 But the title-change event handler could draw the distinction:
 
-    func treeNodeDidChange(treeNode: TreeNode, title: String) {
+{linenos=off}
+    func treeNodeDidChange(_ treeNode: TreeNode, title: String) {
         if title.isEmpty {
             changeNodeTitleToPlaceholderValue(treeNode)
         } else {
@@ -226,7 +223,7 @@ But the title-change event handler could draw the distinction:
         }
     }
     
-    func changeNodeTitleToPlaceholderValue(treeNode: TreeNode) {
+    func changeNodeTitleToPlaceholderValue(_ treeNode: TreeNode) {
         // Don't execute in didSet callback context or KVO won't work.
         dispatch_async_main {
             if treeNode is BoxNode {
@@ -246,9 +243,8 @@ There's one benefit in handling title resets in the view controller to enforcing
                     title = "Box" // This value is stored, but not displayed
                 }
             
-                guard let controller = self.eventHandler else {
-                    return
-                }
+                guard let controller = self.eventHandler 
+                    else { return }
                 
                 controller.treeNodeDidChange(self, title: title)
             }
@@ -267,39 +263,37 @@ Instead of creating a `NonNilStringValueTransformer` to obtain sensible default 
 I don't think this is necessary in our case. For the sake of the example, a validator could look like this:
 
     enum BoxValidationResult {
-        case Valid
-        case Invalid([BoxValidationError])
+        case valid
+        case invalid([BoxValidationError])
     }
     
     struct BoxValidationError {
-        
-        enum BoxField {
-            case Title
+        enum Field {
+            case title
         }
         
-        let field: BoxField
+        let field: Field
         let problemDescription: String
     }
     
     class BoxValidator {
-        
         func validate(box: Box) -> BoxValidationResult {
             var errors = [BoxValidationError]()
             
             if !hasValue(box.title) {
                 let error = BoxValidationError(
-                    field: .Title, 
+                    field: .title, 
                     problemDescription: "Title must not be empty.")
                 errors.append(error)
             }
+
+            // ...
+            // imagine more checks here
             
-            // Imagine more checks here
+            guard errors.isEmpty 
+                else { return .invalid(errors) }
             
-            if errors.isEmpty {
-                return .Valid
-            }
-            
-            return .Invalid(errors)
+            return .valid
         }
     }
 
@@ -310,8 +304,8 @@ Since `Item` validation will not look much different, you could as well generali
 Instead of one validator type targeted at each model object type, you could compose a validation mechanism through protocols:[^validat]
 
     enum ValidationResult {
-        case Valid
-        case Invalid(reason: String)
+        case valid
+        case invalid(reason: String)
     }
     
     protocol Validator {
@@ -326,7 +320,7 @@ Instead of one validator type targeted at each model object type, you could comp
             precondition(hasValue(input), "Title must be present"))
             
             if input.isEmpty {
-                return .Invalid(reason: "Title must not be empty")
+                return .invalid(reason: "Title must not be empty")
             }
             
             return .Valid
@@ -362,8 +356,8 @@ Complex form validation can be composed in this manner: check individual input f
 Read errors don't (necessarily) imply data loss. I let `CoreDataBoxRepository` broadcast a notification to interested parties:
 
     func postReadErrorNotification() {
-        notificationCenter.postNotificationName(
-            kCoreDataReadErrorNotificationName, 
+        notificationCenter.post(
+            name: kCoreDataReadErrorNotificationName, 
             object: self)
     }
     
@@ -371,10 +365,10 @@ Since this application has no value to the user if reading data isn't possible, 
 
 {title="Subscribing to error notifications"}
     func subscribeToCoreDataReadErrors() {
-        readErrorCallback = notificationCenter.addObserverForName(
-                kCoreDataReadErrorNotificationName, 
+        readErrorCallback = notificationCenter.addObserver(
+                forName: kCoreDataReadErrorNotificationName, 
                 object: nil, 
-                queue: NSOperationQueue.mainQueue()) { notification in
+                queue: OperationQueue.mainQueue()) { notification in
             
             let question = NSLocalizedString("Could not read data. Report \
                 and Quit?", comment: "Read error quit question message")
@@ -394,7 +388,7 @@ Since this application has no value to the user if reading data isn't possible, 
             let answer = alert.runModal()
             if answer == NSAlertSecondButtonReturn {
                 //TODO: Add error reporting here
-                return NSApplication.sharedApplication().terminate(self)
+                return NSApplication.shared().terminate(self)
             }
         }
     }

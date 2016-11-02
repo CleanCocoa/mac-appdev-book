@@ -104,6 +104,8 @@ I think the view should at least optimistically add view components instantaneou
         }
     }
 
+You'll see what I think should happen when asynchronous persistence fails even though the user interface optimistically shows a value [in the upcoming part](#errorevents).
+
 Splitting concerns is good most of the time, but it's not always easily done.
 
 When I added a real user interface to the Word Counter, I used a separation similar to Wireframe/Presenter/Event Handler as **Application Services**, only the Event Handler was really an Interactor with close affinity to the domain, pulling in changes from running **Domain Services**. I wasn't ready to do experiments with the architecture for quite a while. Now I feel confident that a strong domain with **Domain Events** can yield better results. The _pull_-oriented Interactor can fetch a snapshot of the data, but if it changes in the background, the user-facing values are getting stale quickly. A _push_-oriented approach, on the other hand, easily remedies such problems.

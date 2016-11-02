@@ -31,7 +31,7 @@ Since we can make it so error throwing propagates, it should suffice to catch er
                 try createDirectory(directory)
             }
         } catch let error as NSError {
-            NSApplication.sharedApplication().presentError(error)
+            NSApplication.shared().presentError(error)
             abort()
         }
     }
