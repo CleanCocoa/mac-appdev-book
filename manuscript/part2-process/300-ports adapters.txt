@@ -4,7 +4,7 @@
 
 The basic idea of this architectural style is this: separate queries from commands and isolate layers through ports and adapters. _Ports_ are interfaces (protocols) declared in one layer, while _Adapters_ are classes from other layers which satisfy a Port's specification:
 
-![Ports and Adapters](images/20141204100034_ports-adapters.jpg)
+![Ports and Adapters](images/20141204100034_ports-adapters.png)
 
 This is nothing new to the code, actually. For example, `BoxRepository` is a port of the domain to which `CoreDataBoxRepository` from infrastructure is an adapter. Similarly, the `HandlesItemListEvents` protocol from the user interface layer is implemented by an application service.
 
