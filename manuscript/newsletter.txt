@@ -8,10 +8,9 @@ heart
 -->
 
 {icon=gift}
-G> ## Get Free Stuff from my Lab {#newsletter-signup}
+G> ## Get the Latest from the Lab
 G>
-G> Sign up to get a private preview of my upcoming programming books, be invited to software betas, and get priority access to my online courses:
+G> Sign up to get a private preview of my upcoming programming books and other material to make you a better independent developer:
 G>
-G> <http://christiantietze.de/newsletter>
+G> <http://cleancocoa.com/newsletter/>
 G> 
-G> I'm working on other projects, too, and will keep you in the loop.
