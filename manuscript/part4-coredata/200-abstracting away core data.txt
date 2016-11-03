@@ -33,7 +33,7 @@ The functionality we created in the first three parts of the book can be distill
 
 That's the public API of what's left of the Domain Model.
 
-I still prefer to avoid mutable properties and stick to `changeTitle(_:)`.
+I still prefer to avoid mutable properties and stick to `changeTitle(_:)` to convey that this is a command.
 
 The existing Core Data implementation actually has everything we will need to expose: there's an `NSSet` of associated items on `Box` which can be transformed to an array easily. We can hide all the rest of Core Data functionality, including the fact that both `Box` and `Item` are based on `NSManagedObject` and `NSObject` using these protocols.
 
@@ -51,7 +51,7 @@ Since most properties of the managed objects match the protocol requirements alr
 
     extension Item: ItemType {    
         public var itemId: ItemId {
-            return ItemId(uniqueId.longLongValue)
+            return ItemId(uniqueId.int64Value)
         }
     
         public var box: BoxType {
@@ -64,7 +64,7 @@ Since most properties of the managed objects match the protocol requirements alr
 Since an array of `ItemType` is available as part of the protocol-defined API, some methods are now easier to implement and thus easier to read:
 
     extension Box: BoxType {
-        public var boxId: BoxId { return BoxId(uniqueId.longLongValue) }
+        public var boxId: BoxId { return BoxId(uniqueId.int64Value) }
     
         public var items: [ItemType] {
             return managedItems.allObjects.map { $0 as! ItemType }
@@ -75,9 +75,9 @@ Since an array of `ItemType` is available as part of the protocol-defined API, s
         }
 
         public func removeItem(itemId itemId: ItemId) {
-            guard let item = self.item(itemId: itemId) else {
-                return
-            }    
+            guard let item = self.item(itemId: itemId) 
+                else { return }
+            
             let existingItems = self.mutableSetValueForKey("managedItems")
             existingItems.removeObject(item)
         }
@@ -86,7 +86,7 @@ Since an array of `ItemType` is available as part of the protocol-defined API, s
 
 The cost of using protocols is next to none, the benefit for clarity of code internally is huge.
 
-### Casting down to the protocol
+### Casting Down to the Protocol
 
 You'll get runtime errors when you try to cast `[AnyObject]` arrays bridged from Objective-C `NSArray`s into arrays of a concrete type:
 
@@ -103,5 +103,4 @@ Instead, you have to map each element:
         return managedItems.allObjects.map { $0 as! ItemType }
     }
 
-The best explanation I found is that an Objective-C bridging seems to result in a real Swift array with `AnyObject` elements, but actually doesn't. We programmers have to keep bridging in mind as an edge case to handle differently.
-
+An array is actually a generic `Array<T>` in Swift; casting from `Array<AnyObject>` to `Array<ItemType>` doesn't make sense to the compiler. The behavior I had expected initially would be to cast each element to `ItemType`, resulting in the array of the desired type. But that's not how things roll, so we have to cast each element using `map` instead and get the desired array as a result of this operation.
