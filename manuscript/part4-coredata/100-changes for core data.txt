@@ -19,7 +19,8 @@ Since creating objects during tests is now a lot more complex than invoking an o
         }
     
         func createBoxWithId(boxId: BoxId, title: String) {
-            Box.insertBoxWithId(boxId, title: title, inManagedObjectContext: context)
+            Box.insertBoxWithId(boxId, title: title, 
+                inManagedObjectContext: context)
         }
     
         func createAndFetchBoxWithId(boxId: BoxId, title: String) -> BoxType? {

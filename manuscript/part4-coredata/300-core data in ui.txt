@@ -70,7 +70,6 @@ View models are often great for simplifying view controllers. Cocoa Bindings was
 Keeping the `TreeNode` protocol for now, it's simple to make `Box` and `Item` implement its contract:
 
     extension Box: TreeNode {
-
         public dynamic var children: [TreeNode] {
             return self.managedItems.map { $0 as! TreeNode }
         }
@@ -79,7 +78,6 @@ Keeping the `TreeNode` protocol for now, it's simple to make `Box` and `Item` im
     }
 
     extension Item: TreeNode {
-
         public dynamic var children: [TreeNode] { return [] }
 
         public dynamic var isLeaf: Bool { return true }

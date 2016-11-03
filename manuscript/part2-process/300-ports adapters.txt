@@ -12,8 +12,6 @@ This is nothing new to the code, actually. For example, `BoxRepository` is a por
 
 I want to refactor `HandlesItemListEvents` to pay more attention to command--query separation.
 
-{pagebreak}
-
 
 ### Concerns With the Naive Approach {#refactoring-to-commands}
 
