@@ -73,6 +73,6 @@ Without wrapping the error, a simple method suffices:
 
 Since Swift requires us to add the `try` keyword in front of every call to a throwing function, there's no way to overlook points of potential failure.
 
-[^appdel]: See what Xcode 7's Swift 2.0 conversion tool made out of that, surrounding failing calls with do-try-catch, [on GitHub](https://github.com/DivineDominion/mac-appdev-code/blob/06f6416a4a084182e9a9530e9592c79e6954b91d/DDDViewDataExample/AppDelegate.swift).
+[^appdel]: See what Xcode 7's Swift 2.0 conversion tool made out of that, surrounding failing calls with do-try-catch, [on GitHub](https://github.com/CleanCocoa/mac-appdev-code/blob/06f6416a4a084182e9a9530e9592c79e6954b91d/DDDViewDataExample/AppDelegate.swift).
 
 [result]: http://nomothetis.svbtle.com/error-handling-in-swift

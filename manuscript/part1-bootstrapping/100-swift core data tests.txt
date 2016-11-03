@@ -68,4 +68,4 @@ I>
 [cdbp]: http://stackoverflow.com/questions/24841856/swift-breakpoint-in-coredata-library
 [objc1]: http://www.objc.io/issue-4/core-data-models-and-model-objects.html
 
-[^2f0f329e3cbec9f624cc575b717291989c960595]: See [commit 2f0f329](https://github.com/DivineDominion/mac-appdev-code/commit/2f0f329e3cbec9f624cc575b717291989c960595)
+[^2f0f329e3cbec9f624cc575b717291989c960595]: See [commit 2f0f329](https://github.com/CleanCocoa/mac-appdev-code/commit/2f0f329e3cbec9f624cc575b717291989c960595)

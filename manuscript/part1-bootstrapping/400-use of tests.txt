@@ -62,4 +62,4 @@ With the years, I tend to do more and more functional testing or integration tes
 
 [objc2]: http://www.objc.io/issue-15/bad-testing-practices.html
 [refactoring]: http://c2.com/cgi/wiki?WhatIsRefactoring
-[bookcode]: https://github.com/DivineDominion/mac-appdev-code
+[bookcode]: https://github.com/CleanCocoa/mac-appdev-code

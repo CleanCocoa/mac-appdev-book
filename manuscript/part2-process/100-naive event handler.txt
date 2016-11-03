@@ -131,7 +131,7 @@ Now all tests pass: new `Box`es are created and both stored and shown.[^1d4b7c3f
 
 <!--ct: commit #1d4b7c3ffa9fbd71ee7d64e5aacab39446c90acd use application layer service to create Box objects into Core Data-->
 
-[^1d4b7c3ffa9fbd71ee7d64e5aacab39446c90acd]: See [commit 1d4b7c3](https://github.com/DivineDominion/mac-appdev-code/commit/1d4b7c3ffa9fbd71ee7d64e5aacab39446c90acd)
+[^1d4b7c3ffa9fbd71ee7d64e5aacab39446c90acd]: See [commit 1d4b7c3](https://github.com/CleanCocoa/mac-appdev-code/commit/1d4b7c3ffa9fbd71ee7d64e5aacab39446c90acd)
 
 [nullobj]: http://en.wikipedia.org/wiki/Null_Object_pattern
 

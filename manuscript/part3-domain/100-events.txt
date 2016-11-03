@@ -203,7 +203,7 @@ It took some trial and error to get there, but it works pretty well.[^d0a8c7b562
 #74cf8041d561e6ecbe696dbb8f9c5d6046005405 refactor code for domain events
 -->
 
-[^d0a8c7b56296961a662bd1681b134dfe550adfff]: See the [latest commit](https://github.com/DivineDominion/mac-appdev-code/commit/3c8ff3835df3c8262833ff9944dedf81aa7d4e94), or the initial [commits d0a8c7b](https://github.com/DivineDominion/mac-appdev-code/commit/d0a8c7b56296961a662bd1681b134dfe550adfff),  [9a8f41d](https://github.com/DivineDominion/mac-appdev-code/commit/9a8f41d29b1bd48eb1d6f7475699da0d0d925c2b),  [a2b0f4c](https://github.com/DivineDominion/mac-appdev-code/commit/a2b0f4c578abbe4407d5cc06b7fc423472cb8151), and [74cf804](https://github.com/DivineDominion/mac-appdev-code/commit/74cf8041d561e6ecbe696dbb8f9c5d6046005405)
+[^d0a8c7b56296961a662bd1681b134dfe550adfff]: See the [latest commit](https://github.com/CleanCocoa/mac-appdev-code/commit/3c8ff3835df3c8262833ff9944dedf81aa7d4e94), or the initial [commits d0a8c7b](https://github.com/CleanCocoa/mac-appdev-code/commit/d0a8c7b56296961a662bd1681b134dfe550adfff),  [9a8f41d](https://github.com/CleanCocoa/mac-appdev-code/commit/9a8f41d29b1bd48eb1d6f7475699da0d0d925c2b),  [a2b0f4c](https://github.com/CleanCocoa/mac-appdev-code/commit/a2b0f4c578abbe4407d5cc06b7fc423472cb8151), and [74cf804](https://github.com/CleanCocoa/mac-appdev-code/commit/74cf8041d561e6ecbe696dbb8f9c5d6046005405)
 
 [generics]: http://swiftyeti.com/generics/
 

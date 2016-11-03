@@ -257,7 +257,7 @@ Obtaining the `Box` via `ManagedBox` didn't re-create the associated items, yet.
 That's all there is to it to create, save, and show items with their default values. Changing the values has no lasting effect, yet, though.
 
 
-[^d8b64eabee134cd516b382956e2aa58c194d5886]: See [commits d8b64ea](https://github.com/DivineDominion/mac-appdev-code/commit/d8b64eabee134cd516b382956e2aa58c194d5886),  [b4c63ff](https://github.com/DivineDominion/mac-appdev-code/commit/b4c63ff803672889f7683aae72554d9538c7f335), [6cfabcf](https://github.com/DivineDominion/mac-appdev-code/commit/6cfabcf026b516b69a30873aa30ea68de79a6aa9), and [f9d96aa](https://github.com/DivineDominion/mac-appdev-code/commit/f9d96aa1f19db681ba654f2bdf067bd8a7edf08f)
+[^d8b64eabee134cd516b382956e2aa58c194d5886]: See [commits d8b64ea](https://github.com/CleanCocoa/mac-appdev-code/commit/d8b64eabee134cd516b382956e2aa58c194d5886),  [b4c63ff](https://github.com/CleanCocoa/mac-appdev-code/commit/b4c63ff803672889f7683aae72554d9538c7f335), [6cfabcf](https://github.com/CleanCocoa/mac-appdev-code/commit/6cfabcf026b516b69a30873aa30ea68de79a6aa9), and [f9d96aa](https://github.com/CleanCocoa/mac-appdev-code/commit/f9d96aa1f19db681ba654f2bdf067bd8a7edf08f)
 
 {pagebreak}
 
@@ -399,7 +399,7 @@ With these changes in place, the item title change test passes, too.
 
 [^mvc]: Like, 1988-classic. See [Wikipedia's MVC history](http://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller#History) for links to articles on the topic.
 
-[^f4abec848fdd107fff3d4badeaa83877bfaf930e]: See [commit f4abec8](https://github.com/DivineDominion/mac-appdev-code/commit/f4abec848fdd107fff3d4badeaa83877bfaf930e)
+[^f4abec848fdd107fff3d4badeaa83877bfaf930e]: See [commit f4abec8](https://github.com/CleanCocoa/mac-appdev-code/commit/f4abec848fdd107fff3d4badeaa83877bfaf930e)
 
 
 ### Removing Items and Boxes
