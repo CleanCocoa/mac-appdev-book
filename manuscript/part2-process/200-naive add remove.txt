@@ -33,7 +33,7 @@ Adding items takes a bit more lines to test, but it's nothing special:
 Appending `ItemNode` to the current selection (or its parent) `BoxNode` works by finding the `BoxNode`'s index path. The associated `NSTreeNode` provides all details to obtain the `BoxId`.
 
 {title="Appending item nodes"}
-    func appendItemNodeToBoxIndexPath(parentIndexPath: NSIndexPath) {
+    func appendItemNodeToBoxIndexPath(parentIndexPath: IndexPath) {
         let parentTreeNode = boxTreeNodeAtIndexPath(parentIndexPath)
         let itemIndexPath = indexPath(appendedToTreeNode: parentTreeNode)
         let item = itemNode(belowBoxTreeNode: parentTreeNode)
@@ -66,6 +66,8 @@ Now that `ItemViewController` asks for a new `ItemId`, we could simply replicate
 
 Stop right there. This may be a mistake.
 
+#### Revisiting the Meaning of Aggregates in the Domain
+
 Think about the domain's specification. `Item`s are part of `Box`es. It doesn't make sense to create them in isolation. In fact, the code above wouldn't execute without errors because the Core Data `ManagedItem` definition declares the `box`-relationship must be set.
 
 In Domain-Driven Design terms, `Box` is an **Aggregate Root**. It is responsible for managing its invariants and related entities. `Item`s are related entities: they have identity over time and across sessions. But in this scenario, they aren't to be managed independently from their respective `Box`es.
@@ -92,13 +94,15 @@ This aspect of the domain changes how to think about the box and item **Reposito
 
 Until now, I had collection-oriented repositories in mind.[^repo] You query the repository for objects, change them, and not worry about saving. The repository does it behind the scenes. If I worked with Core Data managed objects directly, that's exactly what would happen. But I don't, so I have to ensure that changes to a `Box` find their way to the Core Data store.
 
-There's three options:
+There's three options to bind the `Box` Domain object to a Core Data managed object:
 
 1. Change the way the Repositories work. Instead of collection-oriented, make them work persistence-oriented. This includes explicit calls to `save` methods, passing in `Box` or `Item`. Since I don't manipulate a SQL database directly, I have to map changes from `Box` and `Item`to `ManagedBox` and `ManagedItem` respectively.
 2. Leverage KVO to track changes of `Box` objects and map changes to the underlying `ManagedBox`. Similar to (1), but without explicit calls to a `save` method.
 3. Use `NSManagedObject` directly to manipulate the persisted data. Every change gets persisted automagically.
 
-I think (1) is a waste of time in this case. (2) is a viable option I'll explore more. Discovering these difficulties in practice, I decide to take on (3) in another part, namely part 4.
+I think (1) is a waste of time in this case. (2) is a viable option I'll explore more. Discovering these difficulties in practice, I will show you how (3) works in part 4 of this book.
+
+So from this point onward, I'll show you how you could sync `NSManagedObject` subclasses to Domain objects. It's not going to be super simple, but it'll work and illustrate the point of keeping these things separate.
 
 [^repo]: See Chapter 12, "Repositories", in [Vernon (2013).](#booklist)
 
@@ -119,39 +123,37 @@ To leverage Key-Value Observing in Swift, I have to change `Box` to this:
 `ManagedBox` observation is set up in a lazy property initializer. This way, the `Box` can use `ManagedBox`es values when it's requested. Since the Core Data managed object context keeps fetched values around until saving, subsequent fetch requests will produce the same `ManagedBox` and thus the same `Box`:
 
 {title="Setting up KVO on a private Box representation"}
-    private var kBoxContext = 0
+    private var boxContext = 0
 
-    public class ManagedBox: NSManagedObject {
+    open class ManagedBox: NSManagedObject {
         // ...
 
-        private var _box: Box?
+        fileprivate var _box: Box?
         public lazy var box: Box = {
         
             let box = Box(boxId: self.boxId(), title: self.title)
             box.addObserver(self, 
                 forKeyPath: "title", 
                 options: .New, 
-                context: &kBoxContext)
+                context: &boxContext)
         
             self._box = box
             return box
         }()
     
-        public override func observeValueForKeyPath(keyPath: String, 
-                ofObject object: AnyObject, 
-                change: [NSObject : AnyObject], 
-                context: UnsafeMutablePointer<Void>) {
+        open override func observeValue(
+            forKeyPath keyPath: String?, 
+            of object: Any?, 
+            change: [NSKeyValueChangeKey : Any]?, 
+            context: UnsafeMutableRawPointer?) {
         
-            if context != &kBoxContext {
-                super.observeValueForKeyPath(keyPath, 
-                    ofObject: object, 
-                    change: change, 
-                    context: context)
+            guard context == &boxContext else {
+                super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
                 return
             }
-        
+            
             if keyPath == "title" {
-                self.title = change[NSKeyValueChangeNewKey] as! String
+                self.title = change?[.newKey] as! String
             }
         }
     
@@ -167,12 +169,11 @@ To leverage Key-Value Observing in Swift, I have to change `Box` to this:
 This works pretty well for fetched boxes:
 
 {linenos=off}
-    public class CoreDataBoxRepository: NSObject, BoxRepository {
+    public class CoreDataBoxRepository: BoxRepository {
         // ...
         public func boxWithId(boxId: BoxId) -> Box? {
-            guard let managedBox = managedBoxWithUniqueId(boxId.identifier) else {
-                return nil
-            }
+            guard let managedBox = managedBoxWithUniqueId(boxId.identifier) 
+                else { return nil }
         
             return managedBox.box
         }
@@ -184,7 +185,7 @@ To add an `Item` to a `Box`, the view controller has to know about items in the 
 
 Showing the view and populating its data can be modeled as a use case: `ManageBoxesAndItems`. Another naming candidate is `ShowBoxManagementWindow` or similar to express the intent, but `ManageBoxesAndItems` better captures the user's intention.
 
-{title="Use case Application Service"}
+{title="Use-case based Application Service"}
     public class ManageBoxesAndItems {
         var windowController: ItemManagementWindowController!
         // ...
@@ -192,7 +193,7 @@ Showing the view and populating its data can be modeled as a use case: `ManageBo
         public func showBoxManagementWindow() {
             let repository = ServiceLocator.boxRepository()
             let allBoxes = repository.boxes()
-            let allBoxData = boxData(allBoxes)
+            let allBoxData = boxData(boxes: allBoxes)
         
             windowController.displayBoxData(allBoxData)
             
@@ -218,7 +219,7 @@ Showing the view and populating its data can be modeled as a use case: `ManageBo
         let title: String
     }
 
-In Swift, I favor simple structs over dictionary representations of objects. The compiler will help setting instances up properly. In Objective-C, on the other hand, I often hesitate to add yet another class to the code base.
+In Swift, I favor simple structs over dictionary representations of objects for similar reasons I favored 3 explicit `TreeNode` types over 1 general-purpose type. The compiler will help setting instances up properly. In Objective-C, on the other hand, I often hesitate to add yet another class to the code base. This is part of un-learning old habits if you come from Objective-C.
 
 The view controller `ItemViewController` now can create `BoxNode`s and `ItemNode`s in its `displayBoxData` based on the data provided. The window controller simply forwards the message.
 
@@ -228,9 +229,9 @@ This simple use case-oriented **Application Service** object relieves the `AppDe
         // ...
         lazy var manageBoxesAndItems = ManageBoxesAndItems()
     
-        func applicationDidFinishLaunching(aNotification: NSNotification) {
-            ServiceLocator.sharedInstance.managedObjectContext = \
-                persistentStack.managedObjectContext
+        func applicationDidFinishLaunching(_ aNotification: Notification) {
+            let moc = persistentStack.managedObjectContext!
+            ServiceLocator.sharedInstance.setManagedObjectContext(moc)
             manageBoxesAndItems.showBoxManagementWindow()
         }
     }
@@ -253,7 +254,7 @@ Obtaining the `Box` via `ManagedBox` didn't re-create the associated items, yet.
     }
     box.items = items
 
-That's all there is to it to create, save, and show items with their default values. Changing the values has no lasting effect, though.
+That's all there is to it to create, save, and show items with their default values. Changing the values has no lasting effect, yet, though.
 
 
 [^d8b64eabee134cd516b382956e2aa58c194d5886]: See [commits d8b64ea](https://github.com/DivineDominion/mac-appdev-code/commit/d8b64eabee134cd516b382956e2aa58c194d5886),  [b4c63ff](https://github.com/DivineDominion/mac-appdev-code/commit/b4c63ff803672889f7683aae72554d9538c7f335), [6cfabcf](https://github.com/DivineDominion/mac-appdev-code/commit/6cfabcf026b516b69a30873aa30ea68de79a6aa9), and [f9d96aa](https://github.com/DivineDominion/mac-appdev-code/commit/f9d96aa1f19db681ba654f2bdf067bd8a7edf08f)
@@ -285,13 +286,13 @@ I don't want to water-down the existing design just for the sake of convenience.
     public class BoxNode: NSObject, TreeNode {
         public dynamic var title: String = "New Box" {
             didSet {
-                guard let controller = self.eventHandler else {
-                    return 
-                }
+                guard let controller = self.eventHandler 
+                    else { return  }
                 
-                controller.treeNodeDidChange(self, title: title)
+                controller.treeNodeDidChange(treeNode: self, title: title)
             }
         }
+        
         public weak var eventHandler: HandlesItemListChanges?
         // ...
     }
@@ -303,7 +304,7 @@ You can make use of this Model--View--View Model-based approach with any kind of
 Until now, `BoxNode` did set up its own child nodes when it was reconstituted from `BoxData`. I move this part out into `ItemViewController` to set the `eventHandler` property to `self` there:
 
 {title="Add this to ItemViewController:"}
-    public func displayBoxData(boxData: [BoxData]) {
+    public func displayBoxData(_ boxData: [BoxData]) {
         removeExistingNodes()
         for data in boxData {
             itemsController.addObject(boxNode(data))
@@ -317,7 +318,7 @@ Until now, `BoxNode` did set up its own child nodes when it was reconstituted fr
     func boxNode(boxData: BoxData) -> BoxNode {
         let boxNode = BoxNode(boxData: boxData)
         boxNode.eventHandler = self
-        boxNode.children = itemNodes(boxData.itemData)
+        boxNode.children = itemNodes(allItemData: boxData.itemData)
         
         return boxNode
     }
@@ -346,9 +347,8 @@ The Application Service still is pretty simple:
         public func boxDidChange(boxId: BoxId, title: String) {
             let repository = ServiceLocator.boxRepository()
         
-            guard let box = repository.boxWithId(boxId) else {
-                return
-            }
+            guard let box = repository.boxWithId(boxId) 
+                else { return }
             
             box.title = title
         }
@@ -368,34 +368,21 @@ I decide to use an active form for this method. Similar to `provisionNewBoxId`, 
 
 Similarly, I want `changeItemTitle` to look like this:
 
-    public func changeItemTitle(itemId: ItemId, 
-            title: String, 
-            inBox boxId: BoxId) {
+    public func changeItemTitle(
+        itemId: ItemId, 
+        title: String, 
+        inBox boxId: BoxId) {
+        
         let repository = ServiceLocator.boxRepository()
     
-        if let box = repository.boxWithId(boxId) {
-            if let item = box.itemWithId(itemId) {
-                item.title = title
-            }
-        }
-    }
-
-Thanks to the `guard` statement of Swift 2.0, it can be written in a flattened way:
-
-    public func changeItemTitle(itemId: ItemId, 
-            title: String, 
-            inBox boxId: BoxId) {
-        let repository = ServiceLocator.boxRepository()
-    
-        guard let box = repository.boxWithId(boxId), 
-            item = box.itemWithId(itemId) else {
-                
-            return 
-        }
+        guard let box = repository.box(boxId: boxId),
+            let item = box.item(itemId: itemId) 
+            else { return }
         
         item.title = title
+        
     }
-    
+
 To obtain the parent item's `BoxId`, I walk the tree controller's arranged objects to generate a collection of `BoxNode`s. Then, I let the `ItemNode` decide where it belongs: 
 
     public func parentBoxNode(inArray nodes: [BoxNode]) -> BoxNode? {
@@ -432,7 +419,7 @@ The tests have to verify the following:
 There's nothing new to do to accomplish what's left. I like to show you the Application Service's implementation because I think it conveys best how well the parts integrate:
 
     public class BoxAndItemService: HandlesItemListEvents {
-        var repository: BoxRepository! {
+        var repository: BoxRepository {
             return ServiceLocator.boxRepository()
         }
     
@@ -441,9 +428,8 @@ There's nothing new to do to accomplish what's left. I like to show you the Appl
         }
     
         public func removeItem(itemId: ItemId, fromBox boxId: BoxId) {
-            guard let box = repository.box(boxId: boxId) else {
-                return
-            }
+            guard let box = repository.box(boxId: boxId) 
+                else { return }
             
             box.removeItem(itemId: itemId)
         }

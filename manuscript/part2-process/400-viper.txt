@@ -39,7 +39,7 @@ Consuming data for a `BoxNode` is pretty easy because the nodes are just appende
 
     public func consume(boxData: BoxData) {
         let boxNode = self.boxNode(boxData)
-        let indexPath = NSIndexPath(index: nodeCount())
+        let indexPath = IndexPath(index: nodeCount())
         itemsController.insertObject(boxNode, 
             atArrangedObjectIndexPath: indexPath)
         orderTree()
@@ -51,10 +51,8 @@ Consuming data for `ItemNodes` is a bit more intricate, but still not too compli
 
     public func consume(itemData: ItemData) {
         guard let boxId = itemData.boxId, 
-            boxNode = existingBoxNode(boxId) else {
-            
-            return
-        }
+            boxNode = existingBoxNode(boxId) 
+            else { return }
         
         let itemId = itemData.itemId
         let itemNode = self.itemNode(itemData)
@@ -74,34 +72,42 @@ Walking the first level of `NSTreeNodes` to find the `BoxNode` with a specific I
 
 [^8abe3c0a0eee951e70a0375e96d2775cc26a3597]: See [commits 8abe3c0](https://github.com/DivineDominion/mac-appdev-code/commit/8abe3c0a0eee951e70a0375e96d2775cc26a3597) and [ba050fb](https://github.com/DivineDominion/mac-appdev-code/commit/ba050fbfeb2adbb6656c0b0477b62e2e5705f5b8)
 
-### Separation aids with concurrency
+### Separation Helps Dealing with Concurrency
 
 Separating event handling from updating the view can have nice benefits. Imagine there's a background thread syncing the database to a server: you can display changes with the existing setup just like that.
 
-To test how good it really is, I delay view updates a bit using `dispatch_after` with the following global helper function:
+To test how good it really is, I delay view updates a bit using `asyncAfter` (formerly `dispatch_after`) with the following global helper function:
 
 {title="Delay helper in Utilites"}
-    func delay(delay: Double, closure: () -> Void) {
-        dispatch_after(
-            dispatch_time(
-                DISPATCH_TIME_NOW,
-                Int64(delay * Double(NSEC_PER_SEC))
-            ),
-            dispatch_get_main_queue(), closure)
+    func delay(_ delay: Double, closure: @escaping () -> Void) {
+        let deadline = DispatchTime.now() + .milliseconds(Int(delay * 1000))
+        DispatchQueue.main.asyncAfter(
+            deadline: deadline, execute: closure)
     }
 
-Now if I press "New Box" multiple times, it inserts the boxes one after another with a delay.
+The delay can be inserted at various places. Put it into a service to simulate long-running operations, for example. Now if I press "New Box" multiple times, it inserts the boxes one after another with a delay.
 
 At the moment, there's no way to rename `Box` or `Item` in the domain and push changes to the view. Currently, the view optimistically assumes its updates will persist and displays the change on its own terms, without a round-trip to the domain (or persistence).
 
-With a delay of about 10 seconds, I can even rename existing nodes before new ones come in without any conflicts. Try that with an omnipotent, tightly coupled, blocking read--write view controller.
+With a delay of about 10 seconds, I can even rename existing nodes before new ones come in without any conflicts. Try that with an omnipotent, tightly coupled, always blocking read--write view controller.
 
-Keep in mind, though, that this needn't be a sign of high quality. Maybe for your app, a close dependence on model data is the way to go.
+Keep in mind, though, that this needn't be a sign of high quality. Maybe for your app, a closer coupling of view and model data at all times is important. In most cases, this temporal decoupling is a useful feat, though.
 
-I think the view should at least optimistically add view components instantaneously even though the persistence takes some time. This optimistic approach matters most when there are round-trips to a server. In web applications, this is a must to ensure low perceived latency. Mac applications don't suffer from low responsiveness because of Core Data most of the time. Putting a delay in `CoreDataBoxRepository` should not delay user interface reactions. We'll look into the problem of responding to error event [soon in the upcoming part](#errorevents).
+I think the view should at least optimistically add view components instantaneously even though the persistence takes some time. Instant user feedback is important to make the app appear responsive. Long delays confuse the user: did the action work or did it not? An optimistic approach matters more when there are round-trips to a server which can take long. In web applications, this is a must to ensure low perceived latency. Mac applications don't suffer from low responsiveness most of the time; saving simple data sets to Core Data isn't a problem. If we put a delay in `CoreDataBoxRepository`, the user interface should not be lagging behind:
+
+{linenos=off, title="Delay saving a new Box"}
+    open func addBox(_ box: Box) {
+        delay(5) {
+            ManagedBox.insertManagedBox(box.boxId, 
+                title: box.title, 
+                inManagedObjectContext: self.managedObjectContext)
+        }
+    }
+
+You'll see what I think should happen when asynchronous persistence fails even though the user interface optimistically shows a value [in the upcoming part](#errorevents).
 
 Splitting concerns is good most of the time, but it's not always easily done.
 
 When I added a real user interface to the Word Counter, I used a separation similar to Wireframe/Presenter/Event Handler as **Application Services**, only the Event Handler was really an Interactor with close affinity to the domain, pulling in changes from running **Domain Services**. I wasn't ready to do experiments with the architecture for quite a while. Now I feel confident that a strong domain with **Domain Events** can yield better results. The _pull_-oriented Interactor can fetch a snapshot of the data, but if it changes in the background, the user-facing values are getting stale quickly. A _push_-oriented approach, on the other hand, easily remedies such problems.
 
-So up next is the part most interesting to _Domain-Driven Design_, but the least interesting for the sake of this example project so far: the domain itself.
+So up next is the part most interesting to _Domain-Driven Design_: fleshing out the Domain some more and adding behavior next to the Entities.

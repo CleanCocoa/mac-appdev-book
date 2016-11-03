@@ -1,20 +1,22 @@
 # Epilogue
 
-That's it.
+I hope you found the exercise of removing all the "architecture smell" from the code useful in the last past. It's supposed to show how the components I created can be reduced to simpler things you already know or will get to know through your work with the Cocoa frameworks.
 
-Writing this book changed how I approached coding the example application. It helped to aim for telling a coherent story, and it helped being able to look at notes from the day before. 
+In the end, this book shows two different approaches:
 
-Usually, I have a Day One reminder set to remind me of journalling once per hour. When I'm coding, I use these reminders to reflect on a current trail of thought, or a problem I try to solve. Writing makes you think clearly.
+First, it started with a few principles to organize code and think about the structure and flow of an application. There were some problems on the way, like decoupling Core Data from the rest of the app, but they were solved in the spirit of the same principles that started the journey. That's an approach of architecture-first, where you perform rather minimalistic planning to guide the process.
 
-Maybe this is a tool you could make use of, too: write about your programming projects regularly.
+Second, deconstructing the code to remove most of the stuff the architecture did impose really shows how to change a Cocoa app to become more flexible for change. You just have to read the deconstruction process the other way around. I stopped before removing `BoxRepository` from the code base; I stopped just before the example collapsed into a simplistic demo of how to combine Cocoa Bindings and Core Data. That would be the stuff you find in Apple's documentation. The stage of the "CoreDataOnly" app retains a last bit of boundary management, separating database access from the user interface. It shows what it may look like if you cleaned your code base a tiny bit. Then roll back more of the changes I performed to see how you can further extract responsibilities into objects from existing code. That's the approach of improving existing code, of refactoring and changing the architecture later.
 
-Reflect upon decisions and write down alternate paths. By pointing at alternatives throughout this book, I have discovered how hard it has been to stick to a plan without knowing the options. Writing about the options relieved me from the stress of not knowing what might happen if I do something else instead because now I knew without having to do any coding.
+Me, I have found out that I want to try to implement the `ManagedBox`/`Box` distinction in the Word Counter to put Core Data in the outermost layer because it works really well once set up. Years later I can tell it works very well and the resulting module is healthy.
 
-Me, I have found out that I want to try to implement the `ManagedBox`/`Box` distinction in the Word Counter to put Core Data in the outermost layer because it works really well once set up.
+Separating the functionality into cleanly divided layers proves to be a huge win. When components are separated and well-factored, adding or changing functionality becomes a lot easier. Still, sometimes it may be better to stick to the Cocoa features for a while until you find the app grows in complexity. Not every tool needs to be well-architected. Small apps that won't change a lot over the years can benefit from a shorter "time to market," that is less development time. In the end, you have to weigh the pros and cons. To do so, you have to _know_ them first, though.
 
-But before I spend lots of hours getting that to work, it's okay to start small. I can use Core Data and Cocoa Bindings to my advantage to get up to speed initially. Since the model of the Word Counter is not so simple, I will not use Cocoa Bindings from the view controller to Core Data, but keep a view model layer in tact.
+## Learning Through Writing
 
-The view model will help me prepare values for the different columns of the view without cluttering the real model. And should I switch from Core Data to Realm or SQLite or anything else, Core Data wouldn't be too entangled into everything. I think that's the sweet spot to aim for initially and then move forward once the feature is ready.
+Writing this book changed how I approached coding this example application. I know writing makes you think clearly; but I found it improved my code, too. 
+
+Maybe writing is a tool you could make use of. There's not much going on in the Cocoa app developer community regarding field reports. How do you develop applications? What challenges did you face today? These are useful questions for you to answer and provide insight for your readers. It also helps to think about decisions and write down alternate paths. By pointing at alternatives throughout this book, I have discovered how hard it has been to stick to a plan without knowing the options. Writing about these options helped me sort things out. It reduced the stress of not knowing what might happen.
 
 
 ## The Use of Cocoa Bindings
@@ -23,20 +25,14 @@ As we've seen in part 4, Cocoa Bindings are a great way to simplify user interfa
 
 If your model is KVC or Bindings compliant, that is.
 
-Keep in mind that the alternate approach I advocated throughout the rest of this book was to use view models. Using view models, you take the real entities and prepare them for display use. It's easy to see what the view model provides, and their public API reveals what the interface is going to use.
+Keep in mind that the alternate approach I advocated throughout the rest of this book was to use view models. Using view models, you take the real entities and prepare them for display use. It's easy to see what the view model provides, and their public API reveals what the interface is going to use. This is the promise of the Model--View--View-Model (MVVM) pattern.
 
 Cocoa Bindings does not help to reason about your code.
 
-With Bindings, you pass the real deal around. If you want to add a helper method which prepares a `fullName: String` somewhere to slim down your view controller's formatting concerns, there's only one place left: the model itself.
+With Bindings, you pass the real entities around. Say you have a "person" entity with first name and last name, if you want to add a helper method which prepares a `fullName` for a view component, you only have two places left: the view controller and the entity itself. There's not much wiggle room to insert a presenter component to perform any pre-processing when you use Bindings.
 
-Your Core Data managed objects will have to be both the entities and the view model, so to speak.
+Your Core Data managed objects will be two things: the entities and the view models. That's the all too common default situation we're facing, by the way. You have to think your way out of these constraints. That's probably why MVVM became so popular. It shows how to think differently about a particular problem. Only now people apply MVVM everywhere, hoping to end up with clean code and a useful architecture, ending up in another kind of mess.
 
-If your app is simplistic like the sample app of this book, then you'll be just fine. But if you add more and more functionality to the entities, they're going to get bloated.
+The majority of this book is dedicated to helping you develop strategies to get past the point of _Big Ball of Mud_ design, of cruft and mess. If your app is simplistic like the sample app of this book, you can ditch most of the architectural principles because they provide so little value. You've seen the effect on the code in part 4. Over-architecting leads to code no-one needs. If you want to display a list of items, and that's it, just don't try to force a Domain Model into the app. It's not worth it. But now you can employ it when you find your application is _sufficiently complex_ to warrant a Domain Model.
 
-The majority of this book is dedicated to helping you develop strategies to get past the point of _Big Ball of Mud_ design, of cruft and mess.
-
-You've seen that over-architecting leads to code no-one needs. If you want to display a list of items, and that's it, just don't try to force a Domain Model into the app.
-
-Similarly, the conventional pasting together of code snippets from StackOverflow will not help keep the code readable or clean.
-
-I hope to have provided evidence so you can pick wisely which path your next app or your next big refactoring will take.
+I hope to have provided evidence and examples for all these various aspects of creating a macOS application and you can now pick wisely which path your next app or your next big refactoring will take.

@@ -17,7 +17,7 @@ Eric Evans (2006):  _Domain-Driven Design. Tackling complexity in the heart of s
 
 
 Michael C. Feathers (2011):  _Working effectively with legacy code_, Upper Saddle River, NJ: Prentice Hall Professional Technical Reference.  
-  --- _Helps to learn decoupling code incrementally and how to test hard-to-test parts. That's where I learned to provide means to reset singletons, and that it's better to wrap `NSNotificationCenter` in order to replace the wrapper in tests than not test notifications at all._
+  --- _Helps to learn decoupling code incrementally and how to test hard-to-test parts. That's where I learned to provide means to reset singletons, and that it's better to wrap `NotificationCenter` in order to replace the wrapper in tests than not test notifications at all._
 
 
 Steve Freeman and Nat Pryce (2010):  _Growing object-oriented software, guided by tests_, Boston: Pearson Education.  
