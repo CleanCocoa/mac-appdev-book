@@ -43,11 +43,11 @@ Clients of the model objects should not care about Core Data specific features. 
 
 Without the patterns and principles which guided implementing our architecture, the code would have looked a lot worse. Conversely, changes would have taken more time. Repositories are no part of the usual Cocoa programmer's toolbelt. But they helped in production code, and they help us programmers perform changes.
 
-The actual transition to protocol-based model objects is trivially simple.
+The actual transition to protocol-based model objects is simple.
 
 ### Implementing the Protocols   
 
-Since most properties of the managed objects match the protocol requirements already, making `Item` adopt `ItemType` is trivially simple:
+Since most properties of the managed objects match the protocol requirements already, making `Item` adopt `ItemType` requires only a few lines of code:
 
     extension Item: ItemType {    
         public var itemId: ItemId {
@@ -84,9 +84,9 @@ Since an array of `ItemType` is available as part of the protocol-defined API, s
         // ...
     }
 
-The cost of using protocols is next to none, the benefit for clarity of code internally is huge.
+The cost of using protocols is next to none, the benefit for clarity of code internally is huge. When code depends on these protocols instead of the concrete `NSManagedObject` subclasses, we can still hide the fact that Core Data in involved from most parts of the app. That makes using the objects easier. When the interface is limited to a few methods an properties, you know what you are supposed to do. When you get all of the power of `NSObject` and `NSManagedObject`, this power quickly turns into a liability. Object boundaries can be violated easily with Key-Value-Coding, and the framework might enforce access levels we'd rather not make public. Using a protocol as an abstraction helps to keep boundaries in tact and reveal only the parts you want client code to use.
 
-### Casting Down to the Protocol
+### How to Cast Collections Down to the Protocol
 
 You'll get runtime errors when you try to cast `[AnyObject]` arrays bridged from Objective-C `NSArray`s into arrays of a concrete type:
 
