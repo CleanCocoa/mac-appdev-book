@@ -26,8 +26,8 @@ Thanks to ARC, Xcode will complain if you omit `self` in this case, although you
             self.firstName = firstName
             self.lastName = lastName
             
-            // Use unowned self to break strong reference cycle
-            onWakeUp = { [unowned self] in
+            // Use `weak self` to break strong reference cycle
+            onWakeUp = { [weak self] in
                 self.dressUp()
             }
         }
@@ -38,7 +38,7 @@ Thanks to ARC, Xcode will complain if you omit `self` in this case, although you
 The main takeaway for me at this point: 
 
 - Lazily initialized properties aren't strongly referenced closures. No need to worry about strong reference cycles.
-- Closures capture their context and thus capture a strong reference to `self`, too. There, I have to pipe in `[unowned self]`.
+- Closures capture their context and thus capture a strong reference to `self`, too. There, I have to pipe in `[weak self]`.
 
 [closures]: https://developer.apple.com/library/ios/documentation/swift/conceptual/Swift_Programming_Language/Closures.html#//apple_ref/doc/uid/TP40014097-CH11-XID_151
 [uoself]: http://stackoverflow.com/questions/24320347/shall-we-always-use-unowned-self-inside-closure-in-swift

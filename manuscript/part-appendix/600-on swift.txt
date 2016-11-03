@@ -34,3 +34,8 @@ You could do this in Objective-C, too, with the usual overhead of creating a `.h
 
 Each language paves the way we think about programming problems. Swift, to me, is about making it easier to create classes and structs. And Swift is about favoring commands over optional return values. Thus, Swift is more about "Tell, Don't Ask", and preferring Hexagonal Architecture and clean & concise code.
 
+### Update on Oct., 2016
+
+Swift 3 is here, and it brought us a new naming convention in Foundation. Instead of `NSNotificationCenter`, it's now just `NotificationCenter`. But not only did the "NS" prefix go; a lot of things changed to value types internally. Notification names aren't based on strings anymore but on a `Notification.Name`. What I like most is the change of API in Grand Central Dispatch: instead of `dispatch_async` and other C-style free functions, we now have proper types for that with object-oriented interfaces. `DispatchQueue.main.async` is so much nicer to read. And I prefer `DispatchTime.now() + .seconds(5)` to compute a delay over the Double-Int64-NSEC_PER_SEC-stuff any day.
+
+So we're already getting a Foundation 2.0. I'm very excited to see if Cocoa is going to change, too, and if we really get a UIKit/AppKit blend. It seems we needn't hold our breaths for 2017, though.

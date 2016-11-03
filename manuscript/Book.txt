@@ -45,3 +45,5 @@ part-appendix/400-unowned self in closures.txt
 part-appendix/500-objc api.txt
 part-appendix/600-on swift.txt
 part-appendix/700-adopting swift 2.txt
+
+newsletter.txt

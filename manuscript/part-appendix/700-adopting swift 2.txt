@@ -23,9 +23,7 @@ That's how [the `Result` enum][result] helped Swift programmers -- until 2.0 arr
 
 Since we can make it so error throwing propagates, it should suffice to catch errors at the highest level possible:
 
-{linenos=off}
     private func guardApplicationDocumentsDirectory(directory: NSURL) {
-        
         do {
             if try !directoryExists(directory) {
                 try createDirectory(directory)
@@ -41,7 +39,6 @@ In both `directoryExists(_:)` and `createDirectory(_:)` of the `AppDelegate`, I 
 For example:
 
     private func createDirectory(directory: NSURL) throws {
-        
         let fileManager = NSFileManager.defaultManager()
         
         do {
